@@ -1,31 +1,22 @@
 import { useState, useEffect } from 'react';
-import { fetchDoctors, fetchPharmacies } from '../core/geolocation';
-import type { Doctor, Pharmacy } from '../types';
+import { facilities as localFacilities } from '../data';
+import type { Facility } from '../types';
 
-export function useDoctorsAndPharmacies() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
+export function useFacilities() {
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const doctorsData = await fetchDoctors();
-        const pharmaciesData = await fetchPharmacies();
-        setDoctors(doctorsData);
-        setPharmacies(pharmaciesData);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load data');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    // For now, use local data. Replace with Firestore fetch if needed.
+    setFacilities(localFacilities);
+    setLoading(false);
   }, []);
 
-  return { doctors, pharmacies, loading, error };
+  // Helper filters
+  const clinics = facilities.filter(f => f.type === 'clinic');
+  const hospitals = facilities.filter(f => f.type === 'hospital');
+  const pharmacies = facilities.filter(f => f.type === 'pharmacy');
+
+  return { facilities, clinics, hospitals, pharmacies, loading, error };
 }

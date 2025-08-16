@@ -1,9 +1,12 @@
-import { Doctor, Pharmacy, Reminder, UserProfile } from './types';
 
-export const doctors: Doctor[] = [
+import { Facility, Reminder, UserProfile } from './types';
+
+export const facilities: Facility[] = [
+  // Hospitals & Clinics (previously doctors)
   {
     id: '1',
-    name: 'Dr. Mohamed Ould Ahmed',
+    name: 'Hôpital National de Nouakchott',
+    type: 'hospital',
     specialty: 'Cardiologist',
     image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300&h=300',
     rating: 4.8,
@@ -13,14 +16,12 @@ export const doctors: Doctor[] = [
     languages: ['Arabic', 'French', 'Hassaniya'],
     acceptedInsurance: ['CNAM', 'CNSS', 'Saham Assurance'],
     education: ['Faculté de Médecine de Nouakchott', 'CHU Ibn Sina Rabat'],
-    coordinates: {
-      lat: 18.0792,
-      lng: -15.9758
-    }
+    coordinates: { lat: 18.0792, lng: -15.9758 }
   },
   {
     id: '2',
-    name: 'Dr. Fatimata Mint Abdel',
+    name: 'Centre Hospitalier Mère-Enfant',
+    type: 'hospital',
     specialty: 'Pediatrician',
     image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300',
     rating: 4.9,
@@ -30,14 +31,12 @@ export const doctors: Doctor[] = [
     languages: ['Arabic', 'French', 'Pulaar'],
     acceptedInsurance: ['CNAM', 'CNSS', 'MACSF'],
     education: ['Université de Tunis El Manar', 'CHU de Dakar'],
-    coordinates: {
-      lat: 18.0887,
-      lng: -15.9794
-    }
+    coordinates: { lat: 18.0887, lng: -15.9794 }
   },
   {
     id: '3',
-    name: 'Dr. Ousmane Diallo',
+    name: 'Clinique El Wafa',
+    type: 'clinic',
     specialty: 'Dermatologist',
     image: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=300&h=300',
     rating: 4.7,
@@ -47,14 +46,12 @@ export const doctors: Doctor[] = [
     languages: ['Arabic', 'French', 'Wolof'],
     acceptedInsurance: ['CNAM', 'Allianz', 'MACSF'],
     education: ['Université Cheikh Anta Diop', 'Hôpital Avicenne Paris'],
-    coordinates: {
-      lat: 18.0845,
-      lng: -15.9685
-    }
+    coordinates: { lat: 18.0845, lng: -15.9685 }
   },
   {
     id: '4',
-    name: 'Dr. Aminata Sy',
+    name: 'Centre de Santé de Tevragh Zeina',
+    type: 'clinic',
     specialty: 'General Practitioner',
     image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300&h=300',
     rating: 4.6,
@@ -63,15 +60,13 @@ export const doctors: Doctor[] = [
     experience: 8,
     languages: ['Arabic', 'French', 'Soninke'],
     acceptedInsurance: ['CNAM', 'CNSS', 'AGM'],
-    education: ['Faculté de Médecine de Nouakchott', 'Stage à l\'Hôpital Principal de Dakar'],
-    coordinates: {
-      lat: 18.1031,
-      lng: -15.9951
-    }
+    education: ['Faculté de Médecine de Nouakchott', "Stage à l'Hôpital Principal de Dakar"],
+    coordinates: { lat: 18.1031, lng: -15.9951 }
   },
   {
     id: '5',
-    name: 'Dr. Sidi Ould Cheikh',
+    name: 'Hôpital Cheikh Zayed',
+    type: 'hospital',
     specialty: 'Orthopedic Surgeon',
     image: 'https://images.unsplash.com/photo-1622902046580-2b47f47f5471?auto=format&fit=crop&q=80&w=300&h=300',
     rating: 4.9,
@@ -81,73 +76,64 @@ export const doctors: Doctor[] = [
     languages: ['Arabic', 'French', 'English'],
     acceptedInsurance: ['CNAM', 'CNSS', 'Nema Assurance'],
     education: ['Université Mohammed V', 'CHU Casablanca', 'Fellowship in France'],
-    coordinates: {
-      lat: 18.0682,
-      lng: -15.9785
-    }
-  }
-];
-
-export const pharmacies: Pharmacy[] = [
+    coordinates: { lat: 18.0682, lng: -15.9785 }
+  },
+  // Pharmacies
   {
-    id: '1',
+    id: '6',
     name: 'Pharmacie Centrale',
+    type: 'pharmacy',
     address: 'Avenue Gamal Abdel Nasser, Nouakchott',
+    location: 'Avenue Gamal Abdel Nasser, Nouakchott',
     hours: '8:00 - 23:00',
     image: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?auto=format&fit=crop&q=80&w=300&h=300',
     distance: '0.5 km',
-    coordinates: {
-      lat: 18.0778,
-      lng: -15.9750
-    },
+    coordinates: { lat: 18.0778, lng: -15.9750 },
     hasDelivery: true,
     isOpen: true,
     phoneNumber: '+222 45 25 55 55',
     services: ['Prescription Filling', 'Vaccinations', 'Health Consultations']
   },
   {
-    id: '2',
+    id: '7',
     name: 'Pharmacie El Kheir',
+    type: 'pharmacy',
     address: 'Rue 42-154, Tevragh Zeina, Nouakchott',
+    location: 'Rue 42-154, Tevragh Zeina, Nouakchott',
     hours: '24/7',
     image: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&q=80&w=300&h=300',
     distance: '1.2 km',
-    coordinates: {
-      lat: 18.1020,
-      lng: -15.9947
-    },
+    coordinates: { lat: 18.1020, lng: -15.9947 },
     hasDelivery: true,
     isOpen: true,
     phoneNumber: '+222 45 24 16 16',
     services: ['24/7 Service', 'Home Delivery', 'Medical Equipment']
   },
   {
-    id: '3',
+    id: '8',
     name: 'Pharmacie Ibn Sina',
+    type: 'pharmacy',
     address: 'Avenue Moctar Ould Daddah, Ksar, Nouakchott',
+    location: 'Avenue Moctar Ould Daddah, Ksar, Nouakchott',
     hours: '8:00 - 22:00',
     image: 'https://images.unsplash.com/photo-1573883431205-98b5f10aaedb?auto=format&fit=crop&q=80&w=300&h=300',
     distance: '0.8 km',
-    coordinates: {
-      lat: 18.0901,
-      lng: -15.9810
-    },
+    coordinates: { lat: 18.0901, lng: -15.9810 },
     hasDelivery: false,
     isOpen: true,
     phoneNumber: '+222 45 29 20 20',
     services: ['Prescription Filling', 'Health Products', 'Blood Pressure Monitoring']
   },
   {
-    id: '4',
+    id: '9',
     name: 'Pharmacie El Baraka',
+    type: 'pharmacy',
     address: 'Carrefour BMD, El Mina, Nouakchott',
+    location: 'Carrefour BMD, El Mina, Nouakchott',
     hours: '8:00 - 21:00',
     image: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&q=80&w=300&h=300',
     distance: '3.5 km',
-    coordinates: {
-      lat: 18.0552,
-      lng: -15.9515
-    },
+    coordinates: { lat: 18.0552, lng: -15.9515 },
     hasDelivery: true,
     isOpen: true,
     phoneNumber: '+222 45 27 42 42',
@@ -456,7 +442,7 @@ export const mockUserProfile: UserProfile = {
       conditions: []
     }
   ],
-  preferredDoctors: ['1', '2'],
+  preferredFacilities: ['1', '2'],
   insuranceInfo: {
     provider: 'Blue Cross',
     policyNumber: 'BC123456789',
