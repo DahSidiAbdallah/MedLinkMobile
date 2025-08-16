@@ -1,37 +1,32 @@
-export interface Doctor {
+export type FacilityType = 'clinic' | 'hospital' | 'pharmacy';
+
+export interface Facility {
   id: string;
   name: string;
-  specialty: string;
+  type: FacilityType;
+  specialty?: string;
   image: string;
-  rating: number;
+  rating?: number;
   location: string;
-  availableSlots: string[];
-  experience: number;
-  languages: string[];
-  acceptedInsurance: string[];
-  education: string[];
+  availableSlots?: string[];
+  experience?: number;
+  languages?: string[];
+  acceptedInsurance?: string[];
+  education?: string[];
+  address?: string;
+  hours?: string;
+  distance?: string;
+  hasDelivery?: boolean;
+  isOpen?: boolean;
+  phoneNumber?: string;
+  services?: string[];
   coordinates: {
     lat: number;
     lng: number;
   };
 }
 
-export interface Pharmacy {
-  id: string;
-  name: string;
-  address: string;
-  hours: string;
-  image: string;
-  distance: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-  hasDelivery: boolean;
-  isOpen: boolean;
-  phoneNumber: string;
-  services: string[];
-}
+// Pharmacy is now part of Facility with type: 'pharmacy'
 
 export interface Reminder {
   id: string;
@@ -45,15 +40,17 @@ export interface Reminder {
   prescriptionImage?: string;
 }
 
+
 export interface Appointment {
   id: string;
-  doctorId: string;
+  facilityId: string;
   patientId: string;
   datetime: string;
   type: 'in-person';
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
 }
+
 
 export interface UserProfile {
   id: string;
@@ -67,7 +64,7 @@ export interface UserProfile {
   conditions: string[];
   emergencyContacts: EmergencyContact[];
   familyMembers: FamilyMember[];
-  preferredDoctors: string[];
+  preferredFacilities: string[];
   insuranceInfo: InsuranceInfo;
 }
 

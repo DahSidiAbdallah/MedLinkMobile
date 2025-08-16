@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useDoctorsAndPharmacies } from '../hooks/useDoctorsAndPharmacies';
+import { useFacilities } from '../hooks/useDoctorsAndPharmacies';
 import { colors, spacing, radius } from '../theme';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 
-export default function DoctorsPharmacies() {
-  const { doctors, pharmacies, loading, error } = useDoctorsAndPharmacies();
+export default function ClinicsHospitalsPharmacies() {
+  const { clinics, hospitals, pharmacies, loading, error } = useFacilities();
   const [search, setSearch] = useState('');
 
-  const filteredDoctors = doctors.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
-  const filteredPharmacies = pharmacies.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  const filterBySearch = (arr: any[]) =>
+    arr.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -20,18 +20,18 @@ export default function DoctorsPharmacies() {
           <Ionicons name="search" size={20} color={colors.muted} />
           <TextInput
             style={{ flex: 1, marginLeft: spacing.sm }}
-            placeholder="Search clinics"
+            placeholder="Search facilities"
             value={search}
             onChangeText={setSearch}
           />
         </View>
       </View>
       <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
-        {filteredDoctors.map(doc => (
-          <Card key={doc.id}>
+        {filterBySearch(hospitals).map(fac => (
+          <Card key={fac.id}>
             <ListRow
-              title={doc.name}
-              subtitle={doc.specialty}
+              title={fac.name}
+              subtitle={fac.specialty || fac.location}
               leftIcon={<Ionicons name="medkit" size={24} color={colors.primary} />}
               right={<View style={{ flexDirection: 'row', gap: spacing.sm }}>
                 <Pressable style={styles.outlineBtn}><Text style={styles.outlineText}>Call</Text></Pressable>
@@ -40,11 +40,24 @@ export default function DoctorsPharmacies() {
             />
           </Card>
         ))}
-        {filteredPharmacies.map(ph => (
-          <Card key={ph.id}>
+        {filterBySearch(clinics).map(fac => (
+          <Card key={fac.id}>
             <ListRow
-              title={ph.name}
-              subtitle={ph.address}
+              title={fac.name}
+              subtitle={fac.specialty || fac.location}
+              leftIcon={<Ionicons name="medkit" size={24} color={colors.primary} />}
+              right={<View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Pressable style={styles.outlineBtn}><Text style={styles.outlineText}>Call</Text></Pressable>
+                <Pressable style={styles.outlineBtn}><Text style={styles.outlineText}>Map</Text></Pressable>
+              </View>}
+            />
+          </Card>
+        ))}
+        {filterBySearch(pharmacies).map(fac => (
+          <Card key={fac.id}>
+            <ListRow
+              title={fac.name}
+              subtitle={fac.address || fac.location}
               leftIcon={<Ionicons name="business" size={24} color={colors.accent} />}
               right={<View style={{ flexDirection: 'row', gap: spacing.sm }}>
                 <Pressable style={styles.outlineBtn}><Text style={styles.outlineText}>Call</Text></Pressable>
@@ -59,6 +72,7 @@ export default function DoctorsPharmacies() {
     </View>
   );
 }
+  // Removed extra closing brace
 
 const styles = StyleSheet.create({
   top: { padding: spacing.xl },
