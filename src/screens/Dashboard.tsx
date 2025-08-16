@@ -22,7 +22,7 @@ export default function Dashboard({ navigation }: any) {
         {[
           { label: 'Drug Info', route: 'DrugInfo' },
           { label: 'Reminders', route: 'Reminders' },
-          { label: 'Clinics', route: 'DoctorsPharmacies' },
+          { label: 'Clinics', route: 'ClinicsHospitalsPharmacies' },
           { label: 'Profile', route: 'UserProfile' },
         ].map(item => (
           <Card key={item.route} style={styles.tile}>

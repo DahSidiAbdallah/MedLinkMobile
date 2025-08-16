@@ -1,5 +1,5 @@
 // Core user profile logic for cross-platform use
-import { auth, db } from '../lib/firebase.js';
+import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export interface Profile {
