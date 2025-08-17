@@ -1,5 +1,6 @@
 
-import { Facility, Reminder, UserProfile } from './types';
+
+import { Facility, Reminder, UserProfile, Doctor, Pharmacy } from './types';
 
 export const facilities: Facility[] = [
   // Hospitals & Clinics (previously doctors)
@@ -140,6 +141,10 @@ export const facilities: Facility[] = [
     services: ['Prescription Filling', 'Baby Products', 'Cosmetics']
   }
 ];
+
+// Legacy exports for compatibility
+export const doctors: Doctor[] = facilities.filter(f => f.type === 'clinic' || f.type === 'hospital') as Doctor[];
+export const pharmacies: Pharmacy[] = facilities.filter(f => f.type === 'pharmacy') as Pharmacy[];
 
 export const medications = [
   {

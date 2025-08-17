@@ -1,4 +1,9 @@
+
 export type FacilityType = 'clinic' | 'hospital' | 'pharmacy';
+
+// Doctor and Pharmacy types for compatibility with legacy imports
+export type Doctor = Facility & { type: 'clinic' | 'hospital' };
+export type Pharmacy = Facility & { type: 'pharmacy' };
 
 export interface Facility {
   id: string;
