@@ -11,6 +11,7 @@ export interface Facility {
   type: FacilityType;
   specialty?: string;
   image: string;
+  images?: string[];
   rating?: number;
   location: string;
   availableSlots?: string[];
