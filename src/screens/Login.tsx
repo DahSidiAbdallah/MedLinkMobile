@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-nativ
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { colors, spacing, typography } from '../theme';
+import { colors, spacing, type } from '../theme';
 
 export default function Login({ navigation, onLogin }: { navigation?: any; onLogin?: () => void }) {
   const [email, setEmail] = useState('');
@@ -104,7 +104,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
 
   return (
     <View style={styles.container}>
-      <Text style={typography.h1}>{isRegister ? 'Create Account' : 'Login'}</Text>
+      <Text style={type.h1}>{isRegister ? 'Create Account' : 'Login'}</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
