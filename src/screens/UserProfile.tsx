@@ -39,6 +39,11 @@ export default function UserProfile({ navigation }: any) {
       allergies: [...(profile.allergies || [])],
       medical_conditions: [...(profile.medical_conditions || [])],
       medications: [...(profile.medications || [])],
+      insurance_info: {
+        provider: profile.insurance_info?.provider || '',
+        policy_number: profile.insurance_info?.policy_number || '',
+      },
+      emergency_contacts: Array.isArray(profile.emergency_contacts) ? [...profile.emergency_contacts] : [],
     });
     setEditErrors({});
     setAllergyInput('');
@@ -54,6 +59,8 @@ export default function UserProfile({ navigation }: any) {
     if (!edit.name || edit.name.trim().length < 2) errors.name = 'Name is required.';
     if (!edit.phone || edit.phone.trim().length < 6) errors.phone = 'Phone is required.';
     if (!edit.blood_type) errors.blood_type = 'Blood type is required.';
+    if (!edit.insurance_info?.provider) errors.insurance_provider = 'Provider is required.';
+    if (!edit.insurance_info?.policy_number) errors.insurance_policy = 'Policy number is required.';
     setEditErrors(errors);
     if (Object.keys(errors).length > 0) return;
     setSaving(true);
@@ -66,6 +73,11 @@ export default function UserProfile({ navigation }: any) {
         allergies: edit.allergies,
         medical_conditions: edit.medical_conditions,
         medications: edit.medications,
+        insurance_info: {
+          provider: edit.insurance_info.provider,
+          policy_number: edit.insurance_info.policy_number,
+        },
+        emergency_contacts: edit.emergency_contacts,
       };
       await createOrUpdateUserProfile(updated);
       Alert.alert('Success', 'Profile updated successfully.');
@@ -250,18 +262,69 @@ export default function UserProfile({ navigation }: any) {
                   </Pressable>
                 </View>
               ))}
-                {(edit.allergies ?? []).map((a: string, i: number) => {
-                  const handleRemove = () => setEdit((e: any) => ({ ...e, allergies: e.allergies.filter((_: string, idx: number) => idx !== i) }));
-                  return (
-                    <View key={a + i} style={modalStyles.chip}>
-                      <Text style={modalStyles.chipText}>{a}</Text>
-                      <Pressable onPress={handleRemove}>
-                        <Text style={modalStyles.chipRemove}>×</Text>
-                      </Pressable>
-                    </View>
-                  );
-                })}
             </View>
+            {/* Insurance Info */}
+            <Text style={modalStyles.label}>Insurance Provider</Text>
+            <TextInput
+              style={[modalStyles.input, editErrors.insurance_provider && modalStyles.inputError]}
+              placeholder="Provider"
+              value={edit.insurance_info?.provider}
+              onChangeText={v => setEdit((e: any) => ({ ...e, insurance_info: { ...e.insurance_info, provider: v } }))}
+            />
+            {editErrors.insurance_provider && <Text style={modalStyles.error}>{editErrors.insurance_provider}</Text>}
+            <Text style={modalStyles.label}>Policy Number</Text>
+            <TextInput
+              style={[modalStyles.input, editErrors.insurance_policy && modalStyles.inputError]}
+              placeholder="Policy Number"
+              value={edit.insurance_info?.policy_number}
+              onChangeText={v => setEdit((e: any) => ({ ...e, insurance_info: { ...e.insurance_info, policy_number: v } }))}
+            />
+            {editErrors.insurance_policy && <Text style={modalStyles.error}>{editErrors.insurance_policy}</Text>}
+            {/* Emergency Contacts */}
+            <Text style={modalStyles.label}>Emergency Contacts</Text>
+            {(edit.emergency_contacts ?? []).map((c: any, i: number) => (
+              <View key={i} style={{ marginBottom: 8, backgroundColor: '#F3F4F6', borderRadius: 8, padding: 8 }}>
+                <TextInput
+                  style={modalStyles.input}
+                  placeholder="Name"
+                  value={c.name}
+                  onChangeText={v => setEdit((e: any) => {
+                    const arr = [...e.emergency_contacts];
+                    arr[i] = { ...arr[i], name: v };
+                    return { ...e, emergency_contacts: arr };
+                  })}
+                />
+                <TextInput
+                  style={modalStyles.input}
+                  placeholder="Relationship"
+                  value={c.relationship}
+                  onChangeText={v => setEdit((e: any) => {
+                    const arr = [...e.emergency_contacts];
+                    arr[i] = { ...arr[i], relationship: v };
+                    return { ...e, emergency_contacts: arr };
+                  })}
+                />
+                <TextInput
+                  style={modalStyles.input}
+                  placeholder="Phone"
+                  value={c.phone}
+                  onChangeText={v => setEdit((e: any) => {
+                    const arr = [...e.emergency_contacts];
+                    arr[i] = { ...arr[i], phone: v };
+                    return { ...e, emergency_contacts: arr };
+                  })}
+                />
+                <Pressable onPress={() => setEdit((e: any) => ({ ...e, emergency_contacts: e.emergency_contacts.filter((_: any, idx: number) => idx !== i) }))} style={{ marginTop: 4 }}>
+                  <Text style={{ color: colors.danger, fontWeight: 'bold' }}>Remove</Text>
+                </Pressable>
+              </View>
+            ))}
+            <Pressable
+              style={[modalStyles.btn, { backgroundColor: colors.primary, marginBottom: 8 }]}
+              onPress={() => setEdit((e: any) => ({ ...e, emergency_contacts: [...(e.emergency_contacts || []), { name: '', relationship: '', phone: '' }] }))}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Add Emergency Contact</Text>
+            </Pressable>
             {/* Medical Conditions */}
             <Text style={modalStyles.label}>Medical Conditions</Text>
             <View style={modalStyles.chipInputRow}>
