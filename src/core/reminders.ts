@@ -1,6 +1,6 @@
 // Core reminders logic for cross-platform use
 import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase.js';
+import { db } from '../lib/firebase';
 
 export interface Reminder {
   id: string;

@@ -1,77 +1,53 @@
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Switch, ActivityIndicator, Alert, Modal, TextInput, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, shadow } from '../theme';
 import { SegmentedControl } from '../components/SegmentedControl';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
-import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
-import { db, auth } from '../lib/firebase';
+import { useReminders } from '../hooks/useReminders';
 
 export default function Reminders() {
   const [segment, setSegment] = useState('Active');
-  const [reminders, setReminders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [form, setForm] = useState({ medication: '', time: '', frequency: '', dosage: '', instructions: '', refillDate: '' });
+  const [form, setForm] = useState({ title: '', datetime: '', frequency: '', description: '' });
+  const [formErrors, setFormErrors] = useState<any>({});
   const [creating, setCreating] = useState(false);
-
-  useEffect(() => {
-    const fetchReminders = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          setReminders([]);
-          setLoading(false);
-          return;
-        }
-        const q = query(collection(db, 'reminders'), where('userId', '==', user.uid));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setReminders(data);
-      } catch (e: any) {
-        setError(e && e.message ? e.message : 'Failed to load reminders');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchReminders();
-  }, []);
+  const { reminders, loading, error, updateReminder, createReminder, refresh } = useReminders();
 
   const filtered = reminders.filter(r => (segment === 'Active' ? r.active : !r.active));
 
   const toggleActive = async (reminder: any) => {
     try {
-      await updateDoc(doc(db, 'reminders', reminder.id), { active: !reminder.active });
-      setReminders(reminders => reminders.map(r => r.id === reminder.id ? { ...r, active: !r.active } : r));
+      await updateReminder(reminder.id, { active: !reminder.active });
+      refresh();
     } catch (e: any) {
-      setError('Failed to update reminder');
+      setFormErrors({ general: 'Failed to update reminder' });
     }
   };
 
   const handleCreateReminder = async () => {
+    // Validation
+    const errors: any = {};
+    if (!form.title || form.title.trim().length < 2) errors.title = 'Title is required.';
+    if (!form.datetime || form.datetime.trim().length < 2) errors.datetime = 'Date/Time is required.';
+    if (!form.frequency || form.frequency.trim().length < 2) errors.frequency = 'Frequency is required.';
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
     setCreating(true);
-    setError(null);
     try {
-      const user = auth.currentUser;
-      if (!user) throw new Error('Not authenticated');
-      const newReminder = {
+      await createReminder({
         ...form,
-        userId: user.uid,
+        type: 'medication',
         active: true,
-        createdAt: new Date().toISOString(),
-      };
-      const remindersCol = collection(db, 'reminders');
-      const docRef = await (await import('firebase/firestore')).addDoc(remindersCol, newReminder);
-      setReminders(reminders => [...reminders, { ...newReminder, id: docRef.id }]);
+      });
       setModalVisible(false);
-      setForm({ medication: '', time: '', frequency: '', dosage: '', instructions: '', refillDate: '' });
+      setForm({ title: '', datetime: '', frequency: '', description: '' });
+      setFormErrors({});
+      refresh();
     } catch (e: any) {
-      setError(e && e.message ? e.message : 'Failed to create reminder');
+      setFormErrors({ general: e?.message || 'Failed to create reminder' });
     } finally {
       setCreating(false);
     }
@@ -88,26 +64,18 @@ export default function Reminders() {
         {filtered.length === 0 ? (
           <Text style={{ textAlign: 'center', color: colors.muted }}>No reminders</Text>
         ) : null}
-        {filtered.map(r => {
-          let subtitle = r.time;
-          if (r.frequency) subtitle += ` • ${r.frequency}`;
-          if (r.dosage) subtitle += ` • ${r.dosage}`;
-          return (
-            <Card key={r.id} style={{ paddingVertical: spacing.lg }}>
-              <ListRow
-                title={r.medication}
-                subtitle={subtitle}
-                right={<Switch value={r.active} onValueChange={() => toggleActive(r)} />}
-              />
-              {r.instructions ? (
-                <Text style={{ color: colors.muted, marginLeft: 56, marginTop: 4 }}>{r.instructions}</Text>
-              ) : null}
-              {r.refillDate ? (
-                <Text style={{ color: colors.muted, marginLeft: 56, marginTop: 2, fontSize: 12 }}>Refill by: {r.refillDate}</Text>
-              ) : null}
-            </Card>
-          );
-        })}
+        {filtered.map(r => (
+          <Card key={r.id} style={{ paddingVertical: spacing.lg }}>
+            <ListRow
+              title={r.title}
+              subtitle={`${r.datetime}${r.frequency ? ` • ${r.frequency}` : ''}`}
+              right={<Switch value={r.active} onValueChange={() => toggleActive(r)} />}
+            />
+            {r.description ? (
+              <Text style={{ color: colors.muted, marginLeft: 56, marginTop: 4 }}>{r.description}</Text>
+            ) : null}
+          </Card>
+        ))}
       </ScrollView>
     );
   }
@@ -131,42 +99,34 @@ export default function Reminders() {
           <View style={styles.modalContent}>
             <Text style={[{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }]}>Add Reminder</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Medication"
-              value={form.medication}
-              onChangeText={v => setForm(f => ({ ...f, medication: v }))}
+              style={[styles.input, formErrors.title && { borderColor: colors.danger }]}
+              placeholder="Title"
+              value={form.title}
+              onChangeText={v => setForm(f => ({ ...f, title: v }))}
               autoFocus
             />
+            {formErrors.title && <Text style={styles.error}>{formErrors.title}</Text>}
             <TextInput
-              style={styles.input}
-              placeholder="Time (e.g. 8:00)"
-              value={form.time}
-              onChangeText={v => setForm(f => ({ ...f, time: v }))}
+              style={[styles.input, formErrors.datetime && { borderColor: colors.danger }]}
+              placeholder="Date/Time (e.g. 2025-08-17 08:00)"
+              value={form.datetime}
+              onChangeText={v => setForm(f => ({ ...f, datetime: v }))}
             />
+            {formErrors.datetime && <Text style={styles.error}>{formErrors.datetime}</Text>}
             <TextInput
-              style={styles.input}
+              style={[styles.input, formErrors.frequency && { borderColor: colors.danger }]}
               placeholder="Frequency (e.g. Daily)"
               value={form.frequency}
               onChangeText={v => setForm(f => ({ ...f, frequency: v }))}
             />
+            {formErrors.frequency && <Text style={styles.error}>{formErrors.frequency}</Text>}
             <TextInput
               style={styles.input}
-              placeholder="Dosage (optional)"
-              value={form.dosage}
-              onChangeText={v => setForm(f => ({ ...f, dosage: v }))}
+              placeholder="Description (optional)"
+              value={form.description}
+              onChangeText={v => setForm(f => ({ ...f, description: v }))}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Instructions (optional)"
-              value={form.instructions}
-              onChangeText={v => setForm(f => ({ ...f, instructions: v }))}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Refill Date (optional, YYYY-MM-DD)"
-              value={form.refillDate}
-              onChangeText={v => setForm(f => ({ ...f, refillDate: v }))}
-            />
+            {formErrors.general && <Text style={styles.error}>{formErrors.general}</Text>}
             <View style={{ flexDirection: 'row', marginTop: spacing.md }}>
               <Pressable
                 style={[styles.modalBtn, { backgroundColor: colors.primary, flex: 1 }]}
@@ -232,5 +192,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  error: {
+    color: colors.danger,
+    fontSize: 13,
+    marginBottom: 4,
   },
 });
