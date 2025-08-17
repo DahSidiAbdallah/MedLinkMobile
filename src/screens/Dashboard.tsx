@@ -36,7 +36,7 @@ export default function Dashboard({ navigation }: any) {
                 style={styles.avatar}
               />
             </Pressable>
-            <Pressable accessibilityLabel="Notifications" style={styles.bell}>🔔</Pressable>
+            <Pressable accessibilityLabel="Notifications" style={styles.bell}><Text>🔔</Text></Pressable>
           </View>
           <Text style={[type.h1, { marginTop: 18 }]}>Welcome{profile && profile.name ? `, ${profile.name}` : ''}</Text>
           <Text style={[type.meta, { marginBottom: 18 }]}>How is it going today?</Text>
