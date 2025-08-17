@@ -97,7 +97,6 @@ export default function Reminders() {
               <ListRow
                 title={r.medication}
                 subtitle={subtitle}
-                leftIcon={<Ionicons name="medkit" size={24} color={colors.primary} />}
                 right={<Switch value={r.active} onValueChange={() => toggleActive(r)} />}
               />
               {r.instructions ? (
