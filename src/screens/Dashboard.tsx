@@ -1,15 +1,15 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, typography, shadow } from '../theme';
+import { LinearGradient } from 'react-native-linear-gradient';
 import Card from '../components/Card';
+import { colors, spacing, type, shadow } from '../theme';
 
 export default function Dashboard({ navigation }: any) {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient colors={["#EEF4FF", "#FFFFFF"]} style={styles.header}>
         <View>
-          <Text style={[typography.h1, { color: colors.text }]}>Welcome, Rajesh</Text>
-          <Text style={typography.meta}>Your health, your safety, your MedLink.</Text>
+          <Text style={type.h1}>Welcome, Rajesh</Text>
+          <Text style={type.meta}>Your health, your safety, your MedLink.</Text>
         </View>
         <Pressable accessibilityLabel="Notifications" style={styles.bell}>🔔</Pressable>
       </LinearGradient>
@@ -22,7 +22,7 @@ export default function Dashboard({ navigation }: any) {
         {[
           { label: 'Drug Info', route: 'DrugInfo' },
           { label: 'Reminders', route: 'Reminders' },
-          { label: 'Clinics', route: 'ClinicsHospitalsPharmacies' },
+          { label: 'Clinics', route: 'Clinics' },
           { label: 'Profile', route: 'UserProfile' },
         ].map(item => (
           <Card key={item.route} style={styles.tile}>
