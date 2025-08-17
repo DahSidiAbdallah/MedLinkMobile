@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { signOut } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 import { fetchUserProfile, createOrUpdateUserProfile, Profile } from '../core/userProfile';
-import { colors, spacing, typography, radius, shadow } from '../theme';
+import { colors, spacing, type, radius, shadow } from '../theme';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 
@@ -76,7 +78,7 @@ export default function UserProfile() {
       <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
         <Card style={styles.headerCard}>
           <Image source={require('../assets/avatar-placeholder.png')} style={styles.avatar} />
-          <Text style={[typography.h2, { marginTop: spacing.sm }]}>{profile.name}</Text>
+          <Text style={[type.h2, { marginTop: spacing.sm }]}>{profile.name}</Text>
           <Text style={{ color: colors.muted }}>{profile.email}</Text>
           <Text style={{ color: colors.muted }}>{profile.phone}</Text>
         </Card>

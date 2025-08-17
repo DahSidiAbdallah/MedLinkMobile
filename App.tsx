@@ -7,7 +7,7 @@ import Dashboard from './src/screens/Dashboard';
 import DrugInfo from './src/screens/DrugInfo';
 import Reminders from './src/screens/Reminders';
 import UserProfile from './src/screens/UserProfile';
-import ClinicsHospitalsPharmacies from './src/screens/ClinicsHospitalsPharmacies';
+import Clinics from './src/screens/Clinics';
 import { colors } from './src/theme';
 import Login from './src/screens/Login';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -32,7 +32,7 @@ function getTabIconName(routeName: string): TabIconName {
       return 'notifications';
     case 'UserProfile':
       return 'person';
-    case 'ClinicsHospitalsPharmacies':
+    case 'Clinics':
       return 'business';
     default:
       return 'home';
@@ -97,7 +97,7 @@ export default function App() {
         <Tab.Screen name="Dashboard" component={Dashboard} />
         <Tab.Screen name="DrugInfo" component={DrugInfo} />
         <Tab.Screen name="Reminders" component={Reminders} />
-        <Tab.Screen name="ClinicsHospitalsPharmacies" component={ClinicsHospitalsPharmacies} options={{ title: 'Clinics' }} />
+        <Tab.Screen name="Clinics" component={Clinics} />
         <Tab.Screen name="UserProfile" component={UserProfile} />
       </Tab.Navigator>
     </NavigationContainer>
