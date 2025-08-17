@@ -1,12 +1,8 @@
-import { Text, View, StyleSheet } from 'react-native';
-import { colors, radius, spacing } from '../theme';
-export function Pill({ text, tone = 'primary' }: { text: string; tone?: 'primary' | 'warn' }) {
-  const map: any = { primary: ['#E8F0FF', colors.primary], warn: ['#FFF7E6', colors.warn] };
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, radius } from '../theme';
+export function Pill({ children, tone='primary' }:{children:string; tone?:'primary'|'warn'|'neutral'}) {
+  const map = { primary:['#E8F0FF', colors.primary], warn:['#FFF7E6', colors.warn], neutral:['#EEF2F7', colors.muted] } as any;
   const [bg, fg] = map[tone];
-  return (
-    <View style={[styles.pill, { backgroundColor: bg }]}>
-      <Text style={[styles.txt, { color: fg }]}>{text}</Text>
-    </View>
-  );
+  return <View style={[styles.pill,{backgroundColor:bg}]}><Text style={[styles.txt,{color:fg}]}>{children}</Text></View>;
 }
-const styles = StyleSheet.create({ pill: { paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: 999 }, txt: { fontSize: 12, fontWeight: '600' } });
+const styles = StyleSheet.create({ pill:{ borderRadius:999, paddingHorizontal:12, paddingVertical:6 }, txt:{ fontSize:12, fontWeight:'700' } });
