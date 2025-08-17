@@ -2,19 +2,24 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+
 import Dashboard from './src/screens/Dashboard';
 import DrugInfo from './src/screens/DrugInfo';
 import Reminders from './src/screens/Reminders';
 import UserProfile from './src/screens/UserProfile';
 import Clinics from './src/screens/Clinics';
+import FacilityDetail from './src/screens/FacilityDetail';
 import { colors } from './src/theme';
 import Login from './src/screens/Login';
+import SplashScreen from './SplashScreen';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
-import SplashScreen from './SplashScreen';
+
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 
 type TabIconName =
@@ -84,22 +89,29 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        initialRouteName="Dashboard"
-        screenOptions={({ route }) => ({
-          tabBarIcon: tabBarIconFactory(route),
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.muted,
-          headerShown: false,
-          tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line, elevation: 4 },
-        })}
-      >
-        <Tab.Screen name="Dashboard" component={Dashboard} />
-        <Tab.Screen name="DrugInfo" component={DrugInfo} />
-        <Tab.Screen name="Reminders" component={Reminders} />
-        <Tab.Screen name="Clinics" component={Clinics} />
-        <Tab.Screen name="UserProfile" component={UserProfile} />
-      </Tab.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
+          {() => (
+            <Tab.Navigator
+              initialRouteName="Dashboard"
+              screenOptions={({ route }) => ({
+                tabBarIcon: tabBarIconFactory(route),
+                tabBarActiveTintColor: colors.primary,
+                tabBarInactiveTintColor: colors.muted,
+                headerShown: false,
+                tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line, elevation: 4 },
+              })}
+            >
+              <Tab.Screen name="Dashboard" component={Dashboard} />
+              <Tab.Screen name="DrugInfo" component={DrugInfo} />
+              <Tab.Screen name="Reminders" component={Reminders} />
+              <Tab.Screen name="Clinics" component={Clinics} />
+              <Tab.Screen name="UserProfile" component={UserProfile} />
+            </Tab.Navigator>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
