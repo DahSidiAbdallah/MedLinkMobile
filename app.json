@@ -4,9 +4,8 @@
     "slug": "MedLinkMobile",
     "version": "1.0.0",
     "orientation": "portrait",
-  "icon": "./src/assets/icon.png",
-  "userInterfaceStyle": "light",
-  "newArchEnabled": false,
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -20,7 +19,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.anonymous.MedLinkMobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
