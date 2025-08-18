@@ -1,16 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, TouchableOpacity, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Dashboard from './src/screens/Dashboard';
 import DrugInfo from './src/screens/DrugInfo';
 import Reminders from './src/screens/Reminders';
+
 import UserProfile from './src/screens/UserProfile';
 import Clinics from './src/screens/Clinics';
 import FacilityDetail from './src/screens/FacilityDetail';
+import BarcodeScanner from './src/screens/BarcodeScanner';
 import { colors } from './src/theme';
 import Login from './src/screens/Login';
 import SplashScreen from './SplashScreen';
@@ -22,43 +26,88 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 
-type TabIconName =
-  | 'home'
-  | 'medkit'
-  | 'notifications'
-  | 'person'
-  | 'business';
-
-function getTabIconName(routeName: string): TabIconName {
-  switch (routeName) {
-    case 'DrugInfo':
-      return 'medkit';
+const getTabIcon = (route: { name: string }, focused: boolean, color: string, size: number) => {
+  switch (route.name) {
+    case 'Dashboard':
+      return <Ionicons name="home" size={size} color={color} />;
     case 'Reminders':
-      return 'notifications';
-    case 'UserProfile':
-      return 'person';
+      return <Ionicons name="notifications" size={size} color={color} />;
+    case 'Barcode':
+      return (
+        <MaterialCommunityIcons
+          name="barcode-scan"
+          size={size + 10}
+          color={focused ? colors.primary : colors.muted}
+        />
+      );
     case 'Clinics':
-      return 'business';
+      return <Ionicons name="business" size={size} color={color} />;
+    case 'UserProfile':
+      return <Ionicons name="person" size={size} color={color} />;
     default:
-      return 'home';
+      return null;
   }
-}
+};
 
-
-interface TabBarIconProps {
-  readonly route: { name: string };
-  readonly color: string;
-  readonly size: number;
-}
-
-function TabBarIcon({ route, color, size }: TabBarIconProps) {
-  const iconName = getTabIconName(route.name);
-  return <Ionicons name={iconName} size={size} color={color} />;
-}
-
-function tabBarIconFactory(route: { name: string }) {
-  return ({ color, size }: { color: string; size: number }) => (
-    <TabBarIcon route={route} color={color} size={size} />
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  return (
+    <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'transparent' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          height: 64,
+          backgroundColor: colors.card,
+          borderTopWidth: 1,
+          borderTopColor: colors.line,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.04,
+          shadowRadius: 8,
+          elevation: 8,
+        }}
+      >
+        {state.routes.map((route, index) => {
+          if (route.name === 'Barcode') {
+            return (
+              <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', top: -24 }}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate(route.name)}
+                  activeOpacity={0.85}
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 40,
+                    width: 64,
+                    height: 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 8,
+                  }}
+                >
+                  {getTabIcon(route, state.index === index, '#fff', 32)}
+                </TouchableOpacity>
+              </View>
+            );
+          }
+          return (
+            <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate(route.name)}
+                activeOpacity={0.7}
+                style={{ paddingVertical: 8, alignItems: 'center', justifyContent: 'center' }}
+              >
+                {getTabIcon(route, state.index === index, state.index === index ? colors.primary : colors.muted, 28)}
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -94,19 +143,18 @@ export default function App() {
           {() => (
             <Tab.Navigator
               initialRouteName="Dashboard"
-              screenOptions={({ route }) => ({
-                tabBarIcon: tabBarIconFactory(route),
-                tabBarActiveTintColor: colors.primary,
-                tabBarInactiveTintColor: colors.muted,
+              tabBar={props => <CustomTabBar {...props} />}
+              screenOptions={{
                 headerShown: false,
-                tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line, elevation: 4 },
-              })}
+              }}
             >
               <Tab.Screen name="Dashboard" component={Dashboard} />
-              <Tab.Screen name="DrugInfo" component={DrugInfo} />
               <Tab.Screen name="Reminders" component={Reminders} />
+              <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
               <Tab.Screen name="Clinics" component={Clinics} />
-              <Tab.Screen name="UserProfile" component={UserProfile} />
+              <Tab.Screen name="UserProfile">
+                {props => <UserProfile {...props} onLogout={() => setUser(null)} />}
+              </Tab.Screen>
             </Tab.Navigator>
           )}
         </Stack.Screen>
