@@ -20,6 +20,8 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
 
   // Inline error state for login fields
   const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
+  // Inline error state for register fields (account step)
+  const [registerAccountErrors, setRegisterAccountErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -38,22 +40,24 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   };
 
   const validateAccountStep = () => {
-    if (!emailRegex.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
-      return false;
+    let errors: { email?: string; password?: string; confirmPassword?: string } = {};
+    if (!email) {
+      errors.email = 'Email is required.';
+    } else if (!emailRegex.test(email)) {
+      errors.email = 'Please enter a valid email address.';
     }
-    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      Alert.alert(
-        'Password Requirements',
-        'Password must be at least 8 characters and include both letters and numbers.'
-      );
-      return false;
+    if (!password) {
+      errors.password = 'Password is required.';
+    } else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+      errors.password = 'Password must be at least 8 characters and include both letters and numbers.';
     }
-    if (password !== confirmPassword) {
-      Alert.alert('Password Mismatch', 'Passwords do not match.');
-      return false;
+    if (!confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password.';
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
     }
-    return true;
+    setRegisterAccountErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const validatePersonalStep = () => {
@@ -220,33 +224,60 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
         {isRegister && registerStep === 0 && (
           <>
             <TextInput
-              style={[styles.input, focusedInput === 'email' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'email' && styles.inputFocused, registerAccountErrors.email && styles.inputError]}
               placeholder="Email"
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={text => {
+                setEmail(text);
+                if (registerAccountErrors.email) setRegisterAccountErrors(e => ({ ...e, email: undefined }));
+              }}
               onFocus={() => setFocusedInput('email')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (!email) setRegisterAccountErrors(e => ({ ...e, email: 'Email is required.' }));
+                else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
+                else setRegisterAccountErrors(e => ({ ...e, email: undefined }));
+              }}
             />
+            {registerAccountErrors.email ? <Text style={styles.errorText}>{registerAccountErrors.email}</Text> : null}
             <TextInput
-              style={[styles.input, focusedInput === 'password' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'password' && styles.inputFocused, registerAccountErrors.password && styles.inputError]}
               placeholder="Password"
               secureTextEntry
               value={password}
-              onChangeText={setPassword}
+              onChangeText={text => {
+                setPassword(text);
+                if (registerAccountErrors.password) setRegisterAccountErrors(e => ({ ...e, password: undefined }));
+              }}
               onFocus={() => setFocusedInput('password')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (!password) setRegisterAccountErrors(e => ({ ...e, password: 'Password is required.' }));
+                else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) setRegisterAccountErrors(e => ({ ...e, password: 'Password must be at least 8 characters and include both letters and numbers.' }));
+                else setRegisterAccountErrors(e => ({ ...e, password: undefined }));
+              }}
             />
+            {registerAccountErrors.password ? <Text style={styles.errorText}>{registerAccountErrors.password}</Text> : null}
             <TextInput
-              style={[styles.input, focusedInput === 'confirm' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'confirm' && styles.inputFocused, registerAccountErrors.confirmPassword && styles.inputError]}
               placeholder="Confirm Password"
               secureTextEntry
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={text => {
+                setConfirmPassword(text);
+                if (registerAccountErrors.confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
+              }}
               onFocus={() => setFocusedInput('confirm')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (!confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Please confirm your password.' }));
+                else if (password !== confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Passwords do not match.' }));
+                else setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
+              }}
             />
+            {registerAccountErrors.confirmPassword ? <Text style={styles.errorText}>{registerAccountErrors.confirmPassword}</Text> : null}
             <Pressable
               style={[styles.button, loading && { opacity: 0.7 }]}
               onPress={() => {
