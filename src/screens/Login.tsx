@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -9,6 +9,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegister, setIsRegister] = useState(false);
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   // Profile fields
   const [name, setName] = useState('');
@@ -104,54 +105,67 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
 
   return (
     <View style={styles.container}>
-      <Text style={type.h1}>{isRegister ? 'Create Account' : 'Login'}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      {isRegister && (
-        <>
-          <TextInput style={styles.input} placeholder="Full Name" value={name} onChangeText={setName} />
-          <TextInput style={styles.input} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-          <TextInput style={styles.input} placeholder="Date of Birth (YYYY-MM-DD)" value={dateOfBirth} onChangeText={setDateOfBirth} />
-          <TextInput style={styles.input} placeholder="Blood Type (optional)" value={bloodType} onChangeText={setBloodType} />
-          <TextInput style={styles.input} placeholder="Allergies (comma separated)" value={allergies} onChangeText={setAllergies} />
-          <TextInput style={styles.input} placeholder="Medical Conditions (comma separated)" value={medicalConditions} onChangeText={setMedicalConditions} />
-          <TextInput style={styles.input} placeholder="Medications (comma separated)" value={medications} onChangeText={setMedications} />
-          <Text style={{ marginTop: 12, fontWeight: 'bold' }}>Insurance Info</Text>
-          <TextInput style={styles.input} placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} />
-          <TextInput style={styles.input} placeholder="Policy Number" value={insurancePolicy} onChangeText={setInsurancePolicy} />
-          <TextInput style={styles.input} placeholder="Group Number" value={insuranceGroup} onChangeText={setInsuranceGroup} />
-          <TextInput style={styles.input} placeholder="Expiry Date (YYYY-MM-DD)" value={insuranceExpiry} onChangeText={setInsuranceExpiry} />
-          <Text style={{ marginTop: 12, fontWeight: 'bold' }}>Emergency Contact</Text>
-          <TextInput style={styles.input} placeholder="Name" value={emgName} onChangeText={setEmgName} />
-          <TextInput style={styles.input} placeholder="Relationship" value={emgRelationship} onChangeText={setEmgRelationship} />
-          <TextInput style={styles.input} placeholder="Phone" value={emgPhone} onChangeText={setEmgPhone} keyboardType="phone-pad" />
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <Text>Is ICE (In Case of Emergency)?</Text>
-            <Pressable onPress={() => setEmgIsICE(v => !v)} style={{ marginLeft: 8, padding: 4, borderWidth: 1, borderColor: colors.line, borderRadius: 4, backgroundColor: emgIsICE ? colors.primary : colors.card }}>
-              <Text style={{ color: emgIsICE ? '#fff' : colors.text }}>{emgIsICE ? 'Yes' : 'No'}</Text>
-            </Pressable>
-          </View>
-        </>
-      )}
-      <Pressable style={styles.button} onPress={handleAuth} disabled={loading}>
-        <Text style={styles.buttonText}>{isRegister ? 'Register' : 'Login'}</Text>
-      </Pressable>
-      <Pressable onPress={() => setIsRegister(r => !r)}>
-        <Text style={styles.link}>{isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}</Text>
-      </Pressable>
+      <View style={styles.card}>
+        <View style={{ alignItems: 'center', marginBottom: 24 }}>
+          <Image source={require('../assets/logo.png')} style={{ width: 100, height: 100, resizeMode: 'contain', marginBottom: 8 }} />
+          <Text style={[type.h1, { marginBottom: 8 }]}>{isRegister ? 'Create Account' : 'Login'}</Text>
+        </View>
+        <TextInput
+          style={[styles.input, focusedInput === 'email' && styles.inputFocused]}
+          placeholder="Email"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          onFocus={() => setFocusedInput('email')}
+          onBlur={() => setFocusedInput(null)}
+        />
+        <TextInput
+          style={[styles.input, focusedInput === 'password' && styles.inputFocused]}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          onFocus={() => setFocusedInput('password')}
+          onBlur={() => setFocusedInput(null)}
+        />
+        {isRegister && (
+          <>
+            <TextInput style={[styles.input, focusedInput === 'name' && styles.inputFocused]} placeholder="Full Name" value={name} onChangeText={setName} onFocus={() => setFocusedInput('name')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'phone' && styles.inputFocused]} placeholder="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" onFocus={() => setFocusedInput('phone')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'dob' && styles.inputFocused]} placeholder="Date of Birth (YYYY-MM-DD)" value={dateOfBirth} onChangeText={setDateOfBirth} onFocus={() => setFocusedInput('dob')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'blood' && styles.inputFocused]} placeholder="Blood Type (optional)" value={bloodType} onChangeText={setBloodType} onFocus={() => setFocusedInput('blood')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'allergies' && styles.inputFocused]} placeholder="Allergies (comma separated)" value={allergies} onChangeText={setAllergies} onFocus={() => setFocusedInput('allergies')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'medcond' && styles.inputFocused]} placeholder="Medical Conditions (comma separated)" value={medicalConditions} onChangeText={setMedicalConditions} onFocus={() => setFocusedInput('medcond')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'medications' && styles.inputFocused]} placeholder="Medications (comma separated)" value={medications} onChangeText={setMedications} onFocus={() => setFocusedInput('medications')} onBlur={() => setFocusedInput(null)} />
+            <Text style={{ marginTop: 12, fontWeight: 'bold' }}>Insurance Info</Text>
+            <TextInput style={[styles.input, focusedInput === 'insProvider' && styles.inputFocused]} placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} onFocus={() => setFocusedInput('insProvider')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'insPolicy' && styles.inputFocused]} placeholder="Policy Number" value={insurancePolicy} onChangeText={setInsurancePolicy} onFocus={() => setFocusedInput('insPolicy')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'insGroup' && styles.inputFocused]} placeholder="Group Number" value={insuranceGroup} onChangeText={setInsuranceGroup} onFocus={() => setFocusedInput('insGroup')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'insExpiry' && styles.inputFocused]} placeholder="Expiry Date (YYYY-MM-DD)" value={insuranceExpiry} onChangeText={setInsuranceExpiry} onFocus={() => setFocusedInput('insExpiry')} onBlur={() => setFocusedInput(null)} />
+            <Text style={{ marginTop: 12, fontWeight: 'bold' }}>Emergency Contact</Text>
+            <TextInput style={[styles.input, focusedInput === 'emgName' && styles.inputFocused]} placeholder="Name" value={emgName} onChangeText={setEmgName} onFocus={() => setFocusedInput('emgName')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'emgRel' && styles.inputFocused]} placeholder="Relationship" value={emgRelationship} onChangeText={setEmgRelationship} onFocus={() => setFocusedInput('emgRel')} onBlur={() => setFocusedInput(null)} />
+            <TextInput style={[styles.input, focusedInput === 'emgPhone' && styles.inputFocused]} placeholder="Phone" value={emgPhone} onChangeText={setEmgPhone} keyboardType="phone-pad" onFocus={() => setFocusedInput('emgPhone')} onBlur={() => setFocusedInput(null)} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <Text>Is ICE (In Case of Emergency)?</Text>
+              <Pressable onPress={() => setEmgIsICE(v => !v)} style={{ marginLeft: 8, padding: 4, borderWidth: 1, borderColor: colors.line, borderRadius: 4, backgroundColor: emgIsICE ? colors.primary : colors.card }}>
+                <Text style={{ color: emgIsICE ? '#fff' : colors.text }}>{emgIsICE ? 'Yes' : 'No'}</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
+        <Pressable style={[styles.button, loading && { opacity: 0.7 }]} onPress={handleAuth} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>{isRegister ? 'Register' : 'Login'}</Text>
+          )}
+        </Pressable>
+        <Pressable onPress={() => setIsRegister(r => !r)}>
+          <Text style={styles.link}>{isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -164,6 +178,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     padding: spacing.xl,
   },
+  card: {
+    width: '100%',
+    maxWidth: 370,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    alignItems: 'center',
+  },
   input: {
     width: '100%',
     maxWidth: 320,
@@ -171,9 +198,16 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: 8,
     padding: spacing.md,
-    marginVertical: spacing.sm,
+    marginVertical: spacing.md,
     backgroundColor: colors.card,
     fontSize: 16,
+  },
+  inputFocused: {
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   button: {
     backgroundColor: colors.primary,
