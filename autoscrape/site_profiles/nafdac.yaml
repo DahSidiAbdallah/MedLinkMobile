@@ -1,0 +1,8 @@
+start_url: https://nafdac.gov.ng/category/recalls-and-alerts/
+selectors:
+  date: "table tbody tr td:nth-child(1)"
+  id: "table tbody tr td:nth-child(2)"
+  product: "table tbody tr td:nth-child(2) a"
+  gtin: null
+  ndc: null
+  reason: "table tbody tr td:nth-child(2) a"

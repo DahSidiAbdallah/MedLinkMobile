@@ -1,0 +1,30 @@
+# Example autoscrape configuration
+start_url: "https://example.com"
+max_pages: 30
+max_depth: 2
+same_domain_only: true
+delay: 0.5
+ignore_robots: false
+
+selectors:
+  title: "h1"
+  subtitle: "h2.subtitle"
+  price: ".price"
+
+include_urls: []
+exclude_urls:
+  - "\.pdf$"
+  - "\.zip$"
+
+render:
+  use_js: true
+  timeout_ms: 15000
+  url_patterns:
+    - "example\.com/(news|shop)"
+    - "example\.com/product/.+"
+
+cache:
+  enabled: true
+  backend: "sqlite"
+  expire_after: 86400
+  path: "http_cache"
