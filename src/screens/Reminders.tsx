@@ -81,7 +81,14 @@ export default function Reminders() {
     content = <Text style={{ color: colors.danger, textAlign: 'center', marginTop: spacing.xl }}>{error}</Text>;
   } else {
     content = (
-      <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.xl,
+          gap: spacing.lg,
+          paddingBottom: 96, // extra space for navbar and FAB
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
         {filtered.length === 0 ? (
           <Text style={{ textAlign: 'center', color: colors.muted }}>No reminders</Text>
         ) : null}
@@ -102,7 +109,7 @@ export default function Reminders() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: 80 }}>
       <View style={{ padding: spacing.xl }}>
         <SegmentedControl options={['Active', 'Past']} value={segment} onChange={setSegment} />
       </View>

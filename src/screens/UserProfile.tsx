@@ -145,7 +145,12 @@ const modalStyles = StyleSheet.create({
   },
 });
 
-export default function UserProfile({ navigation }: any) {
+type UserProfileProps = {
+  navigation: any;
+  onLogout?: () => void;
+};
+
+export default function UserProfile({ navigation, onLogout }: UserProfileProps) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [editModal, setEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -189,7 +194,18 @@ export default function UserProfile({ navigation }: any) {
       'Are you sure you want to log out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: () => signOut(auth).catch(error => Alert.alert('Logout Error', error.message)) },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              if (onLogout) onLogout();
+            } catch (error: any) {
+              Alert.alert('Logout Error', error.message || 'Failed to log out.');
+            }
+          },
+        },
       ]
     );
   };
