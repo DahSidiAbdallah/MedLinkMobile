@@ -20,6 +20,7 @@ import Login from './src/screens/Login';
 import SplashScreen from './SplashScreen';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
+import { RemindersProvider } from './src/hooks/RemindersContext';
 
 
 const Tab = createBottomTabNavigator();
@@ -37,7 +38,7 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
         <MaterialCommunityIcons
           name="barcode-scan"
           size={size + 10}
-          color={focused ? colors.primary : colors.muted}
+          color={'#fff'}
         />
       );
     case 'Clinics':
@@ -141,6 +142,7 @@ export default function App() {
   }
 
   return (
+  <RemindersProvider>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
@@ -165,5 +167,6 @@ export default function App() {
         <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
       </Stack.Navigator>
     </NavigationContainer>
+  </RemindersProvider>
   );
 }

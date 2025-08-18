@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Image, Modal, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image, Modal, ActivityIndicator, ScrollView, Linking } from 'react-native';
 import { fetchUserProfile, type Profile } from '../core/userProfile';
+import { facilities } from '../data';
+import type { Facility } from '../types';
+// Helper to sort by distance (if user location available, replace with real calculation)
+function sortByDistance(facilities: Facility[]): Facility[] {
+  return facilities.slice().sort((a: Facility, b: Facility) => {
+    const da = parseFloat((a.distance || '').replace(/[^\d.]/g, ''));
+    const db = parseFloat((b.distance || '').replace(/[^\d.]/g, ''));
+    return da - db;
+  });
+}
 import { useReminders } from '../hooks/useReminders';
 const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 // Expo’s gradient works on web, iOS, and Android
@@ -11,9 +21,10 @@ import { colors, spacing, type, shadow } from '../theme';
 
 export default function Dashboard({ navigation }: any) {
   const [profileModal, setProfileModal] = useState(false);
+  const [urgentCareModal, setUrgentCareModal] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  const { reminders, loading: remindersLoading, error: remindersError } = useReminders();
+  const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
 
   useEffect(() => {
     if (profileModal) {
@@ -24,6 +35,14 @@ export default function Dashboard({ navigation }: any) {
       });
     }
   }, [profileModal]);
+
+  // Subscribe to reminder changes and refresh reminders automatically
+  useEffect(() => {
+    const unsubscribe = subscribe(() => {
+      refresh();
+    });
+    return unsubscribe;
+  }, [subscribe, refresh]);
 
   return (
     <LinearGradient colors={["#EEF4FF", "#FFFFFF"]} style={{ flex: 1 }}>
@@ -40,9 +59,59 @@ export default function Dashboard({ navigation }: any) {
           </View>
           <Text style={[type.h1, { marginTop: 18 }]}>Welcome{profile && profile.name ? `, ${profile.name}` : ''}</Text>
           <Text style={[type.meta, { marginBottom: 18 }]}>How is it going today?</Text>
-          <Pressable style={styles.cta} android_ripple={{ color: colors.primary600 }}>
+          <Pressable style={styles.cta} android_ripple={{ color: colors.primary600 }} onPress={() => setUrgentCareModal(true)}>
             <Text style={{ color: '#fff', fontWeight: '700' }}>Urgent Care</Text>
           </Pressable>
+        {/* Urgent Care Modal/Sheet */}
+        <Modal visible={urgentCareModal} animationType="slide" transparent onRequestClose={() => setUrgentCareModal(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.08)', justifyContent: 'flex-end' }}>
+            <View style={styles.facilityModalSheet}>
+              <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>Urgent Care</Text>
+                  <Pressable onPress={() => setUrgentCareModal(false)} hitSlop={10}>
+                    <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>Close</Text>
+                  </Pressable>
+                </View>
+                {/* Emergency Contacts */}
+                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Emergency Contacts</Text>
+                <View style={{ marginBottom: spacing.lg }}>
+                  {profile && profile.emergency_contacts && profile.emergency_contacts.length > 0 ? (
+                    profile.emergency_contacts.map((contact, idx) => (
+                      <View key={idx} style={{ marginBottom: 8 }}>
+                        <Text style={{ color: colors.text, fontWeight: '600' }}>{contact.name}</Text>
+                        <Text style={{ color: colors.muted }}>{contact.phone}</Text>
+                        <Text style={{ color: colors.muted }}>{contact.relationship}</Text>
+                        <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 2 }}>
+                          <Text style={{ color: colors.primary, fontWeight: '600' }}>Call</Text>
+                        </Pressable>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={{ color: colors.muted }}>No emergency contacts listed.</Text>
+                  )}
+                </View>
+                {/* Open & Nearby Facilities */}
+                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Open & Nearby Facilities</Text>
+                <View style={{ marginBottom: spacing.lg }}>
+                  {sortByDistance(facilities.filter(f => f.isOpen && (f.type === 'clinic' || f.type === 'hospital' || f.type === 'pharmacy'))).map((fac: Facility) => (
+                    <View key={fac.id} style={{ marginBottom: 12 }}>
+                      <Text style={{ color: colors.text, fontWeight: '600' }}>{fac.name} <Text style={{ color: colors.muted, fontWeight: '400' }}>({fac.type})</Text></Text>
+                      <Text style={{ color: colors.muted }}>{fac.location}</Text>
+                      {'phoneNumber' in fac && fac.phoneNumber && <Text style={{ color: colors.muted }}>Phone: {fac.phoneNumber}</Text>}
+                      <Text style={{ color: colors.muted }}>Distance: {fac.distance || 'N/A'}</Text>
+                      {'phoneNumber' in fac && fac.phoneNumber && (
+                        <Pressable onPress={() => Linking.openURL(`tel:${fac.phoneNumber}`)} style={{ marginTop: 2 }}>
+                          <Text style={{ color: colors.primary, fontWeight: '600' }}>Call</Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
           {/* Removed Xahara logo */}
         </View>
 
@@ -72,12 +141,12 @@ export default function Dashboard({ navigation }: any) {
             <ActivityIndicator color={colors.primary} />
           ) : remindersError ? (
             <Text style={{ color: colors.danger }}>{remindersError}</Text>
-          ) : reminders.length === 0 ? (
+          ) : reminders.filter(r => r.active).length === 0 ? (
             <Text style={{ color: colors.muted }}>No reminders found.</Text>
-          ) : reminders.map(rem => (
+          ) : reminders.filter(r => r.active).map(rem => (
             <View key={rem.id} style={{ backgroundColor: '#F3F4F6', borderRadius: 16, padding: 14, marginBottom: 10 }}>
               <Text style={{ fontWeight: '600', color: colors.text }}>{rem.title}</Text>
-              <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime} · {rem.frequency}</Text>
+              <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime}{rem.frequency ? ` · ${rem.frequency}` : ''}</Text>
               {rem.description && <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.description}</Text>}
             </View>
           ))}
