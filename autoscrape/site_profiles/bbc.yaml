@@ -1,0 +1,6 @@
+start_url: "https://www.bbc.com/news"
+max_pages: 1
+ignore_robots: true
+use_js: true
+ai_autodetect: true
+always_run_ai_extractors: true
