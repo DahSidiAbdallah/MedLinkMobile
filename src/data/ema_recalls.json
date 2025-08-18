@@ -1,0 +1,11 @@
+[
+  {
+    "id": "EMA-2025-001",
+    "product": "Paracetamol 500mg Tablets",
+    "gtin": "01234567890123",
+    "ndc": "12345-6789-01",
+    "reason": "Potential contamination with NDMA.",
+    "date": "2025-07-01",
+    "source": "EMA"
+  }
+]
