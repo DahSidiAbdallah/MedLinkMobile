@@ -1,0 +1,8 @@
+start_url: https://web.pharmacyboardkenya.org/products-recalled-2025/
+selectors:
+  date: "table tbody tr td:nth-child(2)"
+  id: "table tbody tr td:nth-child(3)"
+  product: "table tbody tr td:nth-child(4) a"
+  gtin: null
+  ndc: null
+  reason: "table tbody tr td:nth-child(8)"

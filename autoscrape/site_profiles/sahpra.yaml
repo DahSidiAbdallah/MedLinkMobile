@@ -1,0 +1,8 @@
+start_url: https://www.sahpra.org.za/category/product-recalls/
+selectors:
+  id: "article h2.entry-title"
+  product: "article h2.entry-title"
+  reason: "article .entry-content p"
+  date: "article time.entry-date"
+  gtin: null
+  ndc: null

@@ -1,0 +1,10 @@
+# Example profile for avito.ma
+selectors:
+  title: .sc-16iz3i7-0
+  price: .sc-1x0vz2r-0
+  link: .sc-1nre5ec-2 a
+pagination:
+  next_selector: a[aria-label="Suivante"]
+  max_pages: 5
+postprocess:
+  - strip_whitespace

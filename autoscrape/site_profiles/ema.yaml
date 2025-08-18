@@ -1,0 +1,8 @@
+start_url: https://www.ema.europa.eu/en/human-regulatory-overview/post-authorisation/compliance-post-authorisation/quality-defects-recalls
+selectors:
+  id: "table tbody tr td:nth-child(1)"
+  product: "table tbody tr td:nth-child(2)"
+  gtin: "table tbody tr td:nth-child(3)"
+  ndc: "table tbody tr td:nth-child(4)"
+  reason: "table tbody tr td:nth-child(5)"
+  date: "table tbody tr td:nth-child(6)"

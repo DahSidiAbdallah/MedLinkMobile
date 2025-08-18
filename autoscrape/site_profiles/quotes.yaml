@@ -1,0 +1,9 @@
+start_url: "https://quotes.toscrape.com/"
+pagination:
+  next_selector: 'li.next > a'
+selectors:
+  quote: '.quote .text'
+  author: '.quote .author'
+  tags: '.quote .tags .tag'
+export_format: excel
+export_path: quotes.xlsx
