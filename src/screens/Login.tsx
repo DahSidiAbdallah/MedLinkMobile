@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -17,6 +19,11 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+
+  // Forgot password dialog state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   // Inline error state for login fields
   const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
@@ -208,6 +215,9 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
               }}
             />
             {loginErrors.password ? <Text style={styles.errorText}>{loginErrors.password}</Text> : null}
+            <Pressable onPress={() => setShowForgot(true)}>
+              <Text style={{ color: colors.primary, marginTop: -4, marginBottom: 12, alignSelf: 'flex-end', textDecorationLine: 'underline' }}>Forgot password?</Text>
+            </Pressable>
             <Pressable
               style={[styles.button, loading && { opacity: 0.7 }]}
               onPress={handleLogin}
@@ -219,6 +229,54 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
                 <Text style={styles.buttonText}>Login</Text>
               )}
             </Pressable>
+            {/* Forgot Password Dialog */}
+            {showForgot && (
+              <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
+                <View style={{ backgroundColor: '#fff', borderRadius: 18, padding: 28, width: 340, alignItems: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12 }}>
+                  <Ionicons name="lock-closed-outline" size={40} color={colors.primary} style={{ marginBottom: 10 }} />
+                  <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 8, color: colors.primary }}>Reset Password</Text>
+                  <Text style={{ color: '#444', marginBottom: 18, textAlign: 'center', fontSize: 15, lineHeight: 20 }}>
+                    Enter your email address and we'll send you a password reset link.
+                  </Text>
+                  <TextInput
+                    style={[styles.input, { marginBottom: 0, width: '100%' }]}
+                    placeholder="Email"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    value={forgotEmail}
+                    onChangeText={setForgotEmail}
+                  />
+                  <View style={{ flexDirection: 'row', marginTop: 22, width: '100%', gap: 0 }}>
+                    <Pressable style={{ flex: 1, marginRight: 8, height: 48, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.card, borderRadius: 8, borderWidth: 1, borderColor: colors.line }} onPress={() => { setShowForgot(false); setForgotEmail(''); }}>
+                      <Text style={styles.buttonSecondaryText}>Cancel</Text>
+                    </Pressable>
+                    <Pressable
+                      style={{ flex: 1, height: 48, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.primary, borderRadius: 8 }}
+                      onPress={async () => {
+                        if (!forgotEmail || !emailRegex.test(forgotEmail)) {
+                          Alert.alert('Invalid Email', 'Please enter a valid email address.');
+                          return;
+                        }
+                        setForgotLoading(true);
+                        try {
+                          await sendPasswordResetEmail(auth, forgotEmail);
+                          Alert.alert('Password Reset', 'A password reset link has been sent to your email.');
+                          setShowForgot(false);
+                          setForgotEmail('');
+                        } catch (e: any) {
+                          Alert.alert('Error', e.message || 'Failed to send reset email.');
+                        } finally {
+                          setForgotLoading(false);
+                        }
+                      }}
+                      disabled={forgotLoading}
+                    >
+                      {forgotLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send</Text>}
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            )}
           </>
         )}
 
