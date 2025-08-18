@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
 import { colors, spacing, type } from '../theme';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { useFacilities } from '../hooks/useDoctorsAndPharmacies';
+import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { Pill } from '../components/Pill';
 
 export default function FacilityDetail() {

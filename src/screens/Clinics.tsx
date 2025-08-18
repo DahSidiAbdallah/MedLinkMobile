@@ -6,7 +6,7 @@ import { colors, spacing } from '../theme';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 import { Pill } from '../components/Pill';
-import { useFacilities } from '../hooks/useDoctorsAndPharmacies';
+import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { SegmentedControl } from '../components/SegmentedControl';
 import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
 
@@ -198,25 +198,21 @@ export default function FacilitiesScreen({ navigation }: any) {
                   {!!selectedFacility.isOpen && <Pill tone="neutral">Open Now</Pill>}
                   {!!selectedFacility.hasDelivery && <Pill tone="neutral">Has Delivery</Pill>}
                 </View>
-                {/* Doctor's Advice (example) */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Doctor's Advice</Text>
+                {/* Show actual facility fields from the database */}
                 <View style={{ marginBottom: spacing.lg }}>
-                  {['Drink 4 Liters of Water a day', 'No Smoking', 'Sleep for 8 Hours a day'].map((item) => (
-                    <View key={item} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                      <Text style={{ color: colors.accent, fontSize: 18, marginRight: 8 }}>✓</Text>
-                      <Text style={{ color: colors.text, fontSize: 15 }}>{item}</Text>
-                    </View>
-                  ))}
-                </View>
-                {/* Discharge Files (example) */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Discharge</Text>
-                <View style={{ flexDirection: 'row', gap: 16 }}>
-                  {[{ name: 'File 1', type: 'pdf' }, { name: 'File 2', type: 'pdf' }].map((file) => (
-                    <View key={file.name} style={{ backgroundColor: '#F3F4F6', borderRadius: 16, padding: 16, alignItems: 'center', width: 80 }}>
-                      <Text style={{ fontSize: 36, textAlign: 'center' }}>📄</Text>
-                      <Text style={{ fontWeight: '600', textAlign: 'center', marginTop: 4 }}>{file.name}</Text>
-                    </View>
-                  ))}
+                  {selectedFacility.address && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Address: {selectedFacility.address}</Text>}
+                  {selectedFacility.phoneNumber && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Phone: {selectedFacility.phoneNumber}</Text>}
+                  {selectedFacility.hours && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Hours: {selectedFacility.hours}</Text>}
+                  {selectedFacility.rating && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Rating: {selectedFacility.rating.toFixed(1)}</Text>}
+                  {selectedFacility.services && selectedFacility.services.length > 0 && (
+                    <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Services: {selectedFacility.services.join(', ')}</Text>
+                  )}
+                  {selectedFacility.languages && selectedFacility.languages.length > 0 && (
+                    <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Languages: {selectedFacility.languages.join(', ')}</Text>
+                  )}
+                  {selectedFacility.acceptedInsurance && selectedFacility.acceptedInsurance.length > 0 && (
+                    <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Insurance: {selectedFacility.acceptedInsurance.join(', ')}</Text>
+                  )}
                 </View>
               </>
             )}
