@@ -1,0 +1,11 @@
+[
+  {
+    "id": "NAFDAC-2025-003",
+    "product": "Amoxicillin 250mg Capsules",
+    "gtin": "11223344556677",
+    "ndc": "11223-3445-03",
+    "reason": "Failed dissolution test.",
+    "date": "2025-05-20",
+    "source": "NAFDAC"
+  }
+]

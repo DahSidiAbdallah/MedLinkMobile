@@ -1,0 +1,11 @@
+[
+  {
+    "id": "SAHPRA-2025-002",
+    "product": "Ibuprofen 200mg Tablets",
+    "gtin": "09876543210987",
+    "ndc": "98765-4321-02",
+    "reason": "Labeling error: incorrect dosage instructions.",
+    "date": "2025-06-15",
+    "source": "SAHPRA"
+  }
+]
