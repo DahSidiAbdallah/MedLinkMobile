@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert } from 'react-native';
+import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
@@ -152,6 +152,7 @@ type UserProfileProps = {
 
 export default function UserProfile({ navigation, onLogout }: UserProfileProps) {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [editModal, setEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [edit, setEdit] = useState<any>({});
@@ -269,14 +270,30 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
 
   useEffect(() => {
     async function loadProfile() {
-      const userProfile = await fetchUserProfile();
-      setProfile(userProfile);
+      try {
+        const userProfile = await fetchUserProfile();
+        setProfile(userProfile);
+      } finally {
+        setLoadingProfile(false);
+      }
     }
     loadProfile();
   }, []);
 
+  if (loadingProfile) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   if (!profile) {
-    return <Text style={{ marginTop: spacing.xl, textAlign: 'center' }}>Loading...</Text>;
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+        <Text style={{ color: colors.muted }}>No profile data.</Text>
+      </View>
+    );
   }
   return (
     <>
@@ -299,7 +316,13 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
         <View style={styles.buttonRow}>
           <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={openEdit}><Text style={styles.btnTxt}>Edit Profile</Text></Pressable>
           <Pressable style={styles.btn} android_ripple={{ color: colors.line }}><Text style={styles.btnTxt}>Privacy</Text></Pressable>
-          <Pressable style={[styles.btn, { backgroundColor: colors.danger }]} android_ripple={{ color: colors.primary600 }} onPress={() => handleLogout()}><Text style={[styles.btnTxt, { color: '#fff' }]}>Logout</Text></Pressable>
+          <Pressable
+            style={[styles.btn, { backgroundColor: colors.danger }]}
+            android_ripple={{ color: colors.primary600 }}
+            onPress={handleLogout}
+          >
+            <Text style={[styles.btnTxt, { color: '#fff' }]}>Logout</Text>
+          </Pressable>
         </View>
       </ScrollView>
       {/* Medical ID Modal */}
