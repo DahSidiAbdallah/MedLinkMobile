@@ -151,6 +151,8 @@ export default function UserProfile({ navigation }: any) {
   const [saving, setSaving] = useState(false);
   const [edit, setEdit] = useState<any>({});
   const [editErrors, setEditErrors] = useState<any>({});
+  // Emergency contacts errors (array of objects)
+  const [emgContactErrors, setEmgContactErrors] = useState<any[]>([]);
   // For chip/tag input fields
   const [allergyInput, setAllergyInput] = useState('');
   const [conditionInput, setConditionInput] = useState('');
@@ -195,6 +197,7 @@ export default function UserProfile({ navigation }: any) {
   // Validation for edit profile modal
   const validateEdit = () => {
     let errors: any = {};
+    let emgErrors: any[] = [];
     if (!edit.name || !edit.name.trim()) {
       errors.name = 'Full name is required.';
     }
@@ -204,8 +207,28 @@ export default function UserProfile({ navigation }: any) {
     if (edit.blood_type && !/^([A|B|AB|O][+-])?$/.test(edit.blood_type.trim())) {
       errors.blood_type = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.';
     }
+    if (edit.insurance_info) {
+      if (edit.insurance_info.provider && edit.insurance_info.provider.trim().length < 2) {
+        errors.insurance_provider = 'Provider name is too short.';
+      }
+      if (edit.insurance_info.policy_number && edit.insurance_info.policy_number.trim().length < 4) {
+        errors.insurance_policy = 'Policy number is too short.';
+      }
+    }
+    if (Array.isArray(edit.emergency_contacts)) {
+      emgErrors = edit.emergency_contacts.map((c: any) => {
+        let ce: any = {};
+        if (!c.name || !c.name.trim()) ce.name = 'Name required.';
+        if (!c.relationship || !c.relationship.trim()) ce.relationship = 'Relationship required.';
+        if (!c.phone || !/^[234]\d{7}$/.test(c.phone)) ce.phone = 'Mauritania phone: 8 digits, starts with 2, 3, or 4.';
+        return ce;
+      });
+    }
     setEditErrors(errors);
-    return Object.keys(errors).length === 0;
+    setEmgContactErrors(emgErrors);
+    // Only valid if no errors in main or any emergency contact
+    const emgValid = emgErrors.every(e => Object.keys(e).length === 0);
+    return Object.keys(errors).length === 0 && emgValid;
   };
 
   // Save handler for edit profile modal
@@ -440,7 +463,14 @@ export default function UserProfile({ navigation }: any) {
                 style={[modalStyles.input, editErrors.insurance_provider && modalStyles.inputError]}
                 placeholder="Provider"
                 value={edit.insurance_info?.provider}
-                onChangeText={v => setEdit((e: any) => ({ ...e, insurance_info: { ...e.insurance_info, provider: v } }))}
+                onChangeText={v => {
+                  setEdit((e: any) => ({ ...e, insurance_info: { ...e.insurance_info, provider: v } }));
+                  if (editErrors.insurance_provider) setEditErrors((errs: any) => ({ ...errs, insurance_provider: undefined }));
+                }}
+                onBlur={() => {
+                  if (edit.insurance_info?.provider && edit.insurance_info.provider.trim().length < 2) setEditErrors((errs: any) => ({ ...errs, insurance_provider: 'Provider name is too short.' }));
+                  else setEditErrors((errs: any) => ({ ...errs, insurance_provider: undefined }));
+                }}
               />
               {editErrors.insurance_provider && <Text style={modalStyles.error}>{editErrors.insurance_provider}</Text>}
               <Text style={modalStyles.label}>Policy Number</Text>
@@ -448,7 +478,14 @@ export default function UserProfile({ navigation }: any) {
                 style={[modalStyles.input, editErrors.insurance_policy && modalStyles.inputError]}
                 placeholder="Policy Number"
                 value={edit.insurance_info?.policy_number}
-                onChangeText={v => setEdit((e: any) => ({ ...e, insurance_info: { ...e.insurance_info, policy_number: v } }))}
+                onChangeText={v => {
+                  setEdit((e: any) => ({ ...e, insurance_info: { ...e.insurance_info, policy_number: v } }));
+                  if (editErrors.insurance_policy) setEditErrors((errs: any) => ({ ...errs, insurance_policy: undefined }));
+                }}
+                onBlur={() => {
+                  if (edit.insurance_info?.policy_number && edit.insurance_info.policy_number.trim().length < 4) setEditErrors((errs: any) => ({ ...errs, insurance_policy: 'Policy number is too short.' }));
+                  else setEditErrors((errs: any) => ({ ...errs, insurance_policy: undefined }));
+                }}
               />
               {editErrors.insurance_policy && <Text style={modalStyles.error}>{editErrors.insurance_policy}</Text>}
               {/* Emergency Contacts */}
@@ -456,35 +493,63 @@ export default function UserProfile({ navigation }: any) {
               {(edit.emergency_contacts ?? []).map((c: any, i: number) => (
                 <View key={i} style={{ marginBottom: 8, backgroundColor: '#F3F4F6', borderRadius: 8, padding: 8 }}>
                   <TextInput
-                    style={modalStyles.input}
+                    style={[modalStyles.input, emgContactErrors[i]?.name && modalStyles.inputError]}
                     placeholder="Name"
                     value={c.name}
-                    onChangeText={v => setEdit((e: any) => {
-                      const arr = [...e.emergency_contacts];
-                      arr[i] = { ...arr[i], name: v };
-                      return { ...e, emergency_contacts: arr };
-                    })}
+                    onChangeText={v => {
+                      setEdit((e: any) => {
+                        const arr = [...e.emergency_contacts];
+                        arr[i] = { ...arr[i], name: v };
+                        return { ...e, emergency_contacts: arr };
+                      });
+                      if (emgContactErrors[i]?.name) setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], name: undefined }; return arr; });
+                    }}
+                    onBlur={() => {
+                      if (!c.name || !c.name.trim()) setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], name: 'Name required.' }; return arr; });
+                      else setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], name: undefined }; return arr; });
+                    }}
                   />
+                  {emgContactErrors[i]?.name && <Text style={modalStyles.error}>{emgContactErrors[i].name}</Text>}
                   <TextInput
-                    style={modalStyles.input}
+                    style={[modalStyles.input, emgContactErrors[i]?.relationship && modalStyles.inputError]}
                     placeholder="Relationship"
                     value={c.relationship}
-                    onChangeText={v => setEdit((e: any) => {
-                      const arr = [...e.emergency_contacts];
-                      arr[i] = { ...arr[i], relationship: v };
-                      return { ...e, emergency_contacts: arr };
-                    })}
+                    onChangeText={v => {
+                      setEdit((e: any) => {
+                        const arr = [...e.emergency_contacts];
+                        arr[i] = { ...arr[i], relationship: v };
+                        return { ...e, emergency_contacts: arr };
+                      });
+                      if (emgContactErrors[i]?.relationship) setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], relationship: undefined }; return arr; });
+                    }}
+                    onBlur={() => {
+                      if (!c.relationship || !c.relationship.trim()) setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], relationship: 'Relationship required.' }; return arr; });
+                      else setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], relationship: undefined }; return arr; });
+                    }}
                   />
+                  {emgContactErrors[i]?.relationship && <Text style={modalStyles.error}>{emgContactErrors[i].relationship}</Text>}
                   <TextInput
-                    style={modalStyles.input}
+                    style={[modalStyles.input, emgContactErrors[i]?.phone && modalStyles.inputError]}
                     placeholder="Phone"
                     value={c.phone}
-                    onChangeText={v => setEdit((e: any) => {
-                      const arr = [...e.emergency_contacts];
-                      arr[i] = { ...arr[i], phone: v };
-                      return { ...e, emergency_contacts: arr };
-                    })}
+                    onChangeText={v => {
+                      // Only allow numbers, max 8 digits
+                      const digits = v.replace(/\D/g, '').slice(0, 8);
+                      setEdit((e: any) => {
+                        const arr = [...e.emergency_contacts];
+                        arr[i] = { ...arr[i], phone: digits };
+                        return { ...e, emergency_contacts: arr };
+                      });
+                      if (emgContactErrors[i]?.phone) setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], phone: undefined }; return arr; });
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={8}
+                    onBlur={() => {
+                      if (!c.phone || !/^[234]\d{7}$/.test(c.phone)) setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], phone: 'Mauritania phone: 8 digits, starts with 2, 3, or 4.' }; return arr; });
+                      else setEmgContactErrors((errs: any[]) => { const arr = [...errs]; arr[i] = { ...arr[i], phone: undefined }; return arr; });
+                    }}
                   />
+                  {emgContactErrors[i]?.phone && <Text style={modalStyles.error}>{emgContactErrors[i].phone}</Text>}
                   <Pressable onPress={() => setEdit((e: any) => ({ ...e, emergency_contacts: e.emergency_contacts.filter((_: any, idx: number) => idx !== i) }))} style={{ marginTop: 4 }}>
                     <Text style={{ color: colors.danger, fontWeight: 'bold' }}>Remove</Text>
                   </Pressable>
