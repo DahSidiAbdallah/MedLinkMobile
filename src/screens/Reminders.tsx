@@ -27,12 +27,33 @@ export default function Reminders() {
     }
   };
 
+  // Real-time validation helpers
+  const validateField = (field: string, value: string) => {
+    switch (field) {
+      case 'title':
+        if (!value || value.trim().length < 2) return 'Title is required.';
+        break;
+      case 'datetime':
+        if (!value) return 'Date/Time is required.';
+        if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value.trim())) return 'Format: YYYY-MM-DD HH:mm';
+        break;
+      case 'frequency':
+        if (!value) return 'Frequency is required.';
+        if (!/^(Daily|Weekly|Monthly)$/i.test(value.trim())) return 'Use: Daily, Weekly, or Monthly.';
+        break;
+      default:
+        return undefined;
+    }
+    return undefined;
+  };
+
   const handleCreateReminder = async () => {
     // Validation
     const errors: any = {};
-    if (!form.title || form.title.trim().length < 2) errors.title = 'Title is required.';
-    if (!form.datetime || form.datetime.trim().length < 2) errors.datetime = 'Date/Time is required.';
-    if (!form.frequency || form.frequency.trim().length < 2) errors.frequency = 'Frequency is required.';
+    ['title', 'datetime', 'frequency'].forEach(field => {
+      const err = validateField(field, form[field as keyof typeof form]);
+      if (err) errors[field] = err;
+    });
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
     setCreating(true);
@@ -102,22 +123,43 @@ export default function Reminders() {
               style={[styles.input, formErrors.title && { borderColor: colors.danger }]}
               placeholder="Title"
               value={form.title}
-              onChangeText={v => setForm(f => ({ ...f, title: v }))}
+              onChangeText={v => {
+                setForm(f => ({ ...f, title: v }));
+                if (formErrors.title) setFormErrors((e: any) => ({ ...e, title: undefined }));
+              }}
+              onBlur={() => {
+                const err = validateField('title', form.title);
+                setFormErrors((e: any) => ({ ...e, title: err }));
+              }}
               autoFocus
             />
             {formErrors.title && <Text style={styles.error}>{formErrors.title}</Text>}
             <TextInput
               style={[styles.input, formErrors.datetime && { borderColor: colors.danger }]}
-              placeholder="Date/Time (e.g. 2025-08-17 08:00)"
+              placeholder="Date/Time (YYYY-MM-DD HH:mm)"
               value={form.datetime}
-              onChangeText={v => setForm(f => ({ ...f, datetime: v }))}
+              onChangeText={v => {
+                setForm(f => ({ ...f, datetime: v }));
+                if (formErrors.datetime) setFormErrors((e: any) => ({ ...e, datetime: undefined }));
+              }}
+              onBlur={() => {
+                const err = validateField('datetime', form.datetime);
+                setFormErrors((e: any) => ({ ...e, datetime: err }));
+              }}
             />
             {formErrors.datetime && <Text style={styles.error}>{formErrors.datetime}</Text>}
             <TextInput
               style={[styles.input, formErrors.frequency && { borderColor: colors.danger }]}
-              placeholder="Frequency (e.g. Daily)"
+              placeholder="Frequency (Daily, Weekly, Monthly)"
               value={form.frequency}
-              onChangeText={v => setForm(f => ({ ...f, frequency: v }))}
+              onChangeText={v => {
+                setForm(f => ({ ...f, frequency: v }));
+                if (formErrors.frequency) setFormErrors((e: any) => ({ ...e, frequency: undefined }));
+              }}
+              onBlur={() => {
+                const err = validateField('frequency', form.frequency);
+                setFormErrors((e: any) => ({ ...e, frequency: err }));
+              }}
             />
             {formErrors.frequency && <Text style={styles.error}>{formErrors.frequency}</Text>}
             <TextInput
