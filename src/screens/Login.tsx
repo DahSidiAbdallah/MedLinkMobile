@@ -18,18 +18,23 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
 
+  // Inline error state for login fields
+  const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const validateLogin = () => {
-    if (!email || !password) {
-      Alert.alert('Missing Fields', 'Please enter both email and password.');
-      return false;
+    let errors: { email?: string; password?: string } = {};
+    if (!email) {
+      errors.email = 'Email is required.';
+    } else if (!emailRegex.test(email)) {
+      errors.email = 'Please enter a valid email address.';
     }
-    if (!emailRegex.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
-      return false;
+    if (!password) {
+      errors.password = 'Password is required.';
     }
-    return true;
+    setLoginErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const validateAccountStep = () => {
@@ -75,13 +80,13 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
       if (onLogin) onLogin();
     } catch (e: any) {
       if (e.code === 'auth/user-not-found') {
-        Alert.alert('Login Error', 'No user found with this email.');
+        setLoginErrors({ email: 'No user found with this email.' });
       } else if (e.code === 'auth/wrong-password') {
-        Alert.alert('Login Error', 'Incorrect password.');
+        setLoginErrors({ password: 'Incorrect password.' });
       } else if (e.code === 'auth/invalid-email') {
-        Alert.alert('Login Error', 'Invalid email address.');
+        setLoginErrors({ email: 'Invalid email address.' });
       } else {
-        Alert.alert('Login Error', e.message);
+        setLoginErrors({ email: e.message });
       }
     } finally {
       setLoading(false);
@@ -163,24 +168,41 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
         {!isRegister && (
           <>
             <TextInput
-              style={[styles.input, focusedInput === 'email' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'email' && styles.inputFocused, loginErrors.email && styles.inputError]}
               placeholder="Email"
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={text => {
+                setEmail(text);
+                if (loginErrors.email) setLoginErrors(e => ({ ...e, email: undefined }));
+              }}
               onFocus={() => setFocusedInput('email')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (!email) setLoginErrors(e => ({ ...e, email: 'Email is required.' }));
+                else if (!emailRegex.test(email)) setLoginErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
+                else setLoginErrors(e => ({ ...e, email: undefined }));
+              }}
             />
+            {loginErrors.email ? <Text style={styles.errorText}>{loginErrors.email}</Text> : null}
             <TextInput
-              style={[styles.input, focusedInput === 'password' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'password' && styles.inputFocused, loginErrors.password && styles.inputError]}
               placeholder="Password"
               secureTextEntry
               value={password}
-              onChangeText={setPassword}
+              onChangeText={text => {
+                setPassword(text);
+                if (loginErrors.password) setLoginErrors(e => ({ ...e, password: undefined }));
+              }}
               onFocus={() => setFocusedInput('password')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (!password) setLoginErrors(e => ({ ...e, password: 'Password is required.' }));
+                else setLoginErrors(e => ({ ...e, password: undefined }));
+              }}
             />
+            {loginErrors.password ? <Text style={styles.errorText}>{loginErrors.password}</Text> : null}
             <Pressable
               style={[styles.button, loading && { opacity: 0.7 }]}
               onPress={handleLogin}
@@ -346,6 +368,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
+  },
+  inputError: {
+    borderColor: '#e53935',
+  },
+  errorText: {
+    color: '#e53935',
+    fontSize: 13,
+    marginTop: -10,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+    maxWidth: 320,
   },
   stepper: {
     flexDirection: 'row',
