@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors, spacing } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
@@ -127,7 +127,7 @@ export default function BarcodeScanner() {
           {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
           {verification && (
             <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
-              {verification.verified && <Text style={{ color: colors.success }}>Authenticity verified!</Text>}
+              {verification.verified && <Text style={{ color: 'green' }}>Authenticity verified!</Text>}
               {verification.expired && <Text style={{ color: 'red' }}>Expired: do not use.</Text>}
               {verification.recall && (
                 <View>
