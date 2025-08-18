@@ -182,13 +182,50 @@ export default function UserProfile({ navigation }: any) {
   };
 
   const handleLogout = () => {
-    signOut(auth).catch(error => Alert.alert('Logout Error', error.message));
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Logout', style: 'destructive', onPress: () => signOut(auth).catch(error => Alert.alert('Logout Error', error.message)) },
+      ]
+    );
+  };
+
+  // Validation for edit profile modal
+  const validateEdit = () => {
+    let errors: any = {};
+    if (!edit.name || !edit.name.trim()) {
+      errors.name = 'Full name is required.';
+    }
+    if (edit.phone && !/^[234]\d{7}$/.test(edit.phone)) {
+      errors.phone = 'Mauritania numbers must be 8 digits, start with 2, 3, or 4.';
+    }
+    if (edit.blood_type && !/^([A|B|AB|O][+-])?$/.test(edit.blood_type.trim())) {
+      errors.blood_type = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.';
+    }
+    setEditErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // Save handler for edit profile modal
   const saveEdit = async () => {
-    // Add your validation and save logic here
-    // Example: setSaving(true); await saveProfile(edit); setSaving(false); setEditModal(false);
+    if (!validateEdit()) return;
+    setSaving(true);
+    try {
+      // Ensure id is present for saving
+      const userId = profile?.id || (auth.currentUser && auth.currentUser.uid);
+      if (!userId) throw new Error('User ID missing.');
+      await createOrUpdateUserProfile({ ...edit, id: userId });
+      setEditModal(false);
+      // Optionally reload profile
+      const userProfile = await fetchUserProfile();
+      setProfile(userProfile);
+    } catch (e: any) {
+      Alert.alert('Save Error', e.message || 'Failed to save profile.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -305,15 +342,60 @@ export default function UserProfile({ navigation }: any) {
               <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: spacing.md }}>Edit Profile</Text>
               {/* Name */}
               <Text style={modalStyles.label}>Full Name</Text>
-              <TextInput style={[modalStyles.input, editErrors.name && modalStyles.inputError]} placeholder="Full Name" value={edit.name} onChangeText={v => setEdit((e: any) => ({ ...e, name: v }))} />
+              <TextInput
+                style={[modalStyles.input, editErrors.name && modalStyles.inputError]}
+                placeholder="Full Name"
+                value={edit.name}
+                onChangeText={v => {
+                  setEdit((e: any) => ({ ...e, name: v }));
+                  if (editErrors.name) setEditErrors((errs: any) => ({ ...errs, name: undefined }));
+                }}
+                onBlur={() => {
+                  if (!edit.name || !edit.name.trim()) setEditErrors((errs: any) => ({ ...errs, name: 'Full name is required.' }));
+                  else setEditErrors((errs: any) => ({ ...errs, name: undefined }));
+                }}
+              />
               {editErrors.name && <Text style={modalStyles.error}>{editErrors.name}</Text>}
               {/* Phone */}
               <Text style={modalStyles.label}>Phone</Text>
-              <TextInput style={[modalStyles.input, editErrors.phone && modalStyles.inputError]} placeholder="Phone" value={edit.phone} onChangeText={v => setEdit((e: any) => ({ ...e, phone: v }))} keyboardType="phone-pad" />
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ backgroundColor: '#F3F4F6', borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', borderRightWidth: 0, paddingHorizontal: 10, height: 48, justifyContent: 'center' }}>
+                  <Text style={{ color: '#888', fontSize: 16 }}>+222</Text>
+                </View>
+                <TextInput
+                  style={[modalStyles.input, { flex: 1, borderTopLeftRadius: 0, borderBottomLeftRadius: 0, marginBottom: 0 }, editErrors.phone && modalStyles.inputError]}
+                  placeholder="Phone (8 digits)"
+                  value={edit.phone}
+                  onChangeText={v => {
+                    // Only allow numbers, max 8 digits
+                    const digits = v.replace(/[^0-9]/g, '').slice(0, 8);
+                    setEdit((e: any) => ({ ...e, phone: digits }));
+                    if (editErrors.phone) setEditErrors((errs: any) => ({ ...errs, phone: undefined }));
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={8}
+                  onBlur={() => {
+                    if (edit.phone && !/^[234]\d{7}$/.test(edit.phone)) setEditErrors((errs: any) => ({ ...errs, phone: 'Mauritania numbers must be 8 digits, start with 2, 3, or 4.' }));
+                    else setEditErrors((errs: any) => ({ ...errs, phone: undefined }));
+                  }}
+                />
+              </View>
               {editErrors.phone && <Text style={modalStyles.error}>{editErrors.phone}</Text>}
               {/* Blood Type */}
               <Text style={modalStyles.label}>Blood Type</Text>
-              <TextInput style={[modalStyles.input, editErrors.blood_type && modalStyles.inputError]} placeholder="Blood Type" value={edit.blood_type} onChangeText={v => setEdit((e: any) => ({ ...e, blood_type: v }))} />
+              <TextInput
+                style={[modalStyles.input, editErrors.blood_type && modalStyles.inputError]}
+                placeholder="Blood Type"
+                value={edit.blood_type}
+                onChangeText={v => {
+                  setEdit((e: any) => ({ ...e, blood_type: v }));
+                  if (editErrors.blood_type) setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
+                }}
+                onBlur={() => {
+                  if (edit.blood_type && !/^([A|B|AB|O][+-])?$/.test(edit.blood_type.trim())) setEditErrors((errs: any) => ({ ...errs, blood_type: 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.' }));
+                  else setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
+                }}
+              />
               {editErrors.blood_type && <Text style={modalStyles.error}>{editErrors.blood_type}</Text>}
               {/* Allergies */}
               <Text style={modalStyles.label}>Allergies</Text>
