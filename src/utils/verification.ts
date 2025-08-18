@@ -1,6 +1,7 @@
 import { verifyDrugByQrCode } from '../core/drugInfo';
 import { parseGs1DataMatrix } from './gs1';
 import { getRecallByGTINorNDC, getLabelingByGTINorNDC } from './openfda';
+import { findLocalRecall } from './localRecalls';
 
 export interface VerificationResult {
   verified: boolean;
@@ -12,6 +13,18 @@ export interface VerificationResult {
 }
 
 export async function verifyScannedCode(data: string, type: string): Promise<VerificationResult> {
+  // 1. Check local recall lists first (offline, EMA, SAHPRA, NAFDAC, PPB, etc.)
+  const localRecall = findLocalRecall(data);
+  if (localRecall) {
+    return {
+      verified: false,
+      counterfeit: false,
+      expired: false,
+      recall: localRecall,
+      label: undefined,
+      message: `Product recalled by ${localRecall.source}`,
+    };
+  }
   // Check MedLink QR authenticity
   if (data.startsWith('MedLink:AUTH:')) {
     const { verified, drug } = await verifyDrugByQrCode(data);
@@ -28,6 +41,19 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     const parsed = parseGs1DataMatrix(data);
     if (parsed) {
       const expired = parsed.expiry ? parsed.expiry < new Date() : false;
+      // Check local recall for GTIN
+      const localRecall = findLocalRecall(parsed.gtin);
+      if (localRecall) {
+        return {
+          verified: false,
+          counterfeit: false,
+          expired,
+          recall: localRecall,
+          label: undefined,
+          message: expired ? 'Product expired' : `Product recalled by ${localRecall.source}`,
+        };
+      }
+      // Fallback to openFDA
       const recall = await getRecallByGTINorNDC(parsed.gtin);
       const label = await getLabelingByGTINorNDC(parsed.gtin);
       return {
@@ -43,6 +69,17 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
 
   // Check NDC codes (UPC/EAN may map to NDC)
   if (/^\d{10,11}$/.test(data)) {
+    const localRecall = findLocalRecall(data);
+    if (localRecall) {
+      return {
+        verified: false,
+        counterfeit: false,
+        expired: false,
+        recall: localRecall,
+        label: undefined,
+        message: `Product recalled by ${localRecall.source}`,
+      };
+    }
     const recall = await getRecallByGTINorNDC(data);
     const label = await getLabelingByGTINorNDC(data);
     return {
