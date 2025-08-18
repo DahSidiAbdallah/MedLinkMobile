@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Linking } from 'react-native';
-import { BarCodeScanner, BarCodeScannerResult } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors, spacing } from '../theme';
+import { verifyScannedCode, VerificationResult } from '../utils/verification';
+import { parseGs1DataMatrix } from '../utils/gs1';
 async function fetchOpenFdaNdcInfo(ndc: string) {
   // NDC can be 10 or 11 digits. OpenFDA expects 10-digit (with hyphens) or 11-digit (no hyphens)
   // We'll try both formats
@@ -48,77 +50,58 @@ function parseCodeType(data: string, type: string) {
   if (/^\d{11}$/.test(data)) return { codeType: 'NDC-11', parsed: data };
   if (/^\d{10}$/.test(data)) return { codeType: 'NDC-10', parsed: data };
   // DataMatrix: often contains GS1 Application Identifiers (AI)
-  if (type === BarCodeScanner.Constants.BarCodeType.datamatrix) {
-    // Try to extract (01)GTIN, (10)Batch, (17)Expiry, etc.
-    const aiMatch = data.match(/\(01\)(\d{14})/);
-    if (aiMatch) return { codeType: 'GS1 DataMatrix (GTIN-14)', parsed: aiMatch[1] };
+  if (type === 'datamatrix') {
+    const gs1 = parseGs1DataMatrix(data);
+    if (gs1) {
+      return {
+        codeType: 'GS1 DataMatrix',
+        parsed: gs1.gtin,
+        extra: gs1, // expiry and lot info
+      };
+    }
     return { codeType: 'DataMatrix', parsed: data };
   }
   // QR, PDF417, etc.
-  if (type === BarCodeScanner.Constants.BarCodeType.qr) return { codeType: 'QR Code', parsed: data };
-  if (type === BarCodeScanner.Constants.BarCodeType.pdf417) return { codeType: 'PDF417', parsed: data };
+  if (type === 'qr') return { codeType: 'QR Code', parsed: data };
+  if (type === 'pdf417') return { codeType: 'PDF417', parsed: data };
   // Fallback
   return { codeType: 'Unknown', parsed: data };
 }
 
-const SUPPORTED_TYPES = [
-  BarCodeScanner.Constants.BarCodeType.qr,
-  BarCodeScanner.Constants.BarCodeType.ean13,
-  BarCodeScanner.Constants.BarCodeType.ean8,
-  BarCodeScanner.Constants.BarCodeType.upc_a,
-  BarCodeScanner.Constants.BarCodeType.upc_e,
-  BarCodeScanner.Constants.BarCodeType.code39,
-  BarCodeScanner.Constants.BarCodeType.code128,
-  BarCodeScanner.Constants.BarCodeType.datamatrix,
-  BarCodeScanner.Constants.BarCodeType.pdf417,
-  BarCodeScanner.Constants.BarCodeType.itf14,
-  BarCodeScanner.Constants.BarCodeType.aztec,
-];
+
 
 export default function BarcodeScanner() {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const [scanData, setScanData] = useState<BarCodeScannerResult | null>(null);
-  const [ndcInfo, setNdcInfo] = useState<any>(null);
-  const [recallInfo, setRecallInfo] = useState<any>(null);
+  const [scanData, setScanData] = useState<any>(null);
+  const [verification, setVerification] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
+    if (!permission?.granted) {
+      requestPermission();
+    }
+  }, [permission]);
 
-  const handleBarCodeScanned = async (result: BarCodeScannerResult) => {
+  const handleBarCodeScanned = async ({ data, type }: { data: string; type: string }) => {
     setScanned(true);
-    setScanData(result);
-    setNdcInfo(null);
-    setRecallInfo(null);
+    setScanData({ data, type });
+    setLoading(true);
     setError(null);
-    setLoading(false);
-
-    // Try to parse code type
-    const { codeType, parsed } = parseCodeType(result.data, result.type);
-    if (codeType.startsWith('NDC')) {
-      setLoading(true);
-      // Fetch OpenFDA info
-      const info = await fetchOpenFdaNdcInfo(parsed);
-      setNdcInfo(info);
-      // Fetch recall info
-      const recall = await fetchOpenFdaRecall(parsed);
-      setRecallInfo(recall);
+    setVerification(null);
+    try {
+      const result = await verifyScannedCode(data, type);
+      setVerification(result);
+    } catch (e) {
+      setError('Verification failed.');
+    } finally {
       setLoading(false);
-      if (!info) setError('No drug info found for this NDC code.');
     }
   };
 
-  if (hasPermission === null) {
+  if (!permission?.granted) {
     return <View style={styles.container}><ActivityIndicator color={colors.primary} /></View>;
-  }
-  if (hasPermission === false) {
-    return <View style={styles.container}><Text style={styles.text}>No access to camera</Text></View>;
   }
 
   return (
@@ -127,10 +110,9 @@ export default function BarcodeScanner() {
         <>
           <Text style={styles.text}>Scan any barcode or data matrix on a medication package</Text>
           <View style={styles.scannerBox}>
-            <BarCodeScanner
-              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-              barCodeTypes={SUPPORTED_TYPES}
+            <CameraView
               style={StyleSheet.absoluteFillObject}
+              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
             />
           </View>
         </>
@@ -142,55 +124,39 @@ export default function BarcodeScanner() {
           <Text style={styles.resultValue}>{scanData.type}</Text>
           <Text style={styles.resultLabel}>Raw Data:</Text>
           <Text style={styles.resultValue}>{scanData.data}</Text>
-          {/* Code type identification */}
-          {(() => {
-            const { codeType, parsed } = parseCodeType(scanData.data, scanData.type);
-            return (
-              <>
-                <Text style={styles.resultLabel}>Detected Code Type:</Text>
-                <Text style={styles.resultValue}>{codeType}</Text>
-                <Text style={styles.resultLabel}>Parsed Value:</Text>
-                <Text style={styles.resultValue}>{parsed}</Text>
-                {/* If NDC, show OpenFDA info */}
-                {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
-                {ndcInfo && !loading && (
-                  <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
-                    <Text style={[styles.resultLabel, { marginBottom: 2 }]}>Drug Name:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.brand_name} ({ndcInfo.generic_name})</Text>
-                    <Text style={styles.resultLabel}>Labeler:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.labeler_name}</Text>
-                    <Text style={styles.resultLabel}>Dosage Form:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.dosage_form}</Text>
-                    <Text style={styles.resultLabel}>Route:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.route}</Text>
-                    <Text style={styles.resultLabel}>Marketing Status:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.marketing_status}</Text>
-                    <Text style={styles.resultLabel}>Active Ingredients:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.active_ingredients?.map((a: any) => a.name + ' (' + a.strength + ')').join(', ')}</Text>
-                    <Text style={styles.resultLabel}>Purpose:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.purpose}</Text>
-                    <Text style={styles.resultLabel}>Side Effects:</Text>
-                    <Text style={styles.resultValue}>{ndcInfo.adverse_reactions || 'N/A'}</Text>
-                    <Text style={styles.resultLabel}>OpenFDA Link:</Text>
-                    <Text style={[styles.resultValue, { color: colors.primary }]} onPress={() => Linking.openURL(`https://open.fda.gov/apis/drug/ndc/`)}>View API</Text>
-                  </View>
-                )}
-                {recallInfo && !loading && (
-                  <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
-                    <Text style={[styles.resultLabel, { color: colors.danger }]}>Recall Alert:</Text>
-                    <Text style={styles.resultValue}>{recallInfo.reason_for_recall}</Text>
-                    <Text style={styles.resultLabel}>Recall Status:</Text>
-                    <Text style={styles.resultValue}>{recallInfo.status}</Text>
-                  </View>
-                )}
-                {error && !loading && (
-                  <Text style={styles.error}>{error}</Text>
-                )}
-              </>
-            );
-          })()}
+          {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
+          {verification && (
+            <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
+              {verification.verified && <Text style={{ color: colors.success }}>Authenticity verified!</Text>}
+              {verification.expired && <Text style={{ color: 'red' }}>Expired: do not use.</Text>}
+              {verification.recall && (
+                <View>
+                  <Text style={{ color: 'red' }}>Recall Alert:</Text>
+                  <Text>{verification.recall.reason_for_recall}</Text>
+                  <Text>Status: {verification.recall.status}</Text>
+                </View>
+              )}
+              {verification.label && (
+                <View>
+                  <Text>Indications:</Text>
+                  <Text>{verification.label.indications_and_usage}</Text>
+                  <Text>Dosage:</Text>
+                  <Text>{verification.label.dosage_and_administration}</Text>
+                  <Text>Side Effects:</Text>
+                  <Text>{verification.label.adverse_reactions}</Text>
+                </View>
+              )}
+              {!verification.verified && !verification.recall && !verification.expired && (
+                <Text>No authenticity data available. Exercise caution.</Text>
+              )}
+              <Text style={{ marginTop: 8, color: colors.muted }}>{verification.message}</Text>
+            </View>
+          )}
+          {error && !loading && (
+            <Text style={styles.error}>{error}</Text>
+          )}
           <TouchableOpacity style={styles.rescanBtn} onPress={() => {
-            setScanned(false); setScanData(null); setNdcInfo(null); setRecallInfo(null); setError(null); setLoading(false);
+            setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
           }}>
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Scan Another</Text>
           </TouchableOpacity>
