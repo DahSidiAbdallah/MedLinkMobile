@@ -1,170 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { FlatList, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors, spacing } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
-async function fetchOpenFdaNdcInfo(ndc: string) {
-  // NDC can be 10 or 11 digits. OpenFDA expects 10-digit (with hyphens) or 11-digit (no hyphens)
-  // We'll try both formats
-  const ndc10 = ndc.length === 10 ? ndc : ndc.replace(/(\d{5})(\d{3})(\d{2})/, '$1-$2-$3');
-  const ndc11 = ndc.length === 11 ? ndc : ndc.replace(/-/g, '');
-  const url = `https://api.fda.gov/drug/ndc.json?search=product_ndc:${ndc10}+product_ndc:${ndc11}`;
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('OpenFDA API error');
-    const data = await resp.json();
-    if (data.results && data.results.length > 0) {
-      return data.results[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function fetchOpenFdaRecall(ndc: string) {
-  // Try to find recall info for this NDC
-  const url = `https://api.fda.gov/drug/enforcement.json?search=openfda.product_ndc:${ndc}&limit=1`;
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    if (data.results && data.results.length > 0) {
-      return data.results[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
-// Helper functions for code type detection
-function parseCodeType(data: string, type: string) {
-  // GTIN-14: 14 digits, GTIN-13: 13 digits, GTIN-12: 12 digits, GTIN-8: 8 digits
-  if (/^\d{14}$/.test(data)) return { codeType: 'GTIN-14', parsed: data };
-  if (/^\d{13}$/.test(data)) return { codeType: 'GTIN-13', parsed: data };
-  if (/^\d{12}$/.test(data)) return { codeType: 'GTIN-12', parsed: data };
-  if (/^\d{8}$/.test(data)) return { codeType: 'GTIN-8', parsed: data };
-  // NDC-11: 11 digits, NDC-10: 10 digits
-  if (/^\d{11}$/.test(data)) return { codeType: 'NDC-11', parsed: data };
-  if (/^\d{10}$/.test(data)) return { codeType: 'NDC-10', parsed: data };
-  // DataMatrix: often contains GS1 Application Identifiers (AI)
-  if (type === 'datamatrix') {
-    const gs1 = parseGs1DataMatrix(data);
-    if (gs1) {
-      return {
-        codeType: 'GS1 DataMatrix',
-        parsed: gs1.gtin,
-        extra: gs1, // expiry and lot info
-      };
-    }
-    return { codeType: 'DataMatrix', parsed: data };
-  }
-  // QR, PDF417, etc.
-  if (type === 'qr') return { codeType: 'QR Code', parsed: data };
-  if (type === 'pdf417') return { codeType: 'PDF417', parsed: data };
-  // Fallback
-  return { codeType: 'Unknown', parsed: data };
-}
-
-
-
-export default function BarcodeScanner() {
-  const [permission, requestPermission] = useCameraPermissions();
-  const [scanned, setScanned] = useState(false);
-  const [scanData, setScanData] = useState<any>(null);
-  const [verification, setVerification] = useState<VerificationResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-  }, [permission]);
-
-  const handleBarCodeScanned = async ({ data, type }: { data: string; type: string }) => {
-    setScanned(true);
-    setScanData({ data, type });
-    setLoading(true);
-    setError(null);
-    setVerification(null);
-    try {
-      const result = await verifyScannedCode(data, type);
-      setVerification(result);
-    } catch (e) {
-      setError('Verification failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!permission?.granted) {
-    return <View style={styles.container}><ActivityIndicator color={colors.primary} /></View>;
-  }
-
-  return (
-    <View style={styles.container}>
-      {!scanned && !scanData && (
-        <>
-          <Text style={styles.text}>Scan any barcode or data matrix on a medication package</Text>
-          <View style={styles.scannerBox}>
-            <CameraView
-              style={StyleSheet.absoluteFillObject}
-              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-            />
-          </View>
-        </>
-      )}
-      {scanned && scanData && (
-        <ScrollView contentContainerStyle={styles.resultBox}>
-          <Text style={styles.resultTitle}>Scan Result</Text>
-          <Text style={styles.resultLabel}>Barcode Type:</Text>
-          <Text style={styles.resultValue}>{scanData.type}</Text>
-          <Text style={styles.resultLabel}>Raw Data:</Text>
-          <Text style={styles.resultValue}>{scanData.data}</Text>
-          {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
-          {verification && (
-            <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
-              {verification.verified && <Text style={{ color: 'green' }}>Authenticity verified!</Text>}
-              {verification.expired && <Text style={{ color: 'red' }}>Expired: do not use.</Text>}
-              {verification.recall && (
-                <View>
-                  <Text style={{ color: 'red' }}>Recall Alert:</Text>
-                  <Text>{verification.recall.reason_for_recall}</Text>
-                  <Text>Status: {verification.recall.status}</Text>
-                </View>
-              )}
-              {verification.label && (
-                <View>
-                  <Text>Indications:</Text>
-                  <Text>{verification.label.indications_and_usage}</Text>
-                  <Text>Dosage:</Text>
-                  <Text>{verification.label.dosage_and_administration}</Text>
-                  <Text>Side Effects:</Text>
-                  <Text>{verification.label.adverse_reactions}</Text>
-                </View>
-              )}
-              {!verification.verified && !verification.recall && !verification.expired && (
-                <Text>No authenticity data available. Exercise caution.</Text>
-              )}
-              <Text style={{ marginTop: 8, color: colors.muted }}>{verification.message}</Text>
-            </View>
-          )}
-          {error && !loading && (
-            <Text style={styles.error}>{error}</Text>
-          )}
-          <TouchableOpacity style={styles.rescanBtn} onPress={() => {
-            setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
-          }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Scan Another</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      )}
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -239,4 +79,287 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
+  userMessage: {
+    fontSize: 16,
+    color: colors.primary,
+    marginTop: 10,
+    marginBottom: 4,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  filterBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    backgroundColor: colors.card,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: colors.muted,
+  },
+  filterBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterBtnText: {
+    color: colors.text,
+    fontWeight: 'bold',
+  },
+  historyItem: {
+    backgroundColor: colors.bg,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  historyType: {
+    fontSize: 13,
+    color: colors.muted,
+    fontWeight: '600',
+  },
+  historyData: {
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 2,
+  },
+  historyMsg: {
+    fontSize: 14,
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  historyTime: {
+    fontSize: 12,
+    color: colors.muted,
+    textAlign: 'right',
+  },
 });
+
+type ScanHistoryItem = {
+  timestamp: number;
+  data: string;
+  type: string;
+  verification: VerificationResult | null;
+  error: string | null;
+};
+
+const getUserMessage = (verification: VerificationResult | null, error: string | null): string => {
+  if (error) return 'Scan failed. Please try again.';
+  if (!verification) return '';
+  if (verification.verified) return 'This product is authentic and safe.';
+  if (verification.expired) return 'Warning: This product is expired. Do not use.';
+  if (verification.recall) return 'Recall alert: This product has been recalled.';
+  return 'No authenticity or recall data found. Please exercise caution.';
+};
+
+async function fetchOpenFdaNdcInfo(ndc: string) {
+  // NDC can be 10 or 11 digits. OpenFDA expects 10-digit (with hyphens) or 11-digit (no hyphens)
+  // We'll try both formats
+  const ndc10 = ndc.length === 10 ? ndc : ndc.replace(/(\d{5})(\d{3})(\d{2})/, '$1-$2-$3');
+  const ndc11 = ndc.length === 11 ? ndc : ndc.replace(/-/g, '');
+  const url = `https://api.fda.gov/drug/ndc.json?search=product_ndc:${ndc10}+product_ndc:${ndc11}`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('OpenFDA API error');
+    const data = await resp.json();
+    if (data.results && data.results.length > 0) {
+      return data.results[0];
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchOpenFdaRecall(ndc: string) {
+  // Try to find recall info for this NDC
+  const url = `https://api.fda.gov/drug/enforcement.json?search=openfda.product_ndc:${ndc}&limit=1`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (data.results && data.results.length > 0) {
+      return data.results[0];
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Helper functions for code type detection
+function parseCodeType(data: string, type: string) {
+  // GTIN-14: 14 digits, GTIN-13: 13 digits, GTIN-12: 12 digits, GTIN-8: 8 digits
+  if (/^\d{14}$/.test(data)) return { codeType: 'GTIN-14', parsed: data };
+  if (/^\d{13}$/.test(data)) return { codeType: 'GTIN-13', parsed: data };
+  if (/^\d{12}$/.test(data)) return { codeType: 'GTIN-12', parsed: data };
+  if (/^\d{8}$/.test(data)) return { codeType: 'GTIN-8', parsed: data };
+  // NDC-11: 11 digits, NDC-10: 10 digits
+  if (/^\d{11}$/.test(data)) return { codeType: 'NDC-11', parsed: data };
+  if (/^\d{10}$/.test(data)) return { codeType: 'NDC-10', parsed: data };
+  // DataMatrix: often contains GS1 Application Identifiers (AI)
+  if (type === 'datamatrix') {
+    const gs1 = parseGs1DataMatrix(data);
+    if (gs1) {
+      return {
+        codeType: 'GS1 DataMatrix',
+        parsed: gs1.gtin,
+        extra: gs1, // expiry and lot info
+      };
+    }
+    return { codeType: 'DataMatrix', parsed: data };
+  }
+  // QR, PDF417, etc.
+  if (type === 'qr') return { codeType: 'QR Code', parsed: data };
+  if (type === 'pdf417') return { codeType: 'PDF417', parsed: data };
+  // Fallback
+  return { codeType: 'Unknown', parsed: data };
+}
+
+const BarcodeScanner: React.FC = () => {
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scanned, setScanned] = useState(false);
+  const [scanData, setScanData] = useState<any>(null);
+  const [verification, setVerification] = useState<VerificationResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<ScanHistoryItem[]>([]);
+  const [filter, setFilter] = useState<'all' | 'successful' | 'unsuccessful'>('all');
+
+  useEffect(() => {
+    if (!permission?.granted) {
+      requestPermission();
+    }
+  }, [permission]);
+
+  const handleBarCodeScanned = async ({ data, type }: { data: string; type: string }) => {
+    setScanned(true);
+    setScanData({ data, type });
+    setLoading(true);
+    setError(null);
+    setVerification(null);
+    let result: VerificationResult | null = null;
+    let err: string | null = null;
+    try {
+      result = await verifyScannedCode(data, type);
+      setVerification(result);
+    } catch (e) {
+      err = 'Verification failed.';
+      setError(err);
+    } finally {
+      setLoading(false);
+      setHistory(prev => [
+        {
+          timestamp: Date.now(),
+          data,
+          type,
+          verification: result,
+          error: err,
+        },
+        ...prev
+      ]);
+    }
+  };
+
+  if (!permission?.granted) {
+    return <View style={styles.container}><ActivityIndicator color={colors.primary} /></View>;
+  }
+
+  // Filter history
+  const filteredHistory = history.filter(item => {
+    if (filter === 'all') return true;
+    if (filter === 'successful') return item.verification && (item.verification.verified || item.verification.recall || item.verification.expired);
+    if (filter === 'unsuccessful') return !item.verification || (!item.verification.verified && !item.verification.recall && !item.verification.expired);
+    return true;
+  });
+
+  return (
+    <View style={styles.container}>
+      {!scanned && !scanData && (
+        <>
+          <Text style={styles.text}>Scan any barcode or data matrix on a medication package</Text>
+          <View style={styles.scannerBox}>
+            <CameraView
+              style={StyleSheet.absoluteFillObject}
+              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+            />
+          </View>
+          {history.length > 0 && (
+            <View style={{ marginTop: 32, width: '100%' }}>
+              <Text style={styles.resultTitle}>Scan History</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
+                <TouchableOpacity onPress={() => setFilter('all')} style={[styles.filterBtn, filter === 'all' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>All</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setFilter('successful')} style={[styles.filterBtn, filter === 'successful' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Successful</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setFilter('unsuccessful')} style={[styles.filterBtn, filter === 'unsuccessful' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Unsuccessful</Text></TouchableOpacity>
+              </View>
+              <FlatList
+                data={filteredHistory}
+                keyExtractor={item => item.timestamp.toString() + item.data}
+                renderItem={({ item }) => (
+                  <View style={styles.historyItem}>
+                    <Text style={styles.historyType}>{item.type}</Text>
+                    <Text style={styles.historyData}>{item.data}</Text>
+                    <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error)}</Text>
+                    <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
+                  </View>
+                )}
+                style={{ maxHeight: 220 }}
+              />
+            </View>
+          )}
+        </>
+      )}
+      {scanned && scanData && (
+        <ScrollView contentContainerStyle={styles.resultBox}>
+          <Text style={styles.resultTitle}>Scan Result</Text>
+          <Text style={styles.resultLabel}>Barcode Type:</Text>
+          <Text style={styles.resultValue}>{scanData.type}</Text>
+          <Text style={styles.resultLabel}>Raw Data:</Text>
+          <Text style={styles.resultValue}>{scanData.data}</Text>
+          {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
+          <Text style={styles.userMessage}>{getUserMessage(verification, error)}</Text>
+          {verification && (
+            <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
+              {verification.verified && <Text style={{ color: 'green' }}>Authenticity verified!</Text>}
+              {verification.expired && <Text style={{ color: 'red' }}>Expired: do not use.</Text>}
+              {verification.recall && (
+                <View>
+                  <Text style={{ color: 'red' }}>Recall Alert:</Text>
+                  <Text>{verification.recall.reason_for_recall}</Text>
+                  <Text>Status: {verification.recall.status}</Text>
+                </View>
+              )}
+              {verification.label && (
+                <View>
+                  <Text>Indications:</Text>
+                  <Text>{verification.label.indications_and_usage}</Text>
+                  <Text>Dosage:</Text>
+                  <Text>{verification.label.dosage_and_administration}</Text>
+                  <Text>Side Effects:</Text>
+                  <Text>{verification.label.adverse_reactions}</Text>
+                </View>
+              )}
+              {!verification.verified && !verification.recall && !verification.expired && (
+                <Text>No authenticity data available. Exercise caution.</Text>
+              )}
+              <Text style={{ marginTop: 8, color: colors.muted }}>{verification.message}</Text>
+            </View>
+          )}
+          {error && !loading && (
+            <Text style={styles.error}>{error}</Text>
+          )}
+          <TouchableOpacity style={styles.rescanBtn} onPress={() => {
+            setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
+          }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Scan Another</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
+    </View>
+  );
+};
+
+export default BarcodeScanner;
+   

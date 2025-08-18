@@ -14,16 +14,24 @@ export default function Reminders() {
   const [form, setForm] = useState({ title: '', datetime: '', frequency: '', description: '' });
   const [formErrors, setFormErrors] = useState<any>({});
   const [creating, setCreating] = useState(false);
+  const [toggling, setToggling] = useState<{ [id: string]: boolean }>({});
+  const [toggleMsg, setToggleMsg] = useState<{ [id: string]: string }>({});
   const { reminders, loading, error, updateReminder, createReminder, refresh } = useReminders();
 
   const filtered = reminders.filter(r => (segment === 'Active' ? r.active : !r.active));
 
   const toggleActive = async (reminder: any) => {
+    setToggling(prev => ({ ...prev, [reminder.id]: true }));
+    setToggleMsg(prev => ({ ...prev, [reminder.id]: '' }));
     try {
       await updateReminder(reminder.id, { active: !reminder.active });
+      setToggleMsg(prev => ({ ...prev, [reminder.id]: reminder.active ? 'Reminder turned off.' : 'Reminder activated.' }));
       refresh();
-    } catch (e: any) {
-      setFormErrors({ general: 'Failed to update reminder' });
+    } catch (e) {
+      // Optionally log error: console.error(e);
+      setToggleMsg(prev => ({ ...prev, [reminder.id]: 'Failed to update reminder.' }));
+    } finally {
+      setToggling(prev => ({ ...prev, [reminder.id]: false }));
     }
   };
 
@@ -96,12 +104,24 @@ export default function Reminders() {
           <Card key={r.id} style={{ paddingVertical: spacing.lg }}>
             <ListRow
               title={r.title}
-              subtitle={`${r.datetime}${r.frequency ? ` • ${r.frequency}` : ''}`}
-              right={<Switch value={r.active} onValueChange={() => toggleActive(r)} />}
+              subtitle={r.frequency ? `${r.datetime} • ${r.frequency}` : r.datetime}
+              right={
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Switch
+                    value={r.active}
+                    onValueChange={() => toggleActive(r)}
+                    disabled={!!toggling[r.id]}
+                  />
+                  {toggling[r.id] && <ActivityIndicator size={16} color={colors.primary} style={{ marginLeft: 6 }} />}
+                </View>
+              }
             />
             {r.description ? (
               <Text style={{ color: colors.muted, marginLeft: 56, marginTop: 4 }}>{r.description}</Text>
             ) : null}
+            {!!toggleMsg[r.id] && (
+              <Text style={{ color: toggleMsg[r.id].includes('Failed') ? colors.danger : colors.primary, marginLeft: 56, marginTop: 2, fontSize: 13 }}>{toggleMsg[r.id]}</Text>
+            )}
           </Card>
         ))}
       </ScrollView>
