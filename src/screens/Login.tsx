@@ -22,6 +22,8 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
   // Inline error state for register fields (account step)
   const [registerAccountErrors, setRegisterAccountErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+  // Inline error state for register fields (personal step)
+  const [registerPersonalErrors, setRegisterPersonalErrors] = useState<{ name?: string; phone?: string; dateOfBirth?: string }>({});
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -61,19 +63,18 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   };
 
   const validatePersonalStep = () => {
+    let errors: { name?: string; phone?: string; dateOfBirth?: string } = {};
     if (!name.trim()) {
-      Alert.alert('Missing Name', 'Please enter your full name.');
-      return false;
+      errors.name = 'Full name is required.';
     }
     if (phone && !/^\d{7,}$/.test(phone)) {
-      Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
-      return false;
+      errors.phone = 'Please enter a valid phone number (at least 7 digits).';
     }
     if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
-      Alert.alert('Invalid Date', 'Date of Birth must be in YYYY-MM-DD format.');
-      return false;
+      errors.dateOfBirth = 'Date of Birth must be in YYYY-MM-DD format.';
     }
-    return true;
+    setRegisterPersonalErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleLogin = async () => {
@@ -297,30 +298,54 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
         {isRegister && registerStep === 1 && (
           <>
             <TextInput
-              style={[styles.input, focusedInput === 'name' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'name' && styles.inputFocused, registerPersonalErrors.name && styles.inputError]}
               placeholder="Full Name"
               value={name}
-              onChangeText={setName}
+              onChangeText={text => {
+                setName(text);
+                if (registerPersonalErrors.name) setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
+              }}
               onFocus={() => setFocusedInput('name')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (!name.trim()) setRegisterPersonalErrors(e => ({ ...e, name: 'Full name is required.' }));
+                else setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
+              }}
             />
+            {registerPersonalErrors.name ? <Text style={styles.errorText}>{registerPersonalErrors.name}</Text> : null}
             <TextInput
-              style={[styles.input, focusedInput === 'phone' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'phone' && styles.inputFocused, registerPersonalErrors.phone && styles.inputError]}
               placeholder="Phone"
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={text => {
+                setPhone(text);
+                if (registerPersonalErrors.phone) setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
+              }}
               keyboardType="phone-pad"
               onFocus={() => setFocusedInput('phone')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: 'Please enter a valid phone number (at least 7 digits).' }));
+                else setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
+              }}
             />
+            {registerPersonalErrors.phone ? <Text style={styles.errorText}>{registerPersonalErrors.phone}</Text> : null}
             <TextInput
-              style={[styles.input, focusedInput === 'dob' && styles.inputFocused]}
+              style={[styles.input, focusedInput === 'dob' && styles.inputFocused, registerPersonalErrors.dateOfBirth && styles.inputError]}
               placeholder="Date of Birth (YYYY-MM-DD)"
               value={dateOfBirth}
-              onChangeText={setDateOfBirth}
+              onChangeText={text => {
+                setDateOfBirth(text);
+                if (registerPersonalErrors.dateOfBirth) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
+              }}
               onFocus={() => setFocusedInput('dob')}
-              onBlur={() => setFocusedInput(null)}
+              onBlur={() => {
+                setFocusedInput(null);
+                if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: 'Date of Birth must be in YYYY-MM-DD format.' }));
+                else setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
+              }}
             />
+            {registerPersonalErrors.dateOfBirth ? <Text style={styles.errorText}>{registerPersonalErrors.dateOfBirth}</Text> : null}
             <View style={styles.buttonRow}>
               <Pressable
                 style={[styles.buttonSecondary, loading && { opacity: 0.7 }]}
@@ -331,7 +356,9 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
               </Pressable>
               <Pressable
                 style={[styles.button, { flex: 1, marginLeft: 8 }, loading && { opacity: 0.7 }]}
-                onPress={handleRegister}
+                onPress={() => {
+                  if (validatePersonalStep()) handleRegister();
+                }}
                 disabled={loading}
               >
                 {loading ? (
