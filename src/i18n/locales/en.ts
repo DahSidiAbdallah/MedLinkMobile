@@ -157,6 +157,10 @@ export default {
       enterAllergy: 'Enter allergy',
       addConditionPrompt: 'Add condition...',
       enterCondition: 'Enter condition',
+      conditions: {
+        label: 'Medical Conditions',
+        other: 'Other (type below)',
+      },
       addMedicationPrompt: 'Add medication',
       ice: 'ICE',
       allergyOptions: {

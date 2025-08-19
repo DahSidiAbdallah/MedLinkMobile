@@ -5,9 +5,7 @@ import en from './locales/en';
 import fr from './locales/fr';
 import ar from './locales/ar';
 
-// i18n instance setup
-i18n
-  .use({
+i18n.use({
     type: 'languageDetector',
     async: true,
     detect: async (cb: any) => {

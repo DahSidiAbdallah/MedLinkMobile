@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Image as RNImage } from 'react-native';
@@ -519,25 +520,60 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               {/* Blood Type (Dropdown + Custom) */}
               <Text style={modalStyles.label}>{t('auth.bloodType', 'Blood Type')}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <select
-                  style={{ flex: 1, height: 40, borderColor: editErrors.blood_type ? '#EF4444' : '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
-                  value={edit.blood_type || ''}
-                  onChange={e => {
-                    setEdit((prev: any) => ({ ...prev, blood_type: e.target.value }));
-                    if (editErrors.blood_type) setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
-                  }}
-                >
-                  <option value="">{t('common.selectOne', 'Select one')}</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="custom">{t('profile.conditions.other', 'Other (type below)')}</option>
-                </select>
+                {Platform.OS === 'web' ? (
+                  <select
+                    style={{ flex: 1, height: 40, borderColor: editErrors.blood_type ? '#EF4444' : '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                    value={edit.blood_type || ''}
+                    onChange={e => {
+                      setEdit((prev: any) => ({ ...prev, blood_type: e.target.value }));
+                      if (editErrors.blood_type) setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
+                    }}
+                  >
+                    <option value="">{t('common.selectOne', 'Select one')}</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="custom">{t('profile.conditions.other', 'Other (type below)')}</option>
+                  </select>
+                ) : (
+                  <View
+                    style={{
+                      flex: 1,
+                      height: 40,
+                      borderColor: editErrors.blood_type ? '#EF4444' : '#E5E7EB',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingLeft: 4,
+                      backgroundColor: '#F9FAFB',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Picker
+                      selectedValue={edit.blood_type || ''}
+                      onValueChange={(v) => {
+                        setEdit((prev: any) => ({ ...prev, blood_type: v }));
+                        if (editErrors.blood_type) setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      <Picker.Item label={t('common.selectOne', 'Select one')} value="" />
+                      <Picker.Item label="A+" value="A+" />
+                      <Picker.Item label="A-" value="A-" />
+                      <Picker.Item label="B+" value="B+" />
+                      <Picker.Item label="B-" value="B-" />
+                      <Picker.Item label="AB+" value="AB+" />
+                      <Picker.Item label="AB-" value="AB-" />
+                      <Picker.Item label="O+" value="O+" />
+                      <Picker.Item label="O-" value="O-" />
+                      <Picker.Item label={t('profile.conditions.other', 'Other (type below)')} value="custom" />
+                    </Picker>
+                  </View>
+                )}
                 {edit.blood_type === 'custom' && (
                   <TextInput
                     style={[modalStyles.input, editErrors.blood_type && modalStyles.inputError, { flex: 1, marginLeft: 8 }]}
@@ -551,22 +587,54 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               {/* Allergies (Dropdown + Custom) */}
               <Text style={modalStyles.label}>{t('auth.allergies', 'Allergies')}</Text>
               <View style={modalStyles.chipInputRow}>
-                <select
-                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
-                  value={allergyInput}
-                  onChange={e => setAllergyInput(e.target.value)}
-                >
-                  <option value="">{t('profile.addAllergyPrompt', 'Add allergy...')}</option>
-                  <option value="Penicillin">{t('profile.allergyOptions.penicillin', 'Penicillin')}</option>
-                  <option value="Sulfa drugs">{t('profile.allergyOptions.sulfaDrugs', 'Sulfa drugs')}</option>
-                  <option value="Aspirin">{t('profile.allergyOptions.aspirin', 'Aspirin')}</option>
-                  <option value="Peanuts">{t('profile.allergyOptions.peanuts', 'Peanuts')}</option>
-                  <option value="Shellfish">{t('profile.allergyOptions.shellfish', 'Shellfish')}</option>
-                  <option value="Latex">{t('profile.allergyOptions.latex', 'Latex')}</option>
-                  <option value="Eggs">{t('profile.allergyOptions.eggs', 'Eggs')}</option>
-                  <option value="Milk">{t('profile.allergyOptions.milk', 'Milk')}</option>
-                  <option value="Other">{t('profile.allergyOptions.other', 'Other (type below)')}</option>
-                </select>
+                {Platform.OS === 'web' ? (
+                  <select
+                    style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                    value={allergyInput}
+                    onChange={e => setAllergyInput(e.target.value)}
+                  >
+                    <option value="">{t('profile.addAllergyPrompt', 'Add allergy...')}</option>
+                    <option value="Penicillin">{t('profile.allergyOptions.penicillin', 'Penicillin')}</option>
+                    <option value="Sulfa drugs">{t('profile.allergyOptions.sulfaDrugs', 'Sulfa drugs')}</option>
+                    <option value="Aspirin">{t('profile.allergyOptions.aspirin', 'Aspirin')}</option>
+                    <option value="Peanuts">{t('profile.allergyOptions.peanuts', 'Peanuts')}</option>
+                    <option value="Shellfish">{t('profile.allergyOptions.shellfish', 'Shellfish')}</option>
+                    <option value="Latex">{t('profile.allergyOptions.latex', 'Latex')}</option>
+                    <option value="Eggs">{t('profile.allergyOptions.eggs', 'Eggs')}</option>
+                    <option value="Milk">{t('profile.allergyOptions.milk', 'Milk')}</option>
+                    <option value="Other">{t('profile.allergyOptions.other', 'Other (type below)')}</option>
+                  </select>
+                ) : (
+                  <View
+                    style={{
+                      flex: 1,
+                      height: 40,
+                      borderColor: '#E5E7EB',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingLeft: 4,
+                      backgroundColor: '#F9FAFB',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Picker
+                      selectedValue={allergyInput}
+                      onValueChange={v => setAllergyInput(v.toString())}
+                      style={{ flex: 1 }}
+                    >
+                      <Picker.Item label={t('profile.addAllergyPrompt', 'Add allergy...')} value="" />
+                      <Picker.Item label={t('profile.allergyOptions.penicillin', 'Penicillin')} value="Penicillin" />
+                      <Picker.Item label={t('profile.allergyOptions.sulfaDrugs', 'Sulfa drugs')} value="Sulfa drugs" />
+                      <Picker.Item label={t('profile.allergyOptions.aspirin', 'Aspirin')} value="Aspirin" />
+                      <Picker.Item label={t('profile.allergyOptions.peanuts', 'Peanuts')} value="Peanuts" />
+                      <Picker.Item label={t('profile.allergyOptions.shellfish', 'Shellfish')} value="Shellfish" />
+                      <Picker.Item label={t('profile.allergyOptions.latex', 'Latex')} value="Latex" />
+                      <Picker.Item label={t('profile.allergyOptions.eggs', 'Eggs')} value="Eggs" />
+                      <Picker.Item label={t('profile.allergyOptions.milk', 'Milk')} value="Milk" />
+                      <Picker.Item label={t('profile.allergyOptions.other', 'Other (type below)')} value="Other" />
+                    </Picker>
+                  </View>
+                )}
                 <Pressable
                   style={modalStyles.chipAddBtn}
                   onPress={() => {
@@ -703,21 +771,52 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               {/* Medical Conditions (Dropdown + Custom) */}
               <Text style={modalStyles.label}>{t('auth.medicalConditions', 'Medical Conditions')}</Text>
               <View style={modalStyles.chipInputRow}>
-                <select
-                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
-                  value={conditionInput}
-                  onChange={e => setConditionInput(e.target.value)}
-                >
-                  <option value="">{t('profile.addConditionPrompt', 'Add condition...')}</option>
-                  <option value="Diabetes">{t('profile.conditionOptions.diabetes', 'Diabetes')}</option>
-                  <option value="Hypertension">{t('profile.conditionOptions.hypertension', 'Hypertension')}</option>
-                  <option value="Asthma">{t('profile.conditionOptions.asthma', 'Asthma')}</option>
-                  <option value="Heart Disease">{t('profile.conditionOptions.heartDisease', 'Heart Disease')}</option>
-                  <option value="Kidney Disease">{t('profile.conditionOptions.kidneyDisease', 'Kidney Disease')}</option>
-                  <option value="Liver Disease">{t('profile.conditionOptions.liverDisease', 'Liver Disease')}</option>
-                  <option value="Epilepsy">{t('profile.conditionOptions.epilepsy', 'Epilepsy')}</option>
-                  <option value="Other">{t('profile.conditionOptions.other', 'Other (type below)')}</option>
-                </select>
+                {Platform.OS === 'web' ? (
+                  <select
+                    style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                    value={conditionInput}
+                    onChange={e => setConditionInput(e.target.value)}
+                  >
+                    <option value="">{t('profile.addConditionPrompt', 'Add condition...')}</option>
+                    <option value="Diabetes">{t('profile.conditionOptions.diabetes', 'Diabetes')}</option>
+                    <option value="Hypertension">{t('profile.conditionOptions.hypertension', 'Hypertension')}</option>
+                    <option value="Asthma">{t('profile.conditionOptions.asthma', 'Asthma')}</option>
+                    <option value="Heart Disease">{t('profile.conditionOptions.heartDisease', 'Heart Disease')}</option>
+                    <option value="Kidney Disease">{t('profile.conditionOptions.kidneyDisease', 'Kidney Disease')}</option>
+                    <option value="Liver Disease">{t('profile.conditionOptions.liverDisease', 'Liver Disease')}</option>
+                    <option value="Epilepsy">{t('profile.conditionOptions.epilepsy', 'Epilepsy')}</option>
+                    <option value="Other">{t('profile.conditionOptions.other', 'Other (type below)')}</option>
+                  </select>
+                ) : (
+                  <View
+                    style={{
+                      flex: 1,
+                      height: 40,
+                      borderColor: '#E5E7EB',
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      paddingLeft: 4,
+                      backgroundColor: '#F9FAFB',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Picker
+                      selectedValue={conditionInput}
+                      onValueChange={v => setConditionInput(v.toString())}
+                      style={{ flex: 1 }}
+                    >
+                      <Picker.Item label={t('profile.addConditionPrompt', 'Add condition...')} value="" />
+                      <Picker.Item label={t('profile.conditionOptions.diabetes', 'Diabetes')} value="Diabetes" />
+                      <Picker.Item label={t('profile.conditionOptions.hypertension', 'Hypertension')} value="Hypertension" />
+                      <Picker.Item label={t('profile.conditionOptions.asthma', 'Asthma')} value="Asthma" />
+                      <Picker.Item label={t('profile.conditionOptions.heartDisease', 'Heart Disease')} value="Heart Disease" />
+                      <Picker.Item label={t('profile.conditionOptions.kidneyDisease', 'Kidney Disease')} value="Kidney Disease" />
+                      <Picker.Item label={t('profile.conditionOptions.liverDisease', 'Liver Disease')} value="Liver Disease" />
+                      <Picker.Item label={t('profile.conditionOptions.epilepsy', 'Epilepsy')} value="Epilepsy" />
+                      <Picker.Item label={t('profile.conditionOptions.other', 'Other (type below)')} value="Other" />
+                    </Picker>
+                  </View>
+                )}
                 <Pressable
                   style={modalStyles.chipAddBtn}
                   onPress={() => {
