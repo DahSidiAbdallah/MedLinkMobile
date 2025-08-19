@@ -447,7 +447,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               <Text style={modalStyles.label}>Blood Type</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 <select
-                  style={{ flex: 1, height: 40, borderColor: editErrors.blood_type ? '#EF4444' : '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                  style={{ flex: 1, height: 40, borderColor: editErrors.blood_type ? '#EF4444' : '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
                   value={edit.blood_type || ''}
                   onChange={e => {
                     setEdit((prev: any) => ({ ...prev, blood_type: e.target.value }));
@@ -479,7 +479,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               <Text style={modalStyles.label}>Allergies</Text>
               <View style={modalStyles.chipInputRow}>
                 <select
-                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
                   value={allergyInput}
                   onChange={e => setAllergyInput(e.target.value)}
                 >
@@ -631,7 +631,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               <Text style={modalStyles.label}>Medical Conditions</Text>
               <View style={modalStyles.chipInputRow}>
                 <select
-                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingLeft: 12, paddingRight: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
                   value={conditionInput}
                   onChange={e => setConditionInput(e.target.value)}
                 >
