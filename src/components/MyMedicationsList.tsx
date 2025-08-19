@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMedications } from '../utils/myMedications';
 import { colors } from '../theme';
@@ -57,11 +57,9 @@ export default function MyMedicationsList() {
   }
 
   return (
-    <FlatList
-      data={medications}
-      keyExtractor={(item, idx) => `${item.code}_${idx}`}
-      renderItem={({ item, index }) => (
-        <View style={styles.card}>
+    <View>
+      {medications.map((item, index) => (
+        <View key={`${item.code}_${index}`} style={styles.card}>
           <Text style={styles.title}>{item.labelInfo?.indications?.slice(0, 40) || 'Medication'}</Text>
           <Text style={styles.label}>Code:</Text>
           <Text style={styles.value}>{item.code}</Text>
@@ -89,11 +87,21 @@ export default function MyMedicationsList() {
               <Text style={[styles.value, { color: colors.danger }]}>{item.recall.reason_for_recall}</Text>
             </>
           )}
-          <TouchableOpacity onPress={() => deleteMedication(index)} style={{ marginTop: 10, alignSelf: 'flex-end', backgroundColor: colors.danger, borderRadius: 6, paddingVertical: 6, paddingHorizontal: 16 }}>
+          <TouchableOpacity
+            onPress={() => deleteMedication(index)}
+            style={{
+              marginTop: 10,
+              alignSelf: 'flex-end',
+              backgroundColor: colors.danger,
+              borderRadius: 6,
+              paddingVertical: 6,
+              paddingHorizontal: 16,
+            }}
+          >
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
           </TouchableOpacity>
         </View>
-      )}
-    />
+      ))}
+    </View>
   );
 }
