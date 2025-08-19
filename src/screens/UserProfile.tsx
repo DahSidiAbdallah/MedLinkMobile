@@ -443,48 +443,75 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
                 />
               </View>
               {editErrors.phone && <Text style={modalStyles.error}>{editErrors.phone}</Text>}
-              {/* Blood Type */}
+              {/* Blood Type (Dropdown + Custom) */}
               <Text style={modalStyles.label}>Blood Type</Text>
-              <TextInput
-                style={[modalStyles.input, editErrors.blood_type && modalStyles.inputError]}
-                placeholder="Blood Type"
-                value={edit.blood_type}
-                onChangeText={v => {
-                  setEdit((e: any) => ({ ...e, blood_type: v }));
-                  if (editErrors.blood_type) setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
-                }}
-                onBlur={() => {
-                  if (edit.blood_type && !/^([A|B|AB|O][+-])?$/.test(edit.blood_type.trim())) setEditErrors((errs: any) => ({ ...errs, blood_type: 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.' }));
-                  else setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
-                }}
-              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <select
+                  style={{ flex: 1, height: 40, borderColor: editErrors.blood_type ? '#EF4444' : '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
+                  value={edit.blood_type || ''}
+                  onChange={e => {
+                    setEdit((prev: any) => ({ ...prev, blood_type: e.target.value }));
+                    if (editErrors.blood_type) setEditErrors((errs: any) => ({ ...errs, blood_type: undefined }));
+                  }}
+                >
+                  <option value="">Select...</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="custom">Other (type below)</option>
+                </select>
+                {edit.blood_type === 'custom' && (
+                  <TextInput
+                    style={[modalStyles.input, editErrors.blood_type && modalStyles.inputError, { flex: 1, marginLeft: 8 }]}
+                    placeholder="Enter blood type"
+                    value={edit.blood_type_custom || ''}
+                    onChangeText={v => setEdit((e: any) => ({ ...e, blood_type_custom: v }))}
+                  />
+                )}
+              </View>
               {editErrors.blood_type && <Text style={modalStyles.error}>{editErrors.blood_type}</Text>}
-              {/* Allergies */}
+              {/* Allergies (Dropdown + Custom) */}
               <Text style={modalStyles.label}>Allergies</Text>
               <View style={modalStyles.chipInputRow}>
-                <TextInput
-                  style={modalStyles.chipInput}
-                  placeholder="Add allergy"
+                <select
+                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
                   value={allergyInput}
-                  onChangeText={setAllergyInput}
-                  onSubmitEditing={() => {
-                    if (allergyInput.trim()) {
-                      setEdit((e: any) => ({ ...e, allergies: [...(e.allergies || []), allergyInput.trim()] }));
-                      setAllergyInput('');
-                    }
-                  }}
-                  returnKeyType="done"
-                />
+                  onChange={e => setAllergyInput(e.target.value)}
+                >
+                  <option value="">Add allergy...</option>
+                  <option value="Penicillin">Penicillin</option>
+                  <option value="Sulfa drugs">Sulfa drugs</option>
+                  <option value="Aspirin">Aspirin</option>
+                  <option value="Peanuts">Peanuts</option>
+                  <option value="Shellfish">Shellfish</option>
+                  <option value="Latex">Latex</option>
+                  <option value="Eggs">Eggs</option>
+                  <option value="Milk">Milk</option>
+                  <option value="Other">Other (type below)</option>
+                </select>
                 <Pressable
                   style={modalStyles.chipAddBtn}
                   onPress={() => {
-                    if (allergyInput.trim()) {
-                      setEdit((e: any) => ({ ...e, allergies: [...(e.allergies || []), allergyInput.trim()] }));
+                    if (allergyInput && !edit.allergies.includes(allergyInput)) {
+                      setEdit((e: any) => ({ ...e, allergies: [...(e.allergies || []), allergyInput] }));
                       setAllergyInput('');
                     }
                   }}>
                   <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 18 }}>+</Text>
                 </Pressable>
+                {allergyInput === 'Other' && (
+                  <TextInput
+                    style={[modalStyles.chipInput, { flex: 1, marginLeft: 8 }]}
+                    placeholder="Enter allergy"
+                    value={edit.allergy_custom || ''}
+                    onChangeText={v => setEdit((e: any) => ({ ...e, allergy_custom: v }))}
+                  />
+                )}
               </View>
               <View style={modalStyles.chipList}>
                 {(edit.allergies ?? []).map((a: string, i: number) => (
@@ -600,32 +627,42 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
               >
                 <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Add Emergency Contact</Text>
               </Pressable>
-              {/* Medical Conditions */}
+              {/* Medical Conditions (Dropdown + Custom) */}
               <Text style={modalStyles.label}>Medical Conditions</Text>
               <View style={modalStyles.chipInputRow}>
-                <TextInput
-                  style={modalStyles.chipInput}
-                  placeholder="Add condition"
+                <select
+                  style={{ flex: 1, height: 40, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, backgroundColor: '#F9FAFB', fontSize: 16 }}
                   value={conditionInput}
-                  onChangeText={setConditionInput}
-                  onSubmitEditing={() => {
-                    if (conditionInput.trim()) {
-                      setEdit((e: any) => ({ ...e, medical_conditions: [...(e.medical_conditions || []), conditionInput.trim()] }));
-                      setConditionInput('');
-                    }
-                  }}
-                  returnKeyType="done"
-                />
+                  onChange={e => setConditionInput(e.target.value)}
+                >
+                  <option value="">Add condition...</option>
+                  <option value="Diabetes">Diabetes</option>
+                  <option value="Hypertension">Hypertension</option>
+                  <option value="Asthma">Asthma</option>
+                  <option value="Heart Disease">Heart Disease</option>
+                  <option value="Kidney Disease">Kidney Disease</option>
+                  <option value="Liver Disease">Liver Disease</option>
+                  <option value="Epilepsy">Epilepsy</option>
+                  <option value="Other">Other (type below)</option>
+                </select>
                 <Pressable
                   style={modalStyles.chipAddBtn}
                   onPress={() => {
-                    if (conditionInput.trim()) {
-                      setEdit((e: any) => ({ ...e, medical_conditions: [...(e.medical_conditions || []), conditionInput.trim()] }));
+                    if (conditionInput && !edit.medical_conditions.includes(conditionInput)) {
+                      setEdit((e: any) => ({ ...e, medical_conditions: [...(e.medical_conditions || []), conditionInput] }));
                       setConditionInput('');
                     }
                   }}>
                   <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 18 }}>+</Text>
                 </Pressable>
+                {conditionInput === 'Other' && (
+                  <TextInput
+                    style={[modalStyles.chipInput, { flex: 1, marginLeft: 8 }]}
+                    placeholder="Enter condition"
+                    value={edit.condition_custom || ''}
+                    onChangeText={v => setEdit((e: any) => ({ ...e, condition_custom: v }))}
+                  />
+                )}
               </View>
               <View style={modalStyles.chipList}>
                 {(edit.medical_conditions ?? []).map((a: string, i: number) => (
