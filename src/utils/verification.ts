@@ -1,7 +1,10 @@
 import { verifyDrugByQrCode } from '../core/drugInfo';
 import { parseGs1DataMatrix } from './gs1';
 import { getRecallByGTINorNDC, getLabelingByGTINorNDC } from './openfda';
+import { fetchDrugLabelByNDC } from './openfdaDrugInfo';
 import { findLocalRecall } from './localRecalls';
+
+import type { DrugLabelInfo } from './openfdaDrugInfo';
 
 export interface VerificationResult {
   verified: boolean;
@@ -9,6 +12,7 @@ export interface VerificationResult {
   expired: boolean;
   recall?: any;
   label?: any;
+  labelInfo?: DrugLabelInfo | null;
   message: string;
 }
 
@@ -56,12 +60,18 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       // Fallback to openFDA
       const recall = await getRecallByGTINorNDC(parsed.gtin);
       const label = await getLabelingByGTINorNDC(parsed.gtin);
+      let labelInfo = null;
+      // If GTIN can be mapped to NDC, fetch openFDA info (assume GTIN is NDC if 10/11 digits)
+      if (/^\d{10,11}$/.test(parsed.gtin)) {
+        labelInfo = await fetchDrugLabelByNDC(parsed.gtin);
+      }
       return {
         verified: false, // no authenticity code
         counterfeit: false,
         expired,
         recall,
         label,
+        labelInfo,
         message: expired ? 'Product expired' : (recall ? 'Product recalled' : 'No authenticity data available'),
       };
     }
@@ -82,12 +92,14 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     }
     const recall = await getRecallByGTINorNDC(data);
     const label = await getLabelingByGTINorNDC(data);
+    const labelInfo = await fetchDrugLabelByNDC(data);
     return {
       verified: false,
       counterfeit: false,
       expired: false,
       recall,
       label,
+      labelInfo,
       message: recall ? 'Product recalled' : 'No authenticity data available',
     };
   }

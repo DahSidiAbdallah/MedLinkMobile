@@ -1,3 +1,4 @@
+import { saveMedication } from '../utils/myMedications';
 
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -414,6 +415,31 @@ const BarcodeScanner: React.FC = () => {
                   <Text>{verification.label.adverse_reactions}</Text>
                 </View>
               )}
+              {verification.labelInfo && (
+                <View style={{ marginTop: 12, backgroundColor: '#f3f4f6', borderRadius: 8, padding: 10 }}>
+                  {verification.labelInfo.indications && (
+                    <>
+                      <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage (openFDA)</Text>
+                      <Text style={{ color: colors.text }}>{verification.labelInfo.indications}</Text>
+                    </>
+                  )}
+                  {verification.labelInfo.dosage && (
+                    <>
+                      <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Dosage & Administration (openFDA)</Text>
+                      <Text style={{ color: colors.text }}>{verification.labelInfo.dosage}</Text>
+                    </>
+                  )}
+                  {verification.labelInfo.sideEffects && (
+                    <>
+                      <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Adverse Reactions (openFDA)</Text>
+                      <Text style={{ color: colors.text }}>{verification.labelInfo.sideEffects}</Text>
+                    </>
+                  )}
+                  {!verification.labelInfo.indications && !verification.labelInfo.dosage && !verification.labelInfo.sideEffects && (
+                    <Text style={{ color: colors.muted }}>No drug information found from openFDA.</Text>
+                  )}
+                </View>
+              )}
               {!verification.verified && !verification.recall && !verification.expired && (
                 <Text>No authenticity data available. Exercise caution.</Text>
               )}
@@ -423,11 +449,33 @@ const BarcodeScanner: React.FC = () => {
           {error && !loading && (
             <Text style={styles.error}>{error}</Text>
           )}
-          <TouchableOpacity style={styles.rescanBtn} onPress={() => {
-            setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
-          }}>
+          <TouchableOpacity
+            style={[styles.rescanBtn, { backgroundColor: colors.primary, marginBottom: 10 }]}
+            onPress={() => {
+              setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
+            }}
+          >
             <Text style={{ color: '#fff', fontWeight: 'bold' }}>Scan Another</Text>
           </TouchableOpacity>
+          {verification && (
+            <TouchableOpacity
+              style={[styles.rescanBtn, { backgroundColor: colors.accent }]}
+              onPress={async () => {
+                await saveMedication({
+                  code: scanData.data,
+                  type: scanData.type,
+                  labelInfo: verification.labelInfo,
+                  recall: verification.recall,
+                  timestamp: Date.now(),
+                });
+                // Optionally show a confirmation
+                setError('Saved to My Medications!');
+                setTimeout(() => setError(null), 1500);
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Save to My Medications</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       )}
     </View>
