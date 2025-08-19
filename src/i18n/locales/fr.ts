@@ -185,7 +185,10 @@ export default {
       settings: 'Paramètres',
       basicInfo: 'Informations de base',
       allergies: 'Allergies',
-      conditions: 'Conditions médicales',
+      conditions: {
+        label: 'Conditions médicales',
+        other: 'Autre (saisir ci-dessous)',
+      },
       medications: 'Médicaments',
       addAllergy: 'Ajouter une allergie',
       addCondition: 'Ajouter une condition',
