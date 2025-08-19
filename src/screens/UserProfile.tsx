@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { Image as RNImage } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { fetchUserProfile, createOrUpdateUserProfile, Profile } from '../core/userProfile';
@@ -150,7 +152,18 @@ type UserProfileProps = {
   onLogout?: () => void;
 };
 
+
+import pkg from '../../package.json';
+
 export default function UserProfile({ navigation, onLogout }: UserProfileProps) {
+  const { t, i18n } = useTranslation();
+  const [langModal, setLangModal] = useState(false);
+  const languages = [
+  { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
+  { code: 'fr', label: t('languages.french', 'French'), flag: require('../assets/fr.svg') },
+  { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
+  ];
+  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editModal, setEditModal] = useState(false);
@@ -297,6 +310,23 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
   }
   return (
     <>
+      {/* Language Modal */}
+      <Modal visible={langModal} animationType="slide" transparent onRequestClose={() => setLangModal(false)}>
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.content}>
+            <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }}>{t('common.languageSettings', 'Language Settings')}</Text>
+            {languages.map(lang => (
+              <Pressable key={lang.code} onPress={() => { i18n.changeLanguage(lang.code); setLangModal(false); }} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, borderRadius: 8, backgroundColor: i18n.language === lang.code ? '#F3F4F6' : 'transparent', marginBottom: 4 }}>
+                <RNImage source={lang.flag} style={{ width: 28, height: 20, borderRadius: 4, marginRight: 10 }} resizeMode="contain" />
+                <Text style={{ color: i18n.language === lang.code ? colors.primary : '#222', fontWeight: i18n.language === lang.code ? 'bold' : 'normal', fontSize: 16 }}>{lang.label}</Text>
+              </Pressable>
+            ))}
+            <Pressable style={[modalStyles.btn, { backgroundColor: colors.primary, marginTop: spacing.lg }]} onPress={() => setLangModal(false)}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
         <Card style={styles.headerCard}>
           <Image source={require('../assets/avatar-placeholder.png')} style={styles.avatar} />
@@ -314,15 +344,28 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
           <ListRow title="Emergency Contacts" right={<Ionicons name="chevron-forward" size={20} color={colors.muted} />} subtitle={profile.emergency_contacts && profile.emergency_contacts.length > 0 ? profile.emergency_contacts[0].name : undefined} onPress={() => setEmergencyModal(true)} />
         </Card>
         <View style={styles.buttonRow}>
-          <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={openEdit}><Text style={styles.btnTxt}>Edit Profile</Text></Pressable>
+          <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={openEdit}><Text style={styles.btnTxt}>{t('common.editProfile', 'Edit Profile')}</Text></Pressable>
           <Pressable style={styles.btn} android_ripple={{ color: colors.line }}><Text style={styles.btnTxt}>Privacy</Text></Pressable>
           <Pressable
             style={[styles.btn, { backgroundColor: colors.danger }]}
             android_ripple={{ color: colors.primary600 }}
             onPress={handleLogout}
           >
-            <Text style={[styles.btnTxt, { color: '#fff' }]}>Logout</Text>
+            <Text style={[styles.btnTxt, { color: '#fff' }]}>{t('auth.signOut', 'Logout')}</Text>
           </Pressable>
+        </View>
+        {/* Language Switcher as ListRow (below Emergency Contacts) */}
+        <Card>
+          <ListRow
+            title={t('common.language', 'Language')}
+            right={<RNImage source={currentLang.flag} style={{ width: 28, height: 20, borderRadius: 4 }} resizeMode="contain" />}
+            subtitle={currentLang.label}
+            onPress={() => setLangModal(true)}
+          />
+        </Card>
+        {/* Version Number */}
+        <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 8 }}>
+          <Text style={{ color: colors.muted, fontSize: 13 }}>v{pkg.version}</Text>
         </View>
       </ScrollView>
       {/* Medical ID Modal */}
