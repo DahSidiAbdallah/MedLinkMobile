@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMedications } from '../utils/myMedications';
 import { colors } from '../theme';
 
@@ -40,6 +41,17 @@ export default function MyMedicationsList() {
     getMedications().then(setMedications);
   }, []);
 
+  const deleteMedication = (idx: number) => {
+    Alert.alert('Delete Medication', 'Are you sure you want to delete this medication?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        const updated = medications.filter((_, i) => i !== idx);
+        await AsyncStorage.setItem('myMedications', JSON.stringify(updated));
+        setMedications(updated);
+      } }
+    ]);
+  };
+
   if (!medications.length) {
     return <Text style={{ color: colors.muted, textAlign: 'center', marginTop: 12 }}>No medications saved.</Text>;
   }
@@ -48,7 +60,7 @@ export default function MyMedicationsList() {
     <FlatList
       data={medications}
       keyExtractor={(item, idx) => `${item.code}_${idx}`}
-      renderItem={({ item }) => (
+      renderItem={({ item, index }) => (
         <View style={styles.card}>
           <Text style={styles.title}>{item.labelInfo?.indications?.slice(0, 40) || 'Medication'}</Text>
           <Text style={styles.label}>Code:</Text>
@@ -77,6 +89,9 @@ export default function MyMedicationsList() {
               <Text style={[styles.value, { color: colors.danger }]}>{item.recall.reason_for_recall}</Text>
             </>
           )}
+          <TouchableOpacity onPress={() => deleteMedication(index)} style={{ marginTop: 10, alignSelf: 'flex-end', backgroundColor: colors.danger, borderRadius: 6, paddingVertical: 6, paddingHorizontal: 16 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
+          </TouchableOpacity>
         </View>
       )}
     />
