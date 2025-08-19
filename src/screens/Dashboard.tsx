@@ -246,8 +246,7 @@ export default function Dashboard({ navigation }: any) {
             </View>
           </View>
         </Modal>
-      </ScrollView>
-        </ScrollView>
+  </ScrollView>
       </LinearGradient>
     </SafeAreaView>
   );
