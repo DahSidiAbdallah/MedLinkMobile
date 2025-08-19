@@ -18,6 +18,7 @@ const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 // Expo’s gradient works on web, iOS, and Android
 import { LinearGradient } from 'expo-linear-gradient';
 import Card from '../components/Card';
+import MyMedicationsList from '../components/MyMedicationsList';
 import { colors, spacing, type, shadow } from '../theme';
 
 
@@ -150,10 +151,15 @@ export default function Dashboard({ navigation }: any) {
           ) : reminders.filter(r => r.active).map(rem => (
             <View key={rem.id} style={{ backgroundColor: '#F3F4F6', borderRadius: 16, padding: 14, marginBottom: 10 }}>
               <Text style={{ fontWeight: '600', color: colors.text }}>{rem.title}</Text>
-              <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime}{rem.frequency ? ` · ${rem.frequency}` : ''}</Text>
+              <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime}{rem.frequency ? `  b7 ${rem.frequency}` : ''}</Text>
               {rem.description && <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.description}</Text>}
             </View>
           ))}
+        </View>
+        {/* My Medications Section */}
+        <View style={styles.appointmentCard}>
+          <Text style={{ fontWeight: '700', fontSize: 17, color: colors.text, marginBottom: 8 }}>My Medications</Text>
+          <MyMedicationsList />
         </View>
 
         {/* Profile Modal */}
