@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Image, StyleSheet, Pressable, Modal, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -313,7 +314,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
     );
   }
   return (
-    <>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'left', 'right']}>
       {/* Language Modal */}
       <Modal visible={langModal} animationType="slide" transparent onRequestClose={() => setLangModal(false)}>
         <View style={modalStyles.overlay}>
@@ -339,7 +340,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
           </View>
         </View>
       </Modal>
-  <ScrollView key={langRefresh} style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
+  <ScrollView key={langRefresh} style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg, paddingBottom: Platform.OS === 'ios' ? 32 : 16 }}>
         <Card style={styles.headerCard}>
           <Image source={require('../assets/avatar-placeholder.png')} style={styles.avatar} />
           <Text style={[type.h2, { marginTop: spacing.sm }]}>{profile.name}</Text>
@@ -370,7 +371,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
             onPress={() => setEmergencyModal(true)}
           />
         </Card>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, marginTop: spacing.lg, marginBottom: spacing.lg }}>
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, marginTop: spacing.lg, marginBottom: spacing.lg }}>
           <Pressable style={({ pressed }) => [{
             flex: 1,
             minWidth: 120,
@@ -970,6 +971,6 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
           </View>
         </View>
       </Modal>
-    </>
+  </SafeAreaView>
   );
 }

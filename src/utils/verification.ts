@@ -1,10 +1,13 @@
+
 import { verifyDrugByQrCode } from '../core/drugInfo';
 import { parseGs1DataMatrix } from './gs1';
 import { getRecallByGTINorNDC, getLabelingByGTINorNDC } from './openfda';
 import { fetchDrugLabelByNDC } from './openfdaDrugInfo';
+import { fetchDrugInfoFromScraper } from './webscraperDrugInfo';
 import { findLocalRecall } from './localRecalls';
 
 import type { DrugLabelInfo } from './openfdaDrugInfo';
+
 
 export interface VerificationResult {
   verified: boolean;
@@ -13,8 +16,10 @@ export interface VerificationResult {
   recall?: any;
   label?: any;
   labelInfo?: DrugLabelInfo | null;
+  webscraperInfo?: any | null;
   message: string;
 }
+
 
 export async function verifyScannedCode(data: string, type: string): Promise<VerificationResult> {
   // 1. Check local recall lists first (offline, EMA, SAHPRA, NAFDAC, PPB, etc.)
@@ -57,14 +62,13 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
           message: expired ? 'Product expired' : `Product recalled by ${localRecall.source}`,
         };
       }
-      // Fallback to openFDA
-      const recall = await getRecallByGTINorNDC(parsed.gtin);
-      const label = await getLabelingByGTINorNDC(parsed.gtin);
-      let labelInfo = null;
-      // If GTIN can be mapped to NDC, fetch openFDA info (assume GTIN is NDC if 10/11 digits)
-      if (/^\d{10,11}$/.test(parsed.gtin)) {
-        labelInfo = await fetchDrugLabelByNDC(parsed.gtin);
-      }
+      // Always call both openFDA and webscraper for GTIN/NDC
+      const [recall, label, labelInfo, webscraperInfo] = await Promise.all([
+        getRecallByGTINorNDC(parsed.gtin),
+        getLabelingByGTINorNDC(parsed.gtin),
+        /^\d{10,11}$/.test(parsed.gtin) ? fetchDrugLabelByNDC(parsed.gtin) : Promise.resolve(null),
+        fetchDrugInfoFromScraper(parsed.gtin)
+      ]);
       return {
         verified: false, // no authenticity code
         counterfeit: false,
@@ -72,6 +76,7 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
         recall,
         label,
         labelInfo,
+        webscraperInfo,
         message: expired ? 'Product expired' : (recall ? 'Product recalled' : 'No authenticity data available'),
       };
     }
@@ -90,9 +95,13 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
         message: `Product recalled by ${localRecall.source}`,
       };
     }
-    const recall = await getRecallByGTINorNDC(data);
-    const label = await getLabelingByGTINorNDC(data);
-    const labelInfo = await fetchDrugLabelByNDC(data);
+    // Always call both openFDA and webscraper for NDC
+    const [recall, label, labelInfo, webscraperInfo] = await Promise.all([
+      getRecallByGTINorNDC(data),
+      getLabelingByGTINorNDC(data),
+      fetchDrugLabelByNDC(data),
+      fetchDrugInfoFromScraper(data)
+    ]);
     return {
       verified: false,
       counterfeit: false,
@@ -100,6 +109,7 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       recall,
       label,
       labelInfo,
+      webscraperInfo,
       message: recall ? 'Product recalled' : 'No authenticity data available',
     };
   }
