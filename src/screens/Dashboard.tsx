@@ -137,15 +137,15 @@ export default function Dashboard({ navigation }: any) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
             <View style={styles.serviceItem}>
               <Text style={styles.serviceIcon}>🩺</Text>
-              <Text style={styles.serviceLabel}>Consultation</Text>
+              <Text style={styles.serviceLabel}>Meds Verification</Text>
             </View>
             <View style={styles.serviceItem}>
               <Text style={styles.serviceIcon}>💊</Text>
-              <Text style={styles.serviceLabel}>Medicines</Text>
+              <Text style={styles.serviceLabel}>Medical ID</Text>
             </View>
             <View style={styles.serviceItem}>
               <Text style={styles.serviceIcon}>🚑</Text>
-              <Text style={styles.serviceLabel}>Ambulance</Text>
+              <Text style={styles.serviceLabel}>Facilities </Text>
             </View>
           </View>
         </View>
