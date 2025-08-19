@@ -185,10 +185,12 @@ export default {
       settings: 'الإعدادات',
       basicInfo: 'المعلومات الأساسية',
       allergies: 'الحساسية',
+
       conditions: {
         label: 'الحالات الطبية',
         other: 'أخرى (اكتب بالأسفل)',
       },
+
       medications: 'الأدوية',
       addAllergy: 'إضافة حساسية',
       addCondition: 'إضافة حالة',
@@ -246,14 +248,14 @@ export default {
         other: 'أخرى (اكتب بالأسفل)'
       },
       conditionOptions: {
-        diabetes: 'السكري',
-        hypertension: 'ارتفاع ضغط الدم',
-        asthma: 'الربو',
-        heartDisease: 'مرض القلب',
-        kidneyDisease: 'مرض الكلى',
-        liverDisease: 'مرض الكبد',
-        epilepsy: 'الصرع',
-        other: 'أخرى (اكتب بالأسفل)'
+  diabetes: 'السكري',
+  hypertension: 'ارتفاع ضغط الدم',
+  asthma: 'الربو',
+  heartDisease: 'مرض القلب',
+  kidneyDisease: 'مرض الكلى',
+  liverDisease: 'مرض الكبد',
+  epilepsy: 'الصرع',
+  other: 'أخرى (اكتب أدناه)'
       },
       insurance: 'التأمين',
       provider: 'المزود',
@@ -277,10 +279,7 @@ export default {
         confirmed: 'مؤكد',
         completed: 'مكتمل',
         cancelled: 'ملغي'
-      }
-    },
-    doctors: {
-      experience: '{{years}} سنوات خبرة',
+  },
       languages: 'اللغات',
       insurance: 'التأمين',
       availableSlots: 'المواعيد المتاحة'
