@@ -5,7 +5,8 @@ import en from './locales/en';
 import fr from './locales/fr';
 import ar from './locales/ar';
 
-i18n
+
+
   .use({
     type: 'languageDetector',
     async: true,
@@ -48,10 +49,22 @@ i18n
     },
   });
 
-// Handle RTL languages
-i18n.on('languageChanged', (lng) => {
-  document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
-  document.documentElement.lang = lng;
-});
-
+// Handle RTL languages for both web and React Native
+if (typeof document !== 'undefined') {
+  i18n.on('languageChanged', (lng) => {
+    document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lng;
+  });
+} else {
+  // React Native RTL support
+  try {
+    const { I18nManager } = require('react-native');
+    i18n.on('languageChanged', (lng: string) => {
+      const isRTL = lng === 'ar';
+      if (I18nManager.isRTL !== isRTL) {
+        I18nManager.forceRTL(isRTL);
+      }
+    });
+  } catch {}
+}
 export default i18n;

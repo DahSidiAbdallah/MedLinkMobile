@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import './src/i18n';
 
 import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';

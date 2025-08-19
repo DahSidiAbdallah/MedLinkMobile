@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     fontSize: 15,
-    color: colors.muted,
+  color: colors.muted,
     marginTop: 8,
     marginBottom: 2,
     fontWeight: '600',
@@ -360,7 +360,7 @@ const BarcodeScanner: React.FC = () => {
               </View>
               <FlatList
                 data={filteredHistory}
-                keyExtractor={item => item.timestamp.toString() + item.data}
+                keyExtractor={(item, idx) => `${item.timestamp}_${item.data}_${idx}`}
                 renderItem={({ item }) => (
                   <View style={styles.historyItem}>
                     <Text style={styles.historyType}>{item.type}</Text>
