@@ -30,6 +30,16 @@ export default function Dashboard({ navigation }: any) {
   const [profileLoading, setProfileLoading] = useState(true);
   const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
 
+  // Always load profile on mount for welcome message
+  useEffect(() => {
+    setProfileLoading(true);
+    fetchUserProfile().then(p => {
+      setProfile(p);
+      setProfileLoading(false);
+    });
+  }, []);
+
+  // Also refresh profile when modal is opened
   useEffect(() => {
     if (profileModal) {
       setProfileLoading(true);
