@@ -370,16 +370,82 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
             onPress={() => setEmergencyModal(true)}
           />
         </Card>
-        <View style={styles.buttonRow}>
-          <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={openEdit}><Text style={styles.btnTxt}>{t('common.editProfile', 'Edit Profile')}</Text></Pressable>
-          <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={() => setMedicationsModal(true)}><Text style={styles.btnTxt}>My Medications</Text></Pressable>
-          <Pressable style={styles.btn} android_ripple={{ color: colors.line }}><Text style={styles.btnTxt}>{t('common.privacy', 'Privacy')}</Text></Pressable>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, marginTop: spacing.lg, marginBottom: spacing.lg }}>
+          <Pressable style={({ pressed }) => [{
+            flex: 1,
+            minWidth: 120,
+            marginHorizontal: 4,
+            backgroundColor: colors.primary,
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOpacity: pressed ? 0.18 : 0.08,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+            marginBottom: 8,
+          }]} onPress={openEdit} android_ripple={{ color: colors.line }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('common.editProfile', 'Edit Profile')}</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [{
+            flex: 1,
+            minWidth: 120,
+            marginHorizontal: 4,
+            backgroundColor: colors.primary,
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOpacity: pressed ? 0.18 : 0.08,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+            marginBottom: 8,
+          }]} onPress={() => setMedicationsModal(true)} android_ripple={{ color: colors.line }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>My Medications</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [{
+            flex: 1,
+            minWidth: 120,
+            marginHorizontal: 4,
+            backgroundColor: colors.primary,
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOpacity: pressed ? 0.18 : 0.08,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+            marginBottom: 8,
+          }]} android_ripple={{ color: colors.line }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('common.privacy', 'Privacy')}</Text>
+          </Pressable>
           <Pressable
-            style={[styles.btn, { backgroundColor: colors.danger }]}
+            style={({ pressed }) => [{
+              flex: 1,
+              minWidth: 120,
+              marginHorizontal: 4,
+              backgroundColor: colors.danger,
+              paddingVertical: 14,
+              borderRadius: 12,
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOpacity: pressed ? 0.18 : 0.08,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 2 },
+              elevation: 3,
+              marginBottom: 8,
+            }]}
             android_ripple={{ color: colors.primary600 }}
             onPress={handleLogout}
           >
-            <Text style={[styles.btnTxt, { color: '#fff' }]}>{t('auth.signOut', 'Logout')}</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('auth.signOut', 'Logout')}</Text>
           </Pressable>
         </View>
       {/* My Medications Bottom Sheet Modal */}
