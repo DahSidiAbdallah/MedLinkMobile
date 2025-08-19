@@ -1,6 +1,6 @@
 import { saveMedication } from '../utils/myMedications';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchUserProfile, Profile } from '../core/userProfile';
 import { FlatList, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
@@ -224,6 +224,7 @@ function parseCodeType(data: string, type: string) {
 
 const HISTORY_KEY = 'scan_history_v1';
 
+
 const BarcodeScanner: React.FC = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -236,6 +237,27 @@ const BarcodeScanner: React.FC = () => {
   const [riskWarning, setRiskWarning] = useState<string | null>(null);
   const [lastRisk, setLastRisk] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'successful' | 'unsuccessful' | 'risk'>('all');
+  const [showScanEffect, setShowScanEffect] = useState(false);
+  const [guidance, setGuidance] = useState<string | null>(null);
+  const [pulse, setPulse] = useState(true);
+  const [barcodeDetected, setBarcodeDetected] = useState(false);
+  const scanTimeout = useRef<NodeJS.Timeout | null>(null);
+  const pulseTimeout = useRef<NodeJS.Timeout | null>(null);
+  // Pulse animation for scan box
+  useEffect(() => {
+    if (!scanned && !scanData) {
+      setPulse(true);
+      const animate = () => {
+        setPulse(p => !p);
+        pulseTimeout.current = setTimeout(animate, 700);
+      };
+      animate();
+      return () => { if (pulseTimeout.current) clearTimeout(pulseTimeout.current); };
+    } else {
+      setPulse(false);
+      if (pulseTimeout.current) clearTimeout(pulseTimeout.current);
+    }
+  }, [scanned, scanData]);
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -259,7 +281,9 @@ const BarcodeScanner: React.FC = () => {
     loadHistory();
   }, [permission]);
 
+  // Only allow one scan at a time
   const handleBarCodeScanned = async ({ data, type }: { data: string; type: string }) => {
+    if (scanned) return;
     setScanned(true);
     setScanData({ data, type });
     setLoading(true);
@@ -267,6 +291,7 @@ const BarcodeScanner: React.FC = () => {
     setVerification(null);
     setRiskWarning(null);
     setLastRisk(null);
+    setShowScanEffect(true);
     let result: VerificationResult | null = null;
     let err: string | null = null;
     let risk = '';
@@ -310,6 +335,7 @@ const BarcodeScanner: React.FC = () => {
       setError(err);
     } finally {
       setLoading(false);
+      setTimeout(() => setShowScanEffect(false), 600);
       const newItem = {
         timestamp: Date.now(),
         data,
@@ -325,6 +351,34 @@ const BarcodeScanner: React.FC = () => {
       });
     }
   };
+
+  // Advanced camera guidance: show dynamic messages
+  useEffect(() => {
+    if (!scanned && !scanData) {
+      setGuidance(null);
+      setBarcodeDetected(false);
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+      // After 3s, suggest to center barcode
+      scanTimeout.current = setTimeout(() => {
+        setGuidance('Center the barcode in the box.');
+      }, 3000);
+      // After 6s, suggest to move closer or improve lighting
+      setTimeout(() => {
+        setGuidance('Move closer, hold steady, or improve lighting.');
+      }, 6000);
+      // After 10s, suggest to clean camera or try another code
+      setTimeout(() => {
+        setGuidance('Try cleaning your camera or another barcode.');
+      }, 10000);
+    } else {
+      setGuidance(null);
+      setBarcodeDetected(false);
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+    }
+    return () => {
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+    };
+  }, [scanned, scanData]);
 
   if (!permission?.granted) {
     return <View style={styles.container}><ActivityIndicator color={colors.primary} /></View>;
@@ -344,12 +398,42 @@ const BarcodeScanner: React.FC = () => {
       {!scanned && !scanData && (
         <>
           <Text style={styles.text}>Scan any barcode or data matrix on a medication package</Text>
-          <View style={styles.scannerBox}>
+          <View style={[styles.scannerBox, { justifyContent: 'center', alignItems: 'center' }]}> 
             <CameraView
               style={StyleSheet.absoluteFillObject}
-              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+              onBarcodeScanned={scanned ? undefined : (event) => {
+                // If barcode is detected but not yet scanned, show detected animation
+                if (!barcodeDetected) setBarcodeDetected(true);
+                handleBarCodeScanned(event);
+              }}
             />
+            {/* Advanced scan guidance overlay */}
+            <View style={{
+              position: 'absolute',
+              borderWidth: pulse ? 3 : 1,
+              borderColor: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : '#fff'),
+              borderRadius: 14,
+              width: 220,
+              height: 80,
+              top: 100,
+              left: 30,
+              backgroundColor: showScanEffect ? 'rgba(34,197,94,0.08)' : (barcodeDetected ? 'rgba(34,197,94,0.04)' : 'transparent'),
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+              shadowColor: barcodeDetected ? colors.accent : undefined,
+              shadowOpacity: barcodeDetected ? 0.3 : 0,
+              shadowRadius: barcodeDetected ? 8 : 0,
+              shadowOffset: { width: 0, height: 0 },
+            }}>
+              <Text style={{ color: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : '#fff'), fontWeight: 'bold', fontSize: 16 }}>
+                {showScanEffect ? 'Scan Complete!' : barcodeDetected ? 'Barcode Detected!' : 'Align barcode here'}
+              </Text>
+            </View>
           </View>
+          {guidance && (
+            <Text style={{ color: colors.warn, marginTop: 10, fontWeight: 'bold', textAlign: 'center' }}>{guidance}</Text>
+          )}
           {history.length > 0 && (
             <View style={{ marginTop: 32, width: '100%' }}>
               <Text style={styles.resultTitle}>Scan History</Text>
