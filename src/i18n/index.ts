@@ -1,12 +1,29 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import en from './locales/en';
 import fr from './locales/fr';
 import ar from './locales/ar';
 
 i18n
-  .use(LanguageDetector)
+  .use({
+    type: 'languageDetector',
+    async: true,
+    detect: async (cb: any) => {
+      try {
+        const lng = await AsyncStorage.getItem('i18nextLng');
+        cb(lng || 'en');
+      } catch {
+        cb('en');
+      }
+    },
+    init: () => {},
+    cacheUserLanguage: async (lng: string) => {
+      try {
+        await AsyncStorage.setItem('i18nextLng', lng);
+      } catch {}
+    },
+  })
   .use(initReactI18next)
   .init({
     resources: {
@@ -21,10 +38,6 @@ i18n
     },
     react: {
       useSuspense: false,
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
     },
     returnNull: false,
     returnEmptyString: false,

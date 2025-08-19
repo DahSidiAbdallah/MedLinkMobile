@@ -45,7 +45,10 @@ export default {
       languageSettings: 'Paramètres de langue',
       bookAppointmentHint: 'Vous pouvez prendre de nouveaux rendez-vous depuis le tableau de bord principal.',
       or: 'ou',
-      error: 'Erreur'
+      error: 'Erreur',
+      privacy: 'Confidentialité',
+      saving: 'Sauvegarde...',
+      none: 'Aucun'
     },
     auth: {
       signIn: 'Connexion à votre compte',
@@ -214,7 +217,45 @@ export default {
       policyNumber: 'Numéro de police',
       deleteError: 'Erreur lors de la suppression du profil',
       primary: 'Principal',
-      addContact: 'Ajouter un contact'
+      addContact: 'Ajouter un contact',
+      confirmLogoutTitle: 'Confirmer la déconnexion',
+      confirmLogoutMessage: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+      medicalId: 'ID médical',
+      phoneDigitsPlaceholder: 'Téléphone (8 chiffres)',
+      relationship: 'Relation',
+      addEmergencyContact: "Ajouter un contact d'urgence",
+      enterBloodType: 'Entrez le groupe sanguin',
+      addAllergyPrompt: 'Ajouter une allergie...',
+      enterAllergy: 'Entrez une allergie',
+      addConditionPrompt: 'Ajouter une condition...',
+      enterCondition: 'Entrez une condition',
+      addMedicationPrompt: 'Ajouter un médicament',
+      ice: 'ICE',
+      allergyOptions: {
+        penicillin: 'Pénicilline',
+        sulfaDrugs: 'Médicaments sulfa',
+        aspirin: 'Aspirine',
+        peanuts: 'Arachides',
+        shellfish: 'Fruits de mer',
+        latex: 'Latex',
+        eggs: 'Œufs',
+        milk: 'Lait',
+        other: 'Autre (saisir ci-dessous)'
+      },
+      conditionOptions: {
+        diabetes: 'Diabète',
+        hypertension: 'Hypertension',
+        asthma: 'Asthme',
+        heartDisease: 'Maladie cardiaque',
+        kidneyDisease: 'Maladie rénale',
+        liverDisease: 'Maladie du foie',
+        epilepsy: 'Épilepsie',
+        other: 'Autre (saisir ci-dessous)'
+      },
+      insurance: 'Assurance',
+      provider: 'Fournisseur',
+      providerWithValue: 'Fournisseur : {{provider}}',
+      noInsuranceInfo: "Aucune information d'assurance."
     },
     appointments: {
       bookWith: 'Prendre rendez-vous avec',
@@ -346,7 +387,15 @@ export default {
       noQrCodeFound: 'Aucun code QR trouvé dans l\'image téléchargée. Veuillez essayer une autre image.',
       genericError: 'Une erreur s\'est produite. Veuillez réessayer.',
       networkError: 'Erreur réseau. Veuillez vérifier votre connexion.',
-      serverError: 'Erreur du serveur. Veuillez réessayer plus tard.'
+      serverError: 'Erreur du serveur. Veuillez réessayer plus tard.',
+      fullNameRequired: 'Le nom complet est requis.',
+      phoneInvalid: 'Les numéros mauritaniens doivent comporter 8 chiffres et commencer par 2, 3 ou 4.',
+      bloodTypeInvalid: 'Le groupe sanguin doit être A+, A-, B+, B-, AB+, AB-, O+ ou O-.',
+      providerShort: 'Le nom du fournisseur est trop court.',
+      policyShort: 'Le numéro de police est trop court.',
+      saveError: 'Échec de l\'enregistrement du profil.',
+      logoutError: 'Échec de la déconnexion.',
+      userIdMissing: 'Identifiant utilisateur manquant.'
     }
   }
 };
