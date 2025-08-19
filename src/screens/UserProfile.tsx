@@ -9,6 +9,7 @@ import { auth } from '../lib/firebase';
 import { fetchUserProfile, createOrUpdateUserProfile, Profile } from '../core/userProfile';
 import { colors, spacing, type, radius, shadow } from '../theme';
 import Card from '../components/Card';
+import MyMedicationsList from '../components/MyMedicationsList';
 import { ListRow } from '../components/ListRow';
 
 const styles = StyleSheet.create({
@@ -179,6 +180,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
   const [conditionInput, setConditionInput] = useState('');
   const [medicationInput, setMedicationInput] = useState('');
   const [medicalModal, setMedicalModal] = useState(false);
+  const [medicationsModal, setMedicationsModal] = useState(false);
   const [insuranceModal, setInsuranceModal] = useState(false);
   const [emergencyModal, setEmergencyModal] = useState(false);
 
@@ -370,6 +372,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
         </Card>
         <View style={styles.buttonRow}>
           <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={openEdit}><Text style={styles.btnTxt}>{t('common.editProfile', 'Edit Profile')}</Text></Pressable>
+          <Pressable style={styles.btn} android_ripple={{ color: colors.line }} onPress={() => setMedicationsModal(true)}><Text style={styles.btnTxt}>My Medications</Text></Pressable>
           <Pressable style={styles.btn} android_ripple={{ color: colors.line }}><Text style={styles.btnTxt}>{t('common.privacy', 'Privacy')}</Text></Pressable>
           <Pressable
             style={[styles.btn, { backgroundColor: colors.danger }]}
@@ -379,6 +382,20 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
             <Text style={[styles.btnTxt, { color: '#fff' }]}>{t('auth.signOut', 'Logout')}</Text>
           </Pressable>
         </View>
+      {/* My Medications Bottom Sheet Modal */}
+      <Modal visible={medicationsModal} animationType="slide" transparent onRequestClose={() => setMedicationsModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.08)', justifyContent: 'flex-end' }}>
+          <View style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 32, paddingHorizontal: 20, minHeight: '50%', maxHeight: '90%', backgroundColor: '#fff', overflow: 'hidden' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>My Medications</Text>
+              <Pressable onPress={() => setMedicationsModal(false)} hitSlop={10}>
+                <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>Close</Text>
+              </Pressable>
+            </View>
+            <MyMedicationsList />
+          </View>
+        </View>
+      </Modal>
         {/* Language Switcher as ListRow (below Emergency Contacts) */}
         <Card>
           <ListRow
