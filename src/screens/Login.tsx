@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Platform } from 'react-native';
+import BloodTypePicker from '../components/BloodTypePicker';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -19,6 +21,14 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  // Health fields
+  const [bloodType, setBloodType] = useState('');
+  const [customBloodType, setCustomBloodType] = useState('');
+  const [allergyInput, setAllergyInput] = useState('');
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [conditionInput, setConditionInput] = useState('');
+  const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
+  const [healthErrors, setHealthErrors] = useState<{ bloodType?: string; allergies?: string; conditions?: string }>({});
 
   // Forgot password dialog state
   const [showForgot, setShowForgot] = useState(false);
@@ -71,6 +81,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
 
   const validatePersonalStep = () => {
     let errors: { name?: string; phone?: string; dateOfBirth?: string } = {};
+    let health: { bloodType?: string; allergies?: string; conditions?: string } = {};
     if (!name.trim()) {
       errors.name = 'Full name is required.';
     }
@@ -80,8 +91,22 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
     if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
       errors.dateOfBirth = 'Date of Birth must be in YYYY-MM-DD format.';
     }
+    // Blood type validation
+    const bt = bloodType === 'custom' ? customBloodType.trim() : bloodType;
+    if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt)) {
+      health.bloodType = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.';
+    }
+    // Allergies validation
+    if (allergies.some(a => !a.trim())) {
+      health.allergies = 'Allergy cannot be empty.';
+    }
+    // Conditions validation
+    if (medicalConditions.some(c => !c.trim())) {
+      health.conditions = 'Condition cannot be empty.';
+    }
     setRegisterPersonalErrors(errors);
-    return Object.keys(errors).length === 0;
+    setHealthErrors(health);
+    return Object.keys(errors).length === 0 && Object.keys(health).length === 0;
   };
 
   const handleLogin = async () => {
@@ -404,6 +429,103 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
               }}
             />
             {registerPersonalErrors.dateOfBirth ? <Text style={styles.errorText}>{registerPersonalErrors.dateOfBirth}</Text> : null}
+
+
+            {/* Blood Type Dropdown (cross-platform) */}
+            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Blood Type</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <BloodTypePicker value={bloodType} onChange={setBloodType} />
+              {bloodType === 'custom' && (
+                <TextInput
+                  style={[styles.input, { flex: 1, marginLeft: 8 }]}
+                  placeholder="Enter blood type"
+                  value={customBloodType}
+                  onChangeText={setCustomBloodType}
+                />
+              )}
+            </View>
+            {healthErrors.bloodType && <Text style={styles.errorText}>{healthErrors.bloodType}</Text>}
+
+            {/* Allergies Chip Input */}
+            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Allergies</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                placeholder="Add allergy"
+                value={allergyInput}
+                onChangeText={setAllergyInput}
+                onSubmitEditing={() => {
+                  if (allergyInput.trim() && !allergies.includes(allergyInput.trim())) {
+                    setAllergies([...allergies, allergyInput.trim()]);
+                    setAllergyInput('');
+                  }
+                }}
+                returnKeyType="done"
+              />
+              <Pressable
+                style={{ marginLeft: 8, backgroundColor: colors.primary, borderRadius: 999, padding: 8 }}
+                onPress={() => {
+                  if (allergyInput.trim() && !allergies.includes(allergyInput.trim())) {
+                    setAllergies([...allergies, allergyInput.trim()]);
+                    setAllergyInput('');
+                  }
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>+</Text>
+              </Pressable>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 }}>
+              {allergies.map((a, i) => (
+                <View key={a + i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#E5E7EB', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginRight: 6, marginBottom: 4 }}>
+                  <Text style={{ color: '#222', fontSize: 15, marginRight: 4 }}>{a}</Text>
+                  <Pressable onPress={() => setAllergies(allergies.filter((_, idx) => idx !== i))}>
+                    <Text style={{ color: '#EF4444', fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>×</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+            {healthErrors.allergies && <Text style={styles.errorText}>{healthErrors.allergies}</Text>}
+
+            {/* Medical Conditions Chip Input */}
+            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Medical Conditions</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <TextInput
+                style={[styles.input, { flex: 1 }]}
+                placeholder="Add condition"
+                value={conditionInput}
+                onChangeText={setConditionInput}
+                onSubmitEditing={() => {
+                  if (conditionInput.trim() && !medicalConditions.includes(conditionInput.trim())) {
+                    setMedicalConditions([...medicalConditions, conditionInput.trim()]);
+                    setConditionInput('');
+                  }
+                }}
+                returnKeyType="done"
+              />
+              <Pressable
+                style={{ marginLeft: 8, backgroundColor: colors.primary, borderRadius: 999, padding: 8 }}
+                onPress={() => {
+                  if (conditionInput.trim() && !medicalConditions.includes(conditionInput.trim())) {
+                    setMedicalConditions([...medicalConditions, conditionInput.trim()]);
+                    setConditionInput('');
+                  }
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>+</Text>
+              </Pressable>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 }}>
+              {medicalConditions.map((c, i) => (
+                <View key={c + i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#E5E7EB', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginRight: 6, marginBottom: 4 }}>
+                  <Text style={{ color: '#222', fontSize: 15, marginRight: 4 }}>{c}</Text>
+                  <Pressable onPress={() => setMedicalConditions(medicalConditions.filter((_, idx) => idx !== i))}>
+                    <Text style={{ color: '#EF4444', fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>×</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+            {healthErrors.conditions && <Text style={styles.errorText}>{healthErrors.conditions}</Text>}
+
             <View style={styles.buttonRow}>
               <Pressable
                 style={[styles.buttonSecondary, loading && { opacity: 0.7 }]}
