@@ -45,7 +45,10 @@ export default {
       languageSettings: 'إعدادات اللغة',
       bookAppointmentHint: 'يمكنك حجز مواعيد جديدة من لوحة التحكم الرئيسية.',
       or: 'أو',
-      error: 'خطأ'
+      error: 'خطأ',
+      privacy: 'الخصوصية',
+      saving: 'جارٍ الحفظ...',
+      none: 'لا يوجد'
     },
     auth: {
       signIn: 'تسجيل الدخول إلى حسابك',
@@ -214,7 +217,45 @@ export default {
       policyNumber: 'رقم البوليصة',
       deleteError: 'خطأ في حذف الملف الشخصي',
       primary: 'أساسي',
-      addContact: 'إضافة جهة اتصال'
+      addContact: 'إضافة جهة اتصال',
+      confirmLogoutTitle: 'تأكيد تسجيل الخروج',
+      confirmLogoutMessage: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+      medicalId: 'المعرف الطبي',
+      phoneDigitsPlaceholder: 'الهاتف (8 أرقام)',
+      relationship: 'العلاقة',
+      addEmergencyContact: 'إضافة جهة اتصال طوارئ',
+      enterBloodType: 'أدخل فصيلة الدم',
+      addAllergyPrompt: 'أضف حساسية...',
+      enterAllergy: 'أدخل حساسية',
+      addConditionPrompt: 'أضف حالة...',
+      enterCondition: 'أدخل حالة',
+      addMedicationPrompt: 'أضف دواء',
+      ice: 'جهة اتصال طوارئ',
+      allergyOptions: {
+        penicillin: 'البنسلين',
+        sulfaDrugs: 'أدوية السلفا',
+        aspirin: 'الأسبرين',
+        peanuts: 'الفول السوداني',
+        shellfish: 'المحار',
+        latex: 'اللاتكس',
+        eggs: 'البيض',
+        milk: 'الحليب',
+        other: 'أخرى (اكتب بالأسفل)'
+      },
+      conditionOptions: {
+        diabetes: 'السكري',
+        hypertension: 'ارتفاع ضغط الدم',
+        asthma: 'الربو',
+        heartDisease: 'مرض القلب',
+        kidneyDisease: 'مرض الكلى',
+        liverDisease: 'مرض الكبد',
+        epilepsy: 'الصرع',
+        other: 'أخرى (اكتب بالأسفل)'
+      },
+      insurance: 'التأمين',
+      provider: 'المزود',
+      providerWithValue: 'المزود: {{provider}}',
+      noInsuranceInfo: 'لا توجد معلومات تأمين.'
     },
     appointments: {
       bookWith: 'حجز موعد مع',
@@ -346,7 +387,15 @@ export default {
       noQrCodeFound: 'لم يتم العثور على رمز QR في الصورة المحملة. يرجى تجربة صورة أخرى.',
       genericError: 'حدث خطأ. يرجى المحاولة مرة أخرى.',
       networkError: 'خطأ في الشبكة. يرجى التحقق من اتصالك.',
-      serverError: 'خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقًا.'
+      serverError: 'خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقًا.',
+      fullNameRequired: 'الاسم الكامل مطلوب.',
+      phoneInvalid: 'يجب أن تتكون أرقام موريتانيا من 8 أرقام وتبدأ بـ 2 أو 3 أو 4.',
+      bloodTypeInvalid: 'يجب أن تكون فصيلة الدم A+ أو A- أو B+ أو B- أو AB+ أو AB- أو O+ أو O-.',
+      providerShort: 'اسم المزود قصير جدًا.',
+      policyShort: 'رقم البوليصة قصير جدًا.',
+      saveError: 'فشل حفظ الملف الشخصي.',
+      logoutError: 'فشل تسجيل الخروج.',
+      userIdMissing: 'معرّف المستخدم مفقود.'
     }
   }
 };
