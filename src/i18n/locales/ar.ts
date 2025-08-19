@@ -185,7 +185,10 @@ export default {
       settings: 'الإعدادات',
       basicInfo: 'المعلومات الأساسية',
       allergies: 'الحساسية',
-      conditions: 'الحالات الطبية',
+      conditions: {
+        label: 'الحالات الطبية',
+        other: 'أخرى (اكتب بالأسفل)',
+      },
       medications: 'الأدوية',
       addAllergy: 'إضافة حساسية',
       addCondition: 'إضافة حالة',
