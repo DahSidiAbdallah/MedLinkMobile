@@ -1,7 +1,20 @@
+
 import { initializeApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuth, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+
+// Only import these in native environments
+let getReactNativePersistence: any = null;
+let ReactNativeAsyncStorage: any = null;
+const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+if (!isWeb) {
+  try {
+    getReactNativePersistence = require('firebase/auth/react-native').getReactNativePersistence;
+    ReactNativeAsyncStorage = require('@react-native-async-storage/async-storage').default;
+  } catch (e) {
+    // Module not found: will use getAuth for Expo Go/web environments
+  }
+}
 
 const firebaseConfig = {
   apiKey: "AIzaSyC_WM7fG6nIvv-7PQimBZbNgPgdnIsv_ww",
@@ -14,10 +27,13 @@ const firebaseConfig = {
 
 
 
+
 const app = initializeApp(firebaseConfig);
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-});
+const auth = (!isWeb && getReactNativePersistence && ReactNativeAsyncStorage)
+  ? initializeAuth(app, {
+      persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+    })
+  : getAuth(app);
 const db = getFirestore(app);
 
 export { app, auth, db };
