@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Image, Modal, ActivityIndicator, ScrollView, Linking } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image, Modal, ActivityIndicator, ScrollView, Linking, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchUserProfile, type Profile } from '../core/userProfile';
 import { facilities } from '../data';
 import type { Facility } from '../types';
@@ -59,8 +60,9 @@ export default function Dashboard({ navigation }: any) {
   }, [subscribe, refresh]);
 
   return (
-    <LinearGradient colors={["#EEF4FF", "#FFFFFF"]} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF4FF' }} edges={['top', 'left', 'right']}>
+      <LinearGradient colors={["#EEF4FF", "#FFFFFF"]} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: Platform.OS === 'ios' ? 32 : 16 }}>
         <View style={styles.dashboardHeader}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Profile">
@@ -245,7 +247,9 @@ export default function Dashboard({ navigation }: any) {
           </View>
         </Modal>
       </ScrollView>
-    </LinearGradient>
+        </ScrollView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 

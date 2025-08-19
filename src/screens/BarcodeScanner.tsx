@@ -499,28 +499,54 @@ const BarcodeScanner: React.FC = () => {
                   <Text>{verification.label.adverse_reactions}</Text>
                 </View>
               )}
-              {verification.labelInfo && (
+              {/* Show openFDA info if available, else webscraper info, or both if both exist */}
+              {(verification.labelInfo || verification.webscraperInfo) && (
                 <View style={{ marginTop: 12, backgroundColor: '#f3f4f6', borderRadius: 8, padding: 10 }}>
-                  {verification.labelInfo.indications && (
+                  {/* openFDA info */}
+                  {verification.labelInfo && (
                     <>
                       <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage (openFDA)</Text>
-                      <Text style={{ color: colors.text }}>{verification.labelInfo.indications}</Text>
-                    </>
-                  )}
-                  {verification.labelInfo.dosage && (
-                    <>
+                      <Text style={{ color: colors.text }}>{verification.labelInfo.indications || 'N/A'}</Text>
                       <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Dosage & Administration (openFDA)</Text>
-                      <Text style={{ color: colors.text }}>{verification.labelInfo.dosage}</Text>
-                    </>
-                  )}
-                  {verification.labelInfo.sideEffects && (
-                    <>
+                      <Text style={{ color: colors.text }}>{verification.labelInfo.dosage || 'N/A'}</Text>
                       <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Adverse Reactions (openFDA)</Text>
-                      <Text style={{ color: colors.text }}>{verification.labelInfo.sideEffects}</Text>
+                      <Text style={{ color: colors.text }}>{verification.labelInfo.sideEffects || 'N/A'}</Text>
                     </>
                   )}
-                  {!verification.labelInfo.indications && !verification.labelInfo.dosage && !verification.labelInfo.sideEffects && (
-                    <Text style={{ color: colors.muted }}>No drug information found from openFDA.</Text>
+                  {/* webscraper info (show if openFDA missing or to supplement) */}
+                  {verification.webscraperInfo && (
+                    <View style={{ marginTop: verification.labelInfo ? 16 : 0 }}>
+                      <Text style={{ fontWeight: 'bold', color: colors.accent }}>Drug Info (Webscraper)</Text>
+                      {verification.webscraperInfo.indications && (
+                        <>
+                          <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage</Text>
+                          <Text style={{ color: colors.text }}>{verification.webscraperInfo.indications}</Text>
+                        </>
+                      )}
+                      {verification.webscraperInfo.dosage && (
+                        <>
+                          <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Dosage & Administration</Text>
+                          <Text style={{ color: colors.text }}>{verification.webscraperInfo.dosage}</Text>
+                        </>
+                      )}
+                      {verification.webscraperInfo.sideEffects && (
+                        <>
+                          <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Adverse Reactions</Text>
+                          <Text style={{ color: colors.text }}>{verification.webscraperInfo.sideEffects}</Text>
+                        </>
+                      )}
+                      {/* Fallback: show all fields if no standard keys */}
+                      {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects && (
+                        <Text style={{ color: colors.muted }}>No standard drug info fields found from webscraper. Raw data:</Text>
+                      )}
+                      {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects && (
+                        <Text style={{ color: colors.text, fontSize: 13 }}>{JSON.stringify(verification.webscraperInfo, null, 2)}</Text>
+                      )}
+                    </View>
+                  )}
+                  {/* If neither source yields info, show fallback */}
+                  {!verification.labelInfo && !verification.webscraperInfo && (
+                    <Text style={{ color: colors.muted }}>No drug information found from openFDA or webscraper.</Text>
                   )}
                 </View>
               )}
