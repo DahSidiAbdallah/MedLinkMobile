@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+
+import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -21,6 +23,7 @@ import SplashScreen from './SplashScreen';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
 import { RemindersProvider } from './src/hooks/RemindersContext';
+import { NotificationsProvider } from './src/notifications/NotificationsContext';
 
 
 const Tab = createBottomTabNavigator();
@@ -38,7 +41,7 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
         <MaterialCommunityIcons
           name="barcode-scan"
           size={size + 10}
-          color={'#fff'}
+          color="#fff"
         />
       );
     case 'Clinics':
@@ -113,9 +116,22 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 }
 
 export default function App() {
+  const [appReady, setAppReady] = useState(false);
+
   const [showSplash, setShowSplash] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      await Font.loadAsync({
+        ...Ionicons.font,
+        ...MaterialCommunityIcons.font,
+      });
+      setShowSplash(false);
+    }
+    prepare();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -142,31 +158,33 @@ export default function App() {
   }
 
   return (
-  <RemindersProvider>
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
-          {() => (
-            <Tab.Navigator
-              initialRouteName="Dashboard"
-              tabBar={props => <CustomTabBar {...props} />}
-              screenOptions={{
-                headerShown: false,
-              }}
-            >
-              <Tab.Screen name="Dashboard" component={Dashboard} />
-              <Tab.Screen name="Reminders" component={Reminders} />
-              <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
-              <Tab.Screen name="Clinics" component={Clinics} />
-              <Tab.Screen name="UserProfile">
-                {props => <UserProfile {...props} onLogout={() => setUser(null)} />}
-              </Tab.Screen>
-            </Tab.Navigator>
-          )}
-        </Stack.Screen>
-        <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  </RemindersProvider>
+    <RemindersProvider>
+      <NotificationsProvider>
+  <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
+              {() => (
+                <Tab.Navigator
+                  initialRouteName="Dashboard"
+                  tabBar={props => <CustomTabBar {...props} />}
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                >
+                  <Tab.Screen name="Dashboard" component={Dashboard} />
+                  <Tab.Screen name="Reminders" component={Reminders} />
+                  <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
+                  <Tab.Screen name="Clinics" component={Clinics} />
+                  <Tab.Screen name="UserProfile">
+                    {props => <UserProfile {...props} onLogout={() => setUser(null)} />}
+                  </Tab.Screen>
+                </Tab.Navigator>
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </NotificationsProvider>
+    </RemindersProvider>
   );
 }

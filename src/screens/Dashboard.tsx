@@ -12,6 +12,8 @@ function sortByDistance(facilities: Facility[]): Facility[] {
   });
 }
 import { useReminders } from '../hooks/useReminders';
+import NotificationBell from '../notifications/NotificationBell';
+import NotificationsSheet from '../notifications/NotificationsSheet';
 const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 // Expo’s gradient works on web, iOS, and Android
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,6 +24,7 @@ import { colors, spacing, type, shadow } from '../theme';
 export default function Dashboard({ navigation }: any) {
   const [profileModal, setProfileModal] = useState(false);
   const [urgentCareModal, setUrgentCareModal] = useState(false);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
@@ -55,7 +58,8 @@ export default function Dashboard({ navigation }: any) {
                 style={styles.avatar}
               />
             </Pressable>
-            <Pressable accessibilityLabel="Notifications" style={styles.bell}><Text>🔔</Text></Pressable>
+            <NotificationBell onPress={() => setNotificationsVisible(true)} />
+  <NotificationsSheet visible={notificationsVisible} onClose={() => setNotificationsVisible(false)} />
           </View>
           <Text style={[type.h1, { marginTop: 18 }]}>Welcome{profile && profile.name ? `, ${profile.name}` : ''}</Text>
           <Text style={[type.meta, { marginBottom: 18 }]}>How is it going today?</Text>
