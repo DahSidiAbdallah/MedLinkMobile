@@ -185,7 +185,7 @@ export default {
       settings: 'Paramètres',
       basicInfo: 'Informations de base',
       allergies: 'Allergies',
-      conditions: 'Conditions médicales',
+  conditions: 'Conditions médicales',
       medications: 'Médicaments',
       addAllergy: 'Ajouter une allergie',
       addCondition: 'Ajouter une condition',
@@ -243,14 +243,14 @@ export default {
         other: 'Autre (saisir ci-dessous)'
       },
       conditionOptions: {
-        diabetes: 'Diabète',
-        hypertension: 'Hypertension',
-        asthma: 'Asthme',
-        heartDisease: 'Maladie cardiaque',
-        kidneyDisease: 'Maladie rénale',
-        liverDisease: 'Maladie du foie',
-        epilepsy: 'Épilepsie',
-        other: 'Autre (saisir ci-dessous)'
+  diabetes: 'Diabète',
+  hypertension: 'Hypertension',
+  asthma: 'Asthme',
+  heartDisease: 'Maladie cardiaque',
+  kidneyDisease: 'Maladie rénale',
+  liverDisease: 'Maladie du foie',
+  epilepsy: 'Épilepsie',
+  other: 'Autre (à saisir ci-dessous)'
       },
       insurance: 'Assurance',
       provider: 'Fournisseur',
@@ -274,10 +274,7 @@ export default {
         confirmed: 'Confirmé',
         completed: 'Terminé',
         cancelled: 'Annulé'
-      }
-    },
-    doctors: {
-      experience: '{{years}} ans d\'expérience',
+  },
       languages: 'Langues',
       insurance: 'Assurance',
       availableSlots: 'Créneaux disponibles'
