@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchUserProfile, Profile } from '../core/userProfile';
 import { FlatList, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors, spacing } from '../theme';
@@ -143,6 +145,7 @@ type ScanHistoryItem = {
   type: string;
   verification: VerificationResult | null;
   error: string | null;
+  risk?: string | null;
 };
 
 const getUserMessage = (verification: VerificationResult | null, error: string | null): string => {
@@ -218,6 +221,8 @@ function parseCodeType(data: string, type: string) {
   return { codeType: 'Unknown', parsed: data };
 }
 
+const HISTORY_KEY = 'scan_history_v1';
+
 const BarcodeScanner: React.FC = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -226,12 +231,31 @@ const BarcodeScanner: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ScanHistoryItem[]>([]);
-  const [filter, setFilter] = useState<'all' | 'successful' | 'unsuccessful'>('all');
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [riskWarning, setRiskWarning] = useState<string | null>(null);
+  const [lastRisk, setLastRisk] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'successful' | 'unsuccessful' | 'risk'>('all');
 
   useEffect(() => {
     if (!permission?.granted) {
       requestPermission();
     }
+    // Load user profile for cross-checking
+    async function loadProfile() {
+      const userProfile = await fetchUserProfile();
+      setProfile(userProfile);
+    }
+    // Load scan history from AsyncStorage
+    async function loadHistory() {
+      try {
+        const raw = await AsyncStorage.getItem(HISTORY_KEY);
+        if (raw) {
+          setHistory(JSON.parse(raw));
+        }
+      } catch {}
+    }
+    loadProfile();
+    loadHistory();
   }, [permission]);
 
   const handleBarCodeScanned = async ({ data, type }: { data: string; type: string }) => {
@@ -240,26 +264,64 @@ const BarcodeScanner: React.FC = () => {
     setLoading(true);
     setError(null);
     setVerification(null);
+    setRiskWarning(null);
+    setLastRisk(null);
     let result: VerificationResult | null = null;
     let err: string | null = null;
+    let risk = '';
     try {
       result = await verifyScannedCode(data, type);
       setVerification(result);
+      // Cross-check with user profile for risks
+      if (profile && result && result.label) {
+        const medName = (result.label.brand_name || result.label.generic_name || '').toLowerCase();
+        // Check allergies
+        if (profile.allergies && profile.allergies.length > 0) {
+          for (const allergy of profile.allergies) {
+            if (medName.includes(allergy.toLowerCase())) {
+              risk += `Allergy risk: ${allergy}.\n`;
+            }
+          }
+        }
+        // Check medical conditions (simple keyword match)
+        if (profile.medical_conditions && profile.medical_conditions.length > 0) {
+          for (const cond of profile.medical_conditions) {
+            if (result.label.contraindications && result.label.contraindications.toLowerCase().includes(cond.toLowerCase())) {
+              risk += `Condition risk: ${cond}.\n`;
+            }
+          }
+        }
+        // Check current medications (simple keyword match)
+        if (profile.medications && profile.medications.length > 0) {
+          for (const med of profile.medications) {
+            if (result.label.drug_interactions && result.label.drug_interactions.toLowerCase().includes(med.toLowerCase())) {
+              risk += `Interaction risk: ${med}.\n`;
+            }
+          }
+        }
+        if (risk) {
+          setRiskWarning(risk.trim());
+          setLastRisk(risk.trim());
+        }
+      }
     } catch (e) {
       err = 'Verification failed.';
       setError(err);
     } finally {
       setLoading(false);
-      setHistory(prev => [
-        {
-          timestamp: Date.now(),
-          data,
-          type,
-          verification: result,
-          error: err,
-        },
-        ...prev
-      ]);
+      const newItem = {
+        timestamp: Date.now(),
+        data,
+        type,
+        verification: result,
+        error: err,
+        risk: risk.trim() || null,
+      };
+      setHistory(prev => {
+        const updated = [newItem, ...prev];
+        AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {});
+        return updated;
+      });
     }
   };
 
@@ -272,6 +334,7 @@ const BarcodeScanner: React.FC = () => {
     if (filter === 'all') return true;
     if (filter === 'successful') return item.verification && (item.verification.verified || item.verification.recall || item.verification.expired);
     if (filter === 'unsuccessful') return !item.verification || (!item.verification.verified && !item.verification.recall && !item.verification.expired);
+    if (filter === 'risk') return item.risk && item.risk.length > 0;
     return true;
   });
 
@@ -293,6 +356,7 @@ const BarcodeScanner: React.FC = () => {
                 <TouchableOpacity onPress={() => setFilter('all')} style={[styles.filterBtn, filter === 'all' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>All</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => setFilter('successful')} style={[styles.filterBtn, filter === 'successful' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Successful</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => setFilter('unsuccessful')} style={[styles.filterBtn, filter === 'unsuccessful' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Unsuccessful</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setFilter('risk')} style={[styles.filterBtn, filter === 'risk' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Risk Matched</Text></TouchableOpacity>
               </View>
               <FlatList
                 data={filteredHistory}
@@ -302,6 +366,9 @@ const BarcodeScanner: React.FC = () => {
                     <Text style={styles.historyType}>{item.type}</Text>
                     <Text style={styles.historyData}>{item.data}</Text>
                     <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error)}</Text>
+                    {item.risk && item.risk.length > 0 && (
+                      <Text style={{ color: '#b45309', fontSize: 13, marginTop: 2 }}>⚠️ {item.risk}</Text>
+                    )}
                     <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
                   </View>
                 )}
@@ -320,6 +387,12 @@ const BarcodeScanner: React.FC = () => {
           <Text style={styles.resultValue}>{scanData.data}</Text>
           {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
           <Text style={styles.userMessage}>{getUserMessage(verification, error)}</Text>
+          {riskWarning && (
+            <View style={{ marginTop: 16, alignSelf: 'stretch', backgroundColor: '#fffbe6', borderColor: '#f59e42', borderWidth: 1, borderRadius: 8, padding: 12 }}>
+              <Text style={{ color: '#b45309', fontWeight: 'bold' }}>⚠️ Medication Risk</Text>
+              <Text style={{ color: '#b45309', marginTop: 4 }}>{riskWarning}</Text>
+            </View>
+          )}
           {verification && (
             <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
               {verification.verified && <Text style={{ color: 'green' }}>Authenticity verified!</Text>}
