@@ -158,10 +158,11 @@ import pkg from '../../package.json';
 export default function UserProfile({ navigation, onLogout }: UserProfileProps) {
   const { t, i18n } = useTranslation();
   const [langModal, setLangModal] = useState(false);
+  const [langRefresh, setLangRefresh] = useState(0);
   const languages = [
-  { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
-  { code: 'fr', label: t('languages.french', 'French'), flag: require('../assets/fr.svg') },
-  { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
+    { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
+    { code: 'fr', label: t('languages.french', 'French'), flag: require('../assets/fr.svg') },
+    { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
   ];
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -316,7 +317,15 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
           <View style={modalStyles.content}>
             <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }}>{t('common.languageSettings', 'Language Settings')}</Text>
             {languages.map(lang => (
-              <Pressable key={lang.code} onPress={() => { i18n.changeLanguage(lang.code); setLangModal(false); }} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, borderRadius: 8, backgroundColor: i18n.language === lang.code ? '#F3F4F6' : 'transparent', marginBottom: 4 }}>
+              <Pressable
+                key={lang.code}
+                onPress={async () => {
+                  await i18n.changeLanguage(lang.code);
+                  setLangModal(false);
+                  setLangRefresh(r => r + 1); // force re-render
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, borderRadius: 8, backgroundColor: i18n.language === lang.code ? '#F3F4F6' : 'transparent', marginBottom: 4 }}
+              >
                 <RNImage source={lang.flag} style={{ width: 28, height: 20, borderRadius: 4, marginRight: 10 }} resizeMode="contain" />
                 <Text style={{ color: i18n.language === lang.code ? colors.primary : '#222', fontWeight: i18n.language === lang.code ? 'bold' : 'normal', fontSize: 16 }}>{lang.label}</Text>
               </Pressable>
@@ -327,7 +336,7 @@ export default function UserProfile({ navigation, onLogout }: UserProfileProps) 
           </View>
         </View>
       </Modal>
-      <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
+  <ScrollView key={langRefresh} style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
         <Card style={styles.headerCard}>
           <Image source={require('../assets/avatar-placeholder.png')} style={styles.avatar} />
           <Text style={[type.h2, { marginTop: spacing.sm }]}>{profile.name}</Text>

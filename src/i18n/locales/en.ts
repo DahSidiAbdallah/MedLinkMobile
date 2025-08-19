@@ -139,10 +139,15 @@ export default {
       noProfileData: 'No profile data available',
       insuranceInfo: 'Insurance Information',
       insuranceProvider: 'Insurance Provider',
-      policyNumber: 'Policy Number',
+      
       deleteError: 'Error deleting profile',
       primary: 'Primary',
-      addContact: 'Add Contact'
+      addContact: 'Add Contact',
+  insurance: 'Insurance',
+  provider: 'Provider',
+  providerWithValue: 'Provider: {{provider}}',
+  policyNumber: 'Policy #',
+  noInsuranceInfo: 'No insurance info.',
     },
     drugs: {
       title: 'Drug Information',
@@ -261,7 +266,13 @@ export default {
       noQrCodeFound: 'No QR code found in the uploaded image. Please try another image.',
       genericError: 'An error occurred. Please try again.',
       networkError: 'Network error. Please check your connection.',
-      serverError: 'Server error. Please try again later.'
+      serverError: 'Server error. Please try again later.',
+  fullNameRequired: 'Full name is required.',
+  phoneInvalid: 'Mauritania numbers must be 8 digits, start with 2, 3, or 4.',
+  providerShort: 'Provider name is too short.',
+  policyShort: 'Policy number is too short.',
+  saveError: 'Failed to save profile.',
+  logoutError: 'Failed to log out.',
     },
     filters: {
       title: 'Filters',
