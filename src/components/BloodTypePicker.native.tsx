@@ -1,8 +1,13 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-const { Picker } = require('@react-native-picker/picker');
+import { Picker } from '@react-native-picker/picker';
 
-export default function BloodTypePicker({ value, onChange }) {
+type Props = {
+  value: string;
+  onChange: (itemValue: string, itemIndex: number) => void;
+};
+
+export default function BloodTypePicker({ value, onChange }: Props) {
   return (
     <View style={styles.pickerWrapper}>
       <Picker
