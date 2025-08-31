@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Image, Modal, ActivityIndicator, ScrollView, Linking, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator, ScrollView, Linking, Platform, Image as RNImage } from 'react-native';
+import SkeletonImage from '../components/SkeletonImage';
+import { useLoading } from '../hooks/LoadingContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchUserProfile, type Profile } from '../core/userProfile';
 import { facilities } from '../data';
@@ -28,28 +30,37 @@ export default function Dashboard({ navigation }: any) {
   const [urgentCareModal, setUrgentCareModal] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const { startLoading, finishLoading } = useLoading();
+  const _prefetched = useRef(new Set<string>());
   const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
 
-  // Always load profile on mount for welcome message
+  // Load profile on mount and when modal opens — use centralized loading
   useEffect(() => {
-    setProfileLoading(true);
-    fetchUserProfile().then(p => {
-      setProfile(p);
-      setProfileLoading(false);
-    });
-  }, []);
-
-  // Also refresh profile when modal is opened
-  useEffect(() => {
-    if (profileModal) {
-      setProfileLoading(true);
-      fetchUserProfile().then(p => {
+    let mounted = true;
+    const key = 'dashboard-profile';
+    startLoading(key);
+    (async () => {
+      try {
+        const p = await fetchUserProfile();
+        if (!mounted) return;
         setProfile(p);
-        setProfileLoading(false);
-      });
-    }
-  }, [profileModal]);
+        // prefetch avatar if present
+        const uri = (p as any)?.image || (p as any)?.avatar;
+        if (uri && !_prefetched.current.has(uri)) {
+          const imgKey = 'profile-image';
+          startLoading(imgKey);
+          try {
+            await RNImage.prefetch(uri);
+            _prefetched.current.add(uri);
+          } catch (e) {}
+          finally { finishLoading(imgKey); }
+        }
+      } finally {
+        finishLoading(key);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [profileModal, startLoading, finishLoading]);
 
   // Subscribe to reminder changes and refresh reminders automatically
   useEffect(() => {
@@ -66,10 +77,7 @@ export default function Dashboard({ navigation }: any) {
         <View style={styles.dashboardHeader}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Profile">
-              <Image
-                source={AVATAR_PLACEHOLDER}
-                style={styles.avatar}
-              />
+              <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
             </Pressable>
             <NotificationBell onPress={() => setNotificationsVisible(true)} />
   <NotificationsSheet visible={notificationsVisible} onClose={() => setNotificationsVisible(false)} />
@@ -186,13 +194,8 @@ export default function Dashboard({ navigation }: any) {
                   </Pressable>
                 </View>
                 <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-                  <Image
-                    source={AVATAR_PLACEHOLDER}
-                    style={styles.profileAvatar}
-                  />
-                  {profileLoading ? (
-                    <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />
-                  ) : profile ? (
+                  <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.profileAvatar} resizeMode="cover" />
+                  {profile ? (
                     <>
                       <Text style={{ fontWeight: '700', fontSize: 22, color: colors.text, marginTop: 8 }}>{profile.name}</Text>
                       <Text style={{ color: colors.muted }}>{profile.email}</Text>
@@ -200,7 +203,7 @@ export default function Dashboard({ navigation }: any) {
                       <Text style={{ color: colors.muted }}>{profile.date_of_birth}</Text>
                     </>
                   ) : (
-                    <Text style={{ color: colors.muted, marginTop: 12 }}>No profile found</Text>
+                    <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />
                   )}
                 </View>
                 {/* Allergies Section */}

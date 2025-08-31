@@ -77,3 +77,23 @@ CLI flags override the YAML.
 - **Rendering**: If `render.use_js: true` and no `url_patterns` are set, all pages render via Playwright (slower). If you set `url_patterns`, only matching URLs render.
 - **Caching**: speeds up re-runs and avoids hammering servers. Use `--cache-expire` or YAML `expire_after` to control freshness.
 - For extremely dynamic sites, you may need site-specific waits (e.g., waiting for a selector). That can be added per site if needed.
+
+## Docker (run full autoscrape with system deps)
+
+To avoid installing native build toolchains on Windows, you can run the full autoscrape stack in Docker. The included `Dockerfile` builds libxml2/libxslt and Playwright browsers so the service is self-contained.
+
+Build and run:
+
+```bash
+cd autoscrape
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+The Flask wrapper will be exposed on port 5001 by default:
+
+```bash
+curl -i "http://localhost:5001/scrape?code=68210-0800"
+```
+
+If you run the app on a phone, set `SCRAPER_BASE_URL` to `http://<your-machine-ip>:5001` so the phone can reach the container.

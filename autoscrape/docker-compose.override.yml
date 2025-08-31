@@ -1,0 +1,5 @@
+version: '3.8'
+services:
+  autoscrape:
+    volumes:
+      - ./autoscrape:/app/autoscrape:ro
