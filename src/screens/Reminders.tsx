@@ -92,7 +92,6 @@ export default function Reminders() {
       <ScrollView
         contentContainerStyle={{
           padding: spacing.xl,
-          gap: spacing.lg,
           paddingBottom: 96, // extra space for navbar and FAB
         }}
         keyboardShouldPersistTaps="handled"
@@ -196,7 +195,7 @@ export default function Reminders() {
               onChangeText={v => setForm(f => ({ ...f, description: v }))}
             />
             {formErrors.general && <Text style={styles.error}>{formErrors.general}</Text>}
-            <View style={{ flexDirection: 'row', marginTop: spacing.md }}>
+            <View style={{ flexDirection: 'row', marginTop: spacing.md, gap: 8 }}>
               <Pressable
                 style={[styles.modalBtn, { backgroundColor: colors.primary, flex: 1 }]}
                 onPress={handleCreateReminder}
@@ -205,7 +204,7 @@ export default function Reminders() {
                 <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{creating ? 'Saving...' : 'Save'}</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalBtn, { backgroundColor: colors.card, flex: 1, marginLeft: 8 }]}
+                style={[styles.modalBtn, { backgroundColor: colors.card, flex: 1 }]}
                 onPress={() => setModalVisible(false)}
                 disabled={creating}
               >

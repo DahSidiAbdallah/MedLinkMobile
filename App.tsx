@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import './src/i18n';
 
 import * as Font from 'expo-font';
@@ -7,11 +7,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Dashboard from './src/screens/Dashboard';
-import DrugInfo from './src/screens/DrugInfo';
 import Reminders from './src/screens/Reminders';
 
 import UserProfile from './src/screens/UserProfile';
@@ -25,6 +24,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
 import { RemindersProvider } from './src/hooks/RemindersContext';
 import { NotificationsProvider } from './src/notifications/NotificationsContext';
+import { LoadingProvider, useLoading } from './src/hooks/LoadingContext';
+import GlobalLoader from './src/components/GlobalLoader';
 
 
 const Tab = createBottomTabNavigator();
@@ -54,15 +55,19 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
   }
 };
 
-function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+function CustomTabBar(props: Readonly<BottomTabBarProps>) {
+  const { state, navigation } = props;
+  const insets = useSafeAreaInsets();
+  const height = 64;
+  const totalHeight = height + insets.bottom;
   return (
-    <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'transparent' }}>
+    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: totalHeight, paddingBottom: insets.bottom, backgroundColor: 'transparent' }} accessibilityElementsHidden={false} importantForAccessibility="no-hide-descendants">
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          height: 64,
+          height,
           backgroundColor: colors.card,
           borderTopWidth: 1,
           borderTopColor: colors.line,
@@ -112,27 +117,57 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
-export default function App() {
-  const [appReady, setAppReady] = useState(false);
 
+export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    async function prepare() {
-      await Font.loadAsync({
-        ...Ionicons.font,
-        ...MaterialCommunityIcons.font,
-      });
-      setShowSplash(false);
-    }
-    prepare();
+    let unsub: any = null;
+    unsub = onAuthStateChanged(auth, () => {
+      // auth state is handled inside AppContent
+    });
+    return () => unsub?.();
   }, []);
+
+  // App content wrapped in LoadingProvider so any screen can register loads
+  return (
+    <SafeAreaProvider>
+      <LoadingProvider>
+        <FontAndSplashLoader />
+        {showSplash ? <SplashScreen onFinish={() => setShowSplash(false)} /> : <AppContent showSplash={showSplash} setShowSplash={setShowSplash} />}
+        <GlobalLoader />
+      </LoadingProvider>
+    </SafeAreaProvider>
+  );
+
+
+// Move FontAndSplashLoader out of App to avoid nested component definition
+function FontAndSplashLoader() {
+  const { startLoading, finishLoading } = useLoading();
+  useEffect(() => {
+    const key = 'fonts';
+    startLoading(key);
+    let mounted = true;
+    Font.loadAsync({
+      ...Ionicons.font,
+      ...MaterialCommunityIcons.font,
+    }).then(() => {
+      if (mounted) {
+        // nothing here — App manages splash state
+      }
+    }).finally(() => finishLoading(key));
+    return () => { mounted = false; };
+  }, [startLoading, finishLoading]);
+  return null;
+}
+
+function AppContent({ showSplash, setShowSplash }: Readonly<{ showSplash: boolean; setShowSplash: (v: boolean) => void }>) {
+  const [user, setUser] = useState<any>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -141,10 +176,6 @@ export default function App() {
     });
     return unsubscribe;
   }, []);
-
-  if (showSplash) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} />;
-  }
 
   if (!authChecked) {
     return (
@@ -161,31 +192,37 @@ export default function App() {
   return (
     <RemindersProvider>
       <NotificationsProvider>
-  <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
-              {() => (
-                <Tab.Navigator
-                  initialRouteName="Dashboard"
-                  tabBar={props => <CustomTabBar {...props} />}
-                  screenOptions={{
-                    headerShown: false,
-                  }}
-                >
-                  <Tab.Screen name="Dashboard" component={Dashboard} />
-                  <Tab.Screen name="Reminders" component={Reminders} />
-                  <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
-                  <Tab.Screen name="Clinics" component={Clinics} />
-                  <Tab.Screen name="UserProfile">
-                    {props => <UserProfile {...props} onLogout={() => setUser(null)} />}
-                  </Tab.Screen>
-                </Tab.Navigator>
-              )}
-            </Stack.Screen>
-            <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
-          </Stack.Navigator>
-        </NavigationContainer>
+  <View style={{ flex: 1 }}>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+              <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </View>
       </NotificationsProvider>
     </RemindersProvider>
   );
+}
+  // AppContent handles authenticated app rendering; the duplicate block was removed to avoid
+  // rendering the app twice which could cause overlays and status-bar issues.
+}
+
+// removed earlier MainTabs variant that accepted onLogout prop; using the simpler MainTabs below
+
+function MainTabs() {
+  return (
+  <Tab.Navigator initialRouteName="Dashboard" tabBar={TabBarRenderer} screenOptions={{ headerShown: false }}>
+      <Tab.Screen name="Dashboard" component={Dashboard} />
+      <Tab.Screen name="Reminders" component={Reminders} />
+      <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
+      <Tab.Screen name="Clinics" component={Clinics} />
+      <Tab.Screen name="UserProfile" component={UserProfile} />
+    </Tab.Navigator>
+  );
+}
+
+// Top-level wrapper so we don't create a new component inline in JSX (avoids lint/runtime issues)
+function TabBarRenderer(props: Readonly<BottomTabBarProps>) {
+  return <CustomTabBar {...props} />;
 }

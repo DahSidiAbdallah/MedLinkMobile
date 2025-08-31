@@ -1,12 +1,14 @@
 
-import React, { useState, useMemo } from 'react';
-import { View, ScrollView, Text, TextInput, Platform, Pressable, Image, Modal, Animated, Easing, Dimensions } from 'react-native';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { View, ScrollView, Text, TextInput, Platform, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage } from 'react-native';
+import SkeletonImage from '../components/SkeletonImage';
 import type { Facility } from '../types';
 import { colors, spacing } from '../theme';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 import { Pill } from '../components/Pill';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
+import { useLoading } from '../hooks/LoadingContext';
 import { SegmentedControl } from '../components/SegmentedControl';
 import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
 
@@ -15,6 +17,26 @@ const FILTERS = ['All', 'Clinic', 'Hospital', 'Pharmacy'];
 
 export default function FacilitiesScreen({ navigation }: any) {
   const { facilities, loading, error } = useFacilities();
+  const { startLoading, finishLoading } = useLoading();
+  const _prefetched = useRef(new Set<string>());
+  const { width } = useWindowDimensions();
+  const listImageWidth = Math.min(140, Math.max(100, Math.floor(width * 0.32)));
+  // Prefetch images for list when facilities update
+  useEffect(() => {
+    if (!facilities || facilities.length === 0) return;
+    const uris = Array.from(new Set(facilities.map(f => f.image).filter(Boolean)));
+    if (uris.length === 0) return;
+    const key = 'clinic-images';
+    startLoading(key);
+    Promise.all(
+      uris.map(uri => {
+        if (_prefetched.current.has(uri)) return Promise.resolve(true);
+        return RNImage.prefetch(uri)
+          .then(() => _prefetched.current.add(uri))
+          .catch(() => false);
+      })
+    ).finally(() => finishLoading(key));
+  }, [facilities]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
   const [openNow, setOpenNow] = useState(false);
@@ -62,6 +84,16 @@ export default function FacilitiesScreen({ navigation }: any) {
       easing: Easing.out(Easing.exp),
       useNativeDriver: true,
     }).start();
+    // Ensure the selected facility image is prefetched (if not already)
+    const uri = fac?.image;
+    if (uri && !_prefetched.current.has(uri)) {
+      const key = `clinic-image-${fac.id}`;
+      startLoading(key);
+      RNImage.prefetch(uri)
+        .then(() => _prefetched.current.add(uri))
+        .catch(() => {})
+        .finally(() => finishLoading(key));
+    }
   };
   const closeFacilityModal = () => {
     Animated.timing(sheetAnim, {
@@ -187,7 +219,7 @@ export default function FacilitiesScreen({ navigation }: any) {
                 {/* Avatar, Name, Specialty */}
                 <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
                   {selectedFacility.image ? (
-                    <Image source={{ uri: selectedFacility.image }} style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 8 }} />
+                    <SkeletonImage source={{ uri: selectedFacility.image }} style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 8 }} resizeMode="cover" />
                   ) : null}
                   <Text style={[{ fontSize: 20, fontWeight: '700', color: colors.text, marginTop: spacing.sm }]}>{selectedFacility.name}</Text>
                   <Text style={{ color: colors.muted }}>{selectedFacility.specialty}</Text>
@@ -224,7 +256,7 @@ export default function FacilitiesScreen({ navigation }: any) {
               {/* Images */}
               {!!fac.image && (
                 <View style={{ marginBottom: 8, borderRadius: 12, overflow: 'hidden', alignSelf: 'flex-start' }}>
-                  <Image source={{ uri: fac.image }} style={{ width: 120, height: 80, borderRadius: 12 }} />
+                  <SkeletonImage source={{ uri: fac.image }} style={{ width: listImageWidth, height: Math.round(listImageWidth * 0.66), borderRadius: 12 }} resizeMode="cover" />
                 </View>
               )}
               {/* Info */}

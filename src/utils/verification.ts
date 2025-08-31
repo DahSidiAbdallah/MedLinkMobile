@@ -5,6 +5,7 @@ import { getRecallByGTINorNDC, getLabelingByGTINorNDC } from './openfda';
 import { fetchDrugLabelByNDC } from './openfdaDrugInfo';
 import { fetchDrugInfoFromScraper } from './webscraperDrugInfo';
 import { findLocalRecall } from './localRecalls';
+import { normalizeGtinTo14, normalizeNdc } from './codeUtils';
 
 import type { DrugLabelInfo } from './openfdaDrugInfo';
 
@@ -51,7 +52,8 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     if (parsed) {
       const expired = parsed.expiry ? parsed.expiry < new Date() : false;
       // Check local recall for GTIN
-      const localRecall = findLocalRecall(parsed.gtin);
+      const canonical = normalizeGtinTo14(parsed.gtin || '');
+      const localRecall = findLocalRecall(canonical || parsed.gtin);
       if (localRecall) {
         return {
           verified: false,
@@ -63,11 +65,12 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
         };
       }
       // Always call both openFDA and webscraper for GTIN/NDC
+      const codeToQuery = canonical || parsed.gtin;
       const [recall, label, labelInfo, webscraperInfo] = await Promise.all([
-        getRecallByGTINorNDC(parsed.gtin),
-        getLabelingByGTINorNDC(parsed.gtin),
-        /^\d{10,11}$/.test(parsed.gtin) ? fetchDrugLabelByNDC(parsed.gtin) : Promise.resolve(null),
-        fetchDrugInfoFromScraper(parsed.gtin)
+        getRecallByGTINorNDC(codeToQuery),
+        getLabelingByGTINorNDC(codeToQuery),
+        /^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null),
+        fetchDrugInfoFromScraper(codeToQuery)
       ]);
       return {
         verified: false, // no authenticity code
@@ -84,7 +87,8 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
 
   // Check NDC codes (UPC/EAN may map to NDC)
   if (/^\d{10,11}$/.test(data)) {
-    const localRecall = findLocalRecall(data);
+    const canonical = normalizeNdc(data || '');
+    const localRecall = findLocalRecall(canonical || data);
     if (localRecall) {
       return {
         verified: false,
@@ -96,11 +100,12 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       };
     }
     // Always call both openFDA and webscraper for NDC
+    const codeToQuery = canonical || data;
     const [recall, label, labelInfo, webscraperInfo] = await Promise.all([
-      getRecallByGTINorNDC(data),
-      getLabelingByGTINorNDC(data),
-      fetchDrugLabelByNDC(data),
-      fetchDrugInfoFromScraper(data)
+      getRecallByGTINorNDC(codeToQuery),
+      getLabelingByGTINorNDC(codeToQuery),
+      fetchDrugLabelByNDC(codeToQuery),
+      fetchDrugInfoFromScraper(codeToQuery)
     ]);
     return {
       verified: false,

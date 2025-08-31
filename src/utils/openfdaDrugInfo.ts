@@ -1,3 +1,5 @@
+import { fetchWithRetries } from './network';
+
 export interface DrugLabelInfo {
   indications?: string;
   dosage?: string;
@@ -8,7 +10,7 @@ export async function fetchDrugLabelByNDC(ndc: string): Promise<DrugLabelInfo | 
   // openFDA expects the NDC without hyphens (10 or 11 digits)
   const url = `https://api.fda.gov/drug/label.json?search=openfda.product_ndc:${ndc}&limit=1`;
   try {
-    const resp = await fetch(url);
+    const resp = await fetchWithRetries(url, undefined, { retries: 2, timeoutMs: 8000 });
     if (!resp.ok) return null;
     const data = await resp.json();
     const result = data.results?.[0];

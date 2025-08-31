@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  autoscrape:
+    build: .
+    container_name: medlink_autoscrape
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
