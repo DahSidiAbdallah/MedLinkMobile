@@ -1,10 +1,12 @@
 
-import React from 'react';
-import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, useWindowDimensions, Image as RNImage } from 'react-native';
 import { colors, spacing, type } from '../theme';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { Pill } from '../components/Pill';
+import SkeletonImage from '../components/SkeletonImage';
+import { useLoading } from '../hooks/LoadingContext';
 
 export default function FacilityDetail() {
   const route = useRoute();
@@ -12,6 +14,22 @@ export default function FacilityDetail() {
   const { id } = route.params as { id: string };
   const { facilities } = useFacilities();
   const fac = facilities.find(f => f.id === id);
+
+  const { width } = useWindowDimensions();
+  const avatarSize = Math.min(96, Math.max(48, Math.floor(width * 0.18)));
+  const _prefetched = useRef(new Set<string>());
+  const { startLoading, finishLoading } = useLoading();
+
+  useEffect(() => {
+    if (fac?.image && !_prefetched.current.has(fac.image)) {
+      const key = `facility-image-${fac.id}`;
+      startLoading(key);
+      RNImage.prefetch(fac.image).catch(() => null).finally(() => {
+  _prefetched.current.add(fac.image);
+        finishLoading(key);
+      });
+    }
+  }, [fac, finishLoading, startLoading]);
 
   if (!fac) {
     return <Text style={{ marginTop: spacing.xl, textAlign: 'center' }}>Facility not found.</Text>;
@@ -29,7 +47,7 @@ export default function FacilityDetail() {
         </View>
         {/* Avatar, Name, Specialty */}
         <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-          <Image source={{ uri: fac.image }} style={styles.avatar} />
+          <SkeletonImage source={{ uri: fac.image }} style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]} />
           <Text style={[type.h2, { marginTop: spacing.sm }]}>{fac.name}</Text>
           <Text style={{ color: colors.muted }}>{fac.specialty}</Text>
         </View>

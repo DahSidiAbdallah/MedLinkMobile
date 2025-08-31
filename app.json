@@ -7,7 +7,7 @@
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-  "image": "./src/assets/logo.png",
+      "image": "./src/assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-          "foregroundImage": "./src/assets/logo.png",
+        "foregroundImage": "./src/assets/logo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -36,8 +36,8 @@
           "cameraPermission": "Allow MedLinkMobile to access your camera",
           "microphonePermission": "Allow MedLinkMobile to access your microphone"
         }
-      ]
-      
+      ],
+      "expo-barcode-scanner"
     ]
   }
 }
