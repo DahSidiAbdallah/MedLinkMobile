@@ -1,0 +1,9 @@
+export const isValidEAN13 = (code: string): boolean => {
+  if (!/^\d{13}$/.test(code)) return false;
+  const digits = code.split('').map(Number);
+  const sum = digits.slice(0, 12).reduce((acc, d, i) => acc + d * (i % 2 ? 3 : 1), 0);
+  const check = (10 - (sum % 10)) % 10;
+  return check === digits[12];
+};
+
+export default isValidEAN13;

@@ -1,0 +1,22 @@
+name: Record check-meds fixtures
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  record-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install deps
+        run: npm ci
+      - name: Run check-meds in record mode
+        env:
+          RECORD_FIXTURES: '1'
+        run: node ./scripts/check-meds.js
+      - name: Show fixtures
+        run: ls -la tests/fixtures/check-meds || true
