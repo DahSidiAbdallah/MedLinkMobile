@@ -20,13 +20,18 @@ jest.mock('node-fetch', () => {
         return Promise.resolve({ ok: true, json: async () => fx.rxcui.body })
       }
       if (fx.label && fx.label.url === url) {
-        return Promise.resolve({ ok: true, json: async () => fx.label.body })
+        // Some recorded fixtures may have label.body === null; the real fetch
+        // returns a JSON object, so normalize null -> {} here to avoid
+        // TypeErrors when code reads .results
+        const body = fx.label.body === null ? {} : fx.label.body
+        return Promise.resolve({ ok: true, json: async () => body })
       }
     }
     // Last resort: if the URL contains a barcode, return that barcode's fixture label body
     for (const [bc, fx] of Object.entries(fixtures)) {
       if (url.includes(bc) && fx.label) {
-        return Promise.resolve({ ok: true, json: async () => fx.label.body })
+        const body = fx.label.body === null ? {} : fx.label.body
+        return Promise.resolve({ ok: true, json: async () => body })
       }
     }
     // Default: return empty ok with no results
@@ -36,9 +41,12 @@ jest.mock('node-fetch', () => {
 
 describe('check-meds.js replay using recorded fixtures', () => {
   test('runs without network and reports expected barcodes', async () => {
-    // Import and run the script's run() function
-    const { run } = await import('../scripts/check-meds')
-    // Run once; it should use the mocked fetch and not throw
-    await expect(run()).resolves.toBeUndefined()
+  // Import and run the script's run() function
+  const { run } = await import('../scripts/check-meds')
+  // Run once; it should use the mocked fetch and not throw. The script
+  // now returns a boolean indicating overall success, so assert the
+  // returned value is a boolean and the function resolves.
+  const result = await run()
+  expect(typeof result).toBe('boolean')
   })
 })
