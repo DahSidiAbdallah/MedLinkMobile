@@ -8,7 +8,7 @@
   },
   "label": {
     "url": "https://api.fda.gov/drug/label.json?search=openfda.brand_name%3A%22Doliprane%22&limit=1",
-    "body": null,
+    "body": {},
     "label": null
   }
 }

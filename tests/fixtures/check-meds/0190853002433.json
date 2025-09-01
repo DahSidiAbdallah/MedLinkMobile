@@ -1,0 +1,279 @@
+{
+  "rxcui": {
+    "url": null,
+    "body": null,
+    "rxcui": null
+  },
+  "label": {
+    "url": "https://api.fda.gov/drug/label.json?search=0190853002433&limit=1",
+    "body": {
+      "meta": {
+        "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+        "terms": "https://open.fda.gov/terms/",
+        "license": "https://open.fda.gov/license/",
+        "last_updated": "2025-09-01",
+        "results": {
+          "skip": 0,
+          "limit": 1,
+          "total": 1
+        }
+      },
+      "results": [
+        {
+          "spl_product_data_elements": [
+            "PROPOLIS NASAL PLUS PLUS NASAL EUCALYPTUS OIL OXYMETAZOLINE HYDROCHLORIDE OXYMETAZOLINE WATER SEA SALT PROPOLIS WAX GLYCERIN PROPOLIS NASAL NASAL EUCALYPTUS OIL SEA SALT GLYCERIN PROPOLIS WAX OXYMETAZOLINE HYDROCHLORIDE OXYMETAZOLINE WATER Sunscreen SPF50 Non Nano Zinc Oxide WATER BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES JOJOBA OIL .ALPHA.-TOCOPHEROL ACETATE ZINC OXIDE ZINC OXIDE PROPOLIS WAX PANTHENOL COCO-CAPRYLATE/CAPRATE MAGNESIUM SULFATE ANHYDROUS ALOE VERA LEAF ARGAN OIL DICAPRYLYL CARBONATE SODIUM STEAROYL GLUTAMATE GLYCERYL CITRATE GLYCERIN Sunscreen for Face SPF50 Non Nano Zinc Oxide COCO-CAPRYLATE/CAPRATE OLEA EUROPAEA (OLIVE) OIL UNSAPONIFIABLES ZINC OXIDE ZINC OXIDE ALOE VERA LEAF DICAPRYLYL CARBONATE PANTHENOL BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES MAGNESIUM SULFATE ANHYDROUS GLYCERYL CITRATE PROPOLIS WAX .ALPHA.-TOCOPHEROL ACETATE WATER GLYCERIN SODIUM STEAROYL GLUTAMATE ARGAN OIL AfterSun Non Nano Zinc Oxide PROPOLIS WAX SODIUM STEAROYL GLUTAMATE PHYSALIS ANGULATA ALOE VERA LEAF GLYCERYL CITRATE ZINC OXIDE ZINC OXIDE WHITE WAX .ALPHA.-TOCOPHEROL ACETATE GLYCERIN PANTHENOL WATER BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES COCO-CAPRYLATE/CAPRATE SESAME OIL XANTHAN GUM ARGAN OIL MAGNESIUM SULFATE ANHYDROUS Diaper Rash Cream Non Nano Zinc Oxide BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES HYDROLYZED JOJOBA ESTERS (POTASSIUM SALTS) WHITE WAX POLYGLYCERYL-3 OLEATE PANTHENOL COCO-CAPRYLATE/CAPRATE ALOE VERA LEAF GLYCERIN POLYGLYCERYL-2 DIPOLYHYDROXYSTEARATE POLYGLYCERYL-3 DIISOSTEARATE CAPRYLIC/CAPRIC/LAURIC TRIGLYCERIDE .ALPHA.-TOCOPHEROL ACETATE ZINC OXIDE ZINC OXIDE JOJOBA OIL HELIANTHUS ANNUUS SEED WAX POLYGLYCERYL-4 ISOSTEARATE POLYGLYCERIN-3 PALM OIL PALM KERNEL OIL COCONUT OIL CANOLA OIL Sunscreen for kids SPF50 Non Nano Zinc Oxide MAGNESIUM SULFATE ANHYDROUS PALM KERNEL OIL COCONUT OIL CANOLA OIL WATER COCO-CAPRYLATE/CAPRATE BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES ARGAN OIL GLYCERYL CITRATE PROPOLIS WAX .ALPHA.-TOCOPHEROL ACETATE PANTHENOL ZINC OXIDE ZINC OXIDE DICAPRYLYL CARBONATE ALOE VERA LEAF PALM OIL SODIUM STEAROYL GLUTAMATE GLYCERIN S.O.S Cream Intensive Moisturizing Skin Protectant Non Nano Zinc Oxide OLEA EUROPAEA FLOWER WHITE WAX PANTHENOL HONEY PROPOLIS WAX BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES GLYCERIN OLEA EUROPAEA (OLIVE) OIL UNSAPONIFIABLES WATER .ALPHA.-TOCOPHEROL ACETATE, D- ROYAL JELLY ZINC OXIDE ZINC OXIDE Acne Control Serum Salicylic Acid WATER APIS MELLIFERA VENOM HYDROXYETHYL CELLULOSE, UNSPECIFIED BEET CAPRYLIC ACID ROSA MULTIFLORA FRUIT HYALURONIC ACID SALICYLIC ACID SALICYLIC ACID ACTINIDIA POLYGAMA FRUIT XYLITOL TEA TREE OIL GLYCERIN PROPANEDIOL PROPOLIS WAX"
+          ],
+          "active_ingredient": [
+            "Active Ingredient(s) Alcohol 80% v/v. Purpose: Antiseptic"
+          ],
+          "purpose": [
+            "Purpose Antiseptic, Hand Sanitizer"
+          ],
+          "indications_and_usage": [
+            "Use Hand Sanitizer to help reduce bacteria that potentially can cause disease. For use when soap and water are not available."
+          ],
+          "warnings": [
+            "Warnings For external use only. Flammable. Keep away from heat or flame"
+          ],
+          "do_not_use": [
+            "Do not use in children less than 2 months of age on open skin wounds"
+          ],
+          "when_using": [
+            "When using this product keep out of eyes, ears, and mouth. In case of contact with eyes, rinse eyes thoroughly with water. Stop use and ask a doctor if irritation or rash occurs. These may be signs of a serious condition. Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away."
+          ],
+          "stop_use": [
+            "Stop use and ask a doctor if irritation or rash occurs. These may be signs of a serious condition."
+          ],
+          "keep_out_of_reach_of_children": [
+            "Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away."
+          ],
+          "dosage_and_administration": [
+            "Directions Place enough product on hands to cover all surfaces. Rub hands together until dry. Supervise children under 6 years of age when using this product to avoid swallowing."
+          ],
+          "storage_and_handling": [
+            "Other information Store between 15-30C (59-86F) Avoid freezing and excessive heat above 40C (104F)"
+          ],
+          "inactive_ingredient": [
+            "Inactive Ingredients"
+          ],
+          "package_label_principal_display_panel": [
+            "Acne Control Serum 30 ml NDC:​ 82123-009 Acne Control Serum",
+            "Sunscreen for kids SPF50 Sunscreen for kids SPF50 80 mL NDC: 82123-012",
+            "Sunscreen for face SPF50 Sunscreen for face SPF50 40 mL NDC: 82123-013",
+            "Aftersun AfterSun 80 mL NDC: 82123-004",
+            "Diaper Rash Cream Diaper Rash Cream 50 mL NDC: 82123-005 Diaper Rash Cream",
+            "Propolis Nasal Plus Nasal Spray Plus NDC: 82123-010",
+            "Propolis Nasal Propolis Nasal NDC: 82123-009",
+            "SOS Cream SOS Cream SOS Cream",
+            "Sunscreen SPF50 Sunscreen SPF50 80 mL NDC: 82123-011"
+          ],
+          "set_id": "c5d52f13-a649-9579-e053-2a95a90a062c",
+          "id": "2174cf36-d5c8-647a-e063-6294a90afc6f",
+          "effective_time": "20240906",
+          "version": "8",
+          "openfda": {
+            "application_number": [
+              "M020"
+            ],
+            "brand_name": [
+              "Sunscreen SPF50"
+            ],
+            "generic_name": [
+              "NON NANO ZINC OXIDE"
+            ],
+            "manufacturer_name": [
+              "SBS BILIMSEL BIO COZUMLER SANAYI VE TICARET ANONIM SIRKETI PINAR SUBESI"
+            ],
+            "product_ndc": [
+              "82123-014",
+              "82123-021",
+              "82123-020",
+              "82123-016",
+              "82123-023",
+              "82123-022",
+              "82123-015",
+              "82123-018",
+              "82123-019"
+            ],
+            "product_type": [
+              "HUMAN OTC DRUG"
+            ],
+            "route": [
+              "TOPICAL"
+            ],
+            "substance_name": [
+              "ZINC OXIDE"
+            ],
+            "spl_id": [
+              "2174cf36-d5c8-647a-e063-6294a90afc6f"
+            ],
+            "spl_set_id": [
+              "c5d52f13-a649-9579-e053-2a95a90a062c"
+            ],
+            "package_ndc": [
+              "82123-021-30",
+              "82123-021-31",
+              "82123-020-30",
+              "82123-020-31",
+              "82123-014-80",
+              "82123-014-81",
+              "82123-016-40",
+              "82123-016-41",
+              "82123-023-80",
+              "82123-023-81",
+              "82123-022-50",
+              "82123-022-51",
+              "82123-015-80",
+              "82123-015-81",
+              "82123-018-15",
+              "82123-018-16",
+              "82123-019-30",
+              "82123-019-31"
+            ],
+            "is_original_packager": [
+              true
+            ],
+            "upc": [
+              "0190853003508",
+              "0190853002433",
+              "0190853001672",
+              "0190853001702"
+            ],
+            "unii": [
+              "O414PZ4LPZ",
+              "K89MJ0S5VY",
+              "SOI2LOH54Z"
+            ]
+          }
+        }
+      ]
+    },
+    "label": {
+      "spl_product_data_elements": [
+        "PROPOLIS NASAL PLUS PLUS NASAL EUCALYPTUS OIL OXYMETAZOLINE HYDROCHLORIDE OXYMETAZOLINE WATER SEA SALT PROPOLIS WAX GLYCERIN PROPOLIS NASAL NASAL EUCALYPTUS OIL SEA SALT GLYCERIN PROPOLIS WAX OXYMETAZOLINE HYDROCHLORIDE OXYMETAZOLINE WATER Sunscreen SPF50 Non Nano Zinc Oxide WATER BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES JOJOBA OIL .ALPHA.-TOCOPHEROL ACETATE ZINC OXIDE ZINC OXIDE PROPOLIS WAX PANTHENOL COCO-CAPRYLATE/CAPRATE MAGNESIUM SULFATE ANHYDROUS ALOE VERA LEAF ARGAN OIL DICAPRYLYL CARBONATE SODIUM STEAROYL GLUTAMATE GLYCERYL CITRATE GLYCERIN Sunscreen for Face SPF50 Non Nano Zinc Oxide COCO-CAPRYLATE/CAPRATE OLEA EUROPAEA (OLIVE) OIL UNSAPONIFIABLES ZINC OXIDE ZINC OXIDE ALOE VERA LEAF DICAPRYLYL CARBONATE PANTHENOL BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES MAGNESIUM SULFATE ANHYDROUS GLYCERYL CITRATE PROPOLIS WAX .ALPHA.-TOCOPHEROL ACETATE WATER GLYCERIN SODIUM STEAROYL GLUTAMATE ARGAN OIL AfterSun Non Nano Zinc Oxide PROPOLIS WAX SODIUM STEAROYL GLUTAMATE PHYSALIS ANGULATA ALOE VERA LEAF GLYCERYL CITRATE ZINC OXIDE ZINC OXIDE WHITE WAX .ALPHA.-TOCOPHEROL ACETATE GLYCERIN PANTHENOL WATER BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES COCO-CAPRYLATE/CAPRATE SESAME OIL XANTHAN GUM ARGAN OIL MAGNESIUM SULFATE ANHYDROUS Diaper Rash Cream Non Nano Zinc Oxide BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES HYDROLYZED JOJOBA ESTERS (POTASSIUM SALTS) WHITE WAX POLYGLYCERYL-3 OLEATE PANTHENOL COCO-CAPRYLATE/CAPRATE ALOE VERA LEAF GLYCERIN POLYGLYCERYL-2 DIPOLYHYDROXYSTEARATE POLYGLYCERYL-3 DIISOSTEARATE CAPRYLIC/CAPRIC/LAURIC TRIGLYCERIDE .ALPHA.-TOCOPHEROL ACETATE ZINC OXIDE ZINC OXIDE JOJOBA OIL HELIANTHUS ANNUUS SEED WAX POLYGLYCERYL-4 ISOSTEARATE POLYGLYCERIN-3 PALM OIL PALM KERNEL OIL COCONUT OIL CANOLA OIL Sunscreen for kids SPF50 Non Nano Zinc Oxide MAGNESIUM SULFATE ANHYDROUS PALM KERNEL OIL COCONUT OIL CANOLA OIL WATER COCO-CAPRYLATE/CAPRATE BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES ARGAN OIL GLYCERYL CITRATE PROPOLIS WAX .ALPHA.-TOCOPHEROL ACETATE PANTHENOL ZINC OXIDE ZINC OXIDE DICAPRYLYL CARBONATE ALOE VERA LEAF PALM OIL SODIUM STEAROYL GLUTAMATE GLYCERIN S.O.S Cream Intensive Moisturizing Skin Protectant Non Nano Zinc Oxide OLEA EUROPAEA FLOWER WHITE WAX PANTHENOL HONEY PROPOLIS WAX BUTYROSPERMUM PARKII (SHEA) BUTTER UNSAPONIFIABLES GLYCERIN OLEA EUROPAEA (OLIVE) OIL UNSAPONIFIABLES WATER .ALPHA.-TOCOPHEROL ACETATE, D- ROYAL JELLY ZINC OXIDE ZINC OXIDE Acne Control Serum Salicylic Acid WATER APIS MELLIFERA VENOM HYDROXYETHYL CELLULOSE, UNSPECIFIED BEET CAPRYLIC ACID ROSA MULTIFLORA FRUIT HYALURONIC ACID SALICYLIC ACID SALICYLIC ACID ACTINIDIA POLYGAMA FRUIT XYLITOL TEA TREE OIL GLYCERIN PROPANEDIOL PROPOLIS WAX"
+      ],
+      "active_ingredient": [
+        "Active Ingredient(s) Alcohol 80% v/v. Purpose: Antiseptic"
+      ],
+      "purpose": [
+        "Purpose Antiseptic, Hand Sanitizer"
+      ],
+      "indications_and_usage": [
+        "Use Hand Sanitizer to help reduce bacteria that potentially can cause disease. For use when soap and water are not available."
+      ],
+      "warnings": [
+        "Warnings For external use only. Flammable. Keep away from heat or flame"
+      ],
+      "do_not_use": [
+        "Do not use in children less than 2 months of age on open skin wounds"
+      ],
+      "when_using": [
+        "When using this product keep out of eyes, ears, and mouth. In case of contact with eyes, rinse eyes thoroughly with water. Stop use and ask a doctor if irritation or rash occurs. These may be signs of a serious condition. Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away."
+      ],
+      "stop_use": [
+        "Stop use and ask a doctor if irritation or rash occurs. These may be signs of a serious condition."
+      ],
+      "keep_out_of_reach_of_children": [
+        "Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away."
+      ],
+      "dosage_and_administration": [
+        "Directions Place enough product on hands to cover all surfaces. Rub hands together until dry. Supervise children under 6 years of age when using this product to avoid swallowing."
+      ],
+      "storage_and_handling": [
+        "Other information Store between 15-30C (59-86F) Avoid freezing and excessive heat above 40C (104F)"
+      ],
+      "inactive_ingredient": [
+        "Inactive Ingredients"
+      ],
+      "package_label_principal_display_panel": [
+        "Acne Control Serum 30 ml NDC:​ 82123-009 Acne Control Serum",
+        "Sunscreen for kids SPF50 Sunscreen for kids SPF50 80 mL NDC: 82123-012",
+        "Sunscreen for face SPF50 Sunscreen for face SPF50 40 mL NDC: 82123-013",
+        "Aftersun AfterSun 80 mL NDC: 82123-004",
+        "Diaper Rash Cream Diaper Rash Cream 50 mL NDC: 82123-005 Diaper Rash Cream",
+        "Propolis Nasal Plus Nasal Spray Plus NDC: 82123-010",
+        "Propolis Nasal Propolis Nasal NDC: 82123-009",
+        "SOS Cream SOS Cream SOS Cream",
+        "Sunscreen SPF50 Sunscreen SPF50 80 mL NDC: 82123-011"
+      ],
+      "set_id": "c5d52f13-a649-9579-e053-2a95a90a062c",
+      "id": "2174cf36-d5c8-647a-e063-6294a90afc6f",
+      "effective_time": "20240906",
+      "version": "8",
+      "openfda": {
+        "application_number": [
+          "M020"
+        ],
+        "brand_name": [
+          "Sunscreen SPF50"
+        ],
+        "generic_name": [
+          "NON NANO ZINC OXIDE"
+        ],
+        "manufacturer_name": [
+          "SBS BILIMSEL BIO COZUMLER SANAYI VE TICARET ANONIM SIRKETI PINAR SUBESI"
+        ],
+        "product_ndc": [
+          "82123-014",
+          "82123-021",
+          "82123-020",
+          "82123-016",
+          "82123-023",
+          "82123-022",
+          "82123-015",
+          "82123-018",
+          "82123-019"
+        ],
+        "product_type": [
+          "HUMAN OTC DRUG"
+        ],
+        "route": [
+          "TOPICAL"
+        ],
+        "substance_name": [
+          "ZINC OXIDE"
+        ],
+        "spl_id": [
+          "2174cf36-d5c8-647a-e063-6294a90afc6f"
+        ],
+        "spl_set_id": [
+          "c5d52f13-a649-9579-e053-2a95a90a062c"
+        ],
+        "package_ndc": [
+          "82123-021-30",
+          "82123-021-31",
+          "82123-020-30",
+          "82123-020-31",
+          "82123-014-80",
+          "82123-014-81",
+          "82123-016-40",
+          "82123-016-41",
+          "82123-023-80",
+          "82123-023-81",
+          "82123-022-50",
+          "82123-022-51",
+          "82123-015-80",
+          "82123-015-81",
+          "82123-018-15",
+          "82123-018-16",
+          "82123-019-30",
+          "82123-019-31"
+        ],
+        "is_original_packager": [
+          true
+        ],
+        "upc": [
+          "0190853003508",
+          "0190853002433",
+          "0190853001672",
+          "0190853001702"
+        ],
+        "unii": [
+          "O414PZ4LPZ",
+          "K89MJ0S5VY",
+          "SOI2LOH54Z"
+        ]
+      }
+    }
+  }
+}

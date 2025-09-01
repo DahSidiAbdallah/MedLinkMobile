@@ -1,0 +1,219 @@
+{
+  "rxcui": {
+    "url": null,
+    "body": null,
+    "rxcui": null
+  },
+  "label": {
+    "url": "https://api.fda.gov/drug/label.json?search=0843119104326&limit=1",
+    "body": {
+      "meta": {
+        "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+        "terms": "https://open.fda.gov/terms/",
+        "license": "https://open.fda.gov/license/",
+        "last_updated": "2025-09-01",
+        "results": {
+          "skip": 0,
+          "limit": 1,
+          "total": 1
+        }
+      },
+      "results": [
+        {
+          "spl_product_data_elements": [
+            "PM Recovery Pain Relief Camphor, Menthol LONICERA CONFUSA FLOWER SHEA BUTTER MENTHOL MENTHOL CAMPHOR (NATURAL) CAMPHOR (NATURAL) JOJOBA OIL MEDIUM-CHAIN TRIGLYCERIDES BEESWAX LAVENDER OIL"
+          ],
+          "active_ingredient": [
+            "Active ingredients Camphor USP 10% Menthol USP 15%"
+          ],
+          "purpose": [
+            "Purpose Camphor USP 10%..................External analgesic Menthol USP 15%....................External analgesic"
+          ],
+          "indications_and_usage": [
+            "Uses For the temporary relief of minor aches and pains of muscles and joints associated with strains, bruises and sprains."
+          ],
+          "warnings": [
+            "Warnings For external use only When using this product avoid contact with eyes, nostrils and mouth do not apply to wounds or damaged skin do not bandage tightly Stop use and ask a doctor if condition worsens symptoms persist for more than 7 days symptoms clear up and occur again within a few days excessive skin irritation develops If pregnant or breastfeeding, ask a health professional before use Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away"
+          ],
+          "when_using": [
+            "When using this product avoid contact with eyes, nostrils and mouth do not apply to wounds or damaged skin do not bandage tightly"
+          ],
+          "stop_use": [
+            "Stop use and ask a doctor if condition worsens symptoms persist for more than 7 days symptoms clear up and occur again within a few days excessive skin irritation develops"
+          ],
+          "pregnancy_or_breast_feeding": [
+            "If pregnant or breastfeeding, ask a health professional before use"
+          ],
+          "keep_out_of_reach_of_children": [
+            "Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away"
+          ],
+          "dosage_and_administration": [
+            "Directions Adults and children 2 years of age and older: apply to affected area not more than 3 to 4 times daily. Children under 2 years of age: do not use, consult a physician. Wash hands after use with cool water."
+          ],
+          "storage_and_handling": [
+            "Other information store at 20-25°C (68-77°F) store in a cool dry place away from direct sunlight"
+          ],
+          "inactive_ingredient": [
+            "Inactive ingredients Beeswax, Honeysuckle Oil, Jojoba Oil, Lavender Oil, MCT Oil, Shea Butter"
+          ],
+          "questions": [
+            "Questions or Comments? Call 1-855-790-8169"
+          ],
+          "package_label_principal_display_panel": [
+            "Charlotte's Web PM Recovery Muscle & Joint Pain Relief Stick Camphor 10% | Menthol 15% Relaxing Essential Oils NET WT. 1 OZ (30 G) 1"
+          ],
+          "set_id": "3aa08859-809d-de8c-e063-6394a90a8e25",
+          "id": "3aa08859-809e-de8c-e063-6394a90a8e25",
+          "effective_time": "20250801",
+          "version": "1",
+          "openfda": {
+            "application_number": [
+              "M017"
+            ],
+            "brand_name": [
+              "PM Recovery Pain Relief"
+            ],
+            "generic_name": [
+              "CAMPHOR, MENTHOL"
+            ],
+            "manufacturer_name": [
+              "Charlotte's Web, Inc."
+            ],
+            "product_ndc": [
+              "79845-770"
+            ],
+            "product_type": [
+              "HUMAN OTC DRUG"
+            ],
+            "route": [
+              "TOPICAL"
+            ],
+            "substance_name": [
+              "CAMPHOR (NATURAL)",
+              "MENTHOL"
+            ],
+            "rxcui": [
+              "2720403"
+            ],
+            "spl_id": [
+              "3aa08859-809e-de8c-e063-6394a90a8e25"
+            ],
+            "spl_set_id": [
+              "3aa08859-809d-de8c-e063-6394a90a8e25"
+            ],
+            "package_ndc": [
+              "79845-770-30"
+            ],
+            "is_original_packager": [
+              true
+            ],
+            "upc": [
+              "0843119104326"
+            ],
+            "unii": [
+              "N20HL7Q941",
+              "L7T10EIP3A"
+            ]
+          }
+        }
+      ]
+    },
+    "label": {
+      "spl_product_data_elements": [
+        "PM Recovery Pain Relief Camphor, Menthol LONICERA CONFUSA FLOWER SHEA BUTTER MENTHOL MENTHOL CAMPHOR (NATURAL) CAMPHOR (NATURAL) JOJOBA OIL MEDIUM-CHAIN TRIGLYCERIDES BEESWAX LAVENDER OIL"
+      ],
+      "active_ingredient": [
+        "Active ingredients Camphor USP 10% Menthol USP 15%"
+      ],
+      "purpose": [
+        "Purpose Camphor USP 10%..................External analgesic Menthol USP 15%....................External analgesic"
+      ],
+      "indications_and_usage": [
+        "Uses For the temporary relief of minor aches and pains of muscles and joints associated with strains, bruises and sprains."
+      ],
+      "warnings": [
+        "Warnings For external use only When using this product avoid contact with eyes, nostrils and mouth do not apply to wounds or damaged skin do not bandage tightly Stop use and ask a doctor if condition worsens symptoms persist for more than 7 days symptoms clear up and occur again within a few days excessive skin irritation develops If pregnant or breastfeeding, ask a health professional before use Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away"
+      ],
+      "when_using": [
+        "When using this product avoid contact with eyes, nostrils and mouth do not apply to wounds or damaged skin do not bandage tightly"
+      ],
+      "stop_use": [
+        "Stop use and ask a doctor if condition worsens symptoms persist for more than 7 days symptoms clear up and occur again within a few days excessive skin irritation develops"
+      ],
+      "pregnancy_or_breast_feeding": [
+        "If pregnant or breastfeeding, ask a health professional before use"
+      ],
+      "keep_out_of_reach_of_children": [
+        "Keep out of reach of children. If swallowed, get medical help or contact a Poison Control Center right away"
+      ],
+      "dosage_and_administration": [
+        "Directions Adults and children 2 years of age and older: apply to affected area not more than 3 to 4 times daily. Children under 2 years of age: do not use, consult a physician. Wash hands after use with cool water."
+      ],
+      "storage_and_handling": [
+        "Other information store at 20-25°C (68-77°F) store in a cool dry place away from direct sunlight"
+      ],
+      "inactive_ingredient": [
+        "Inactive ingredients Beeswax, Honeysuckle Oil, Jojoba Oil, Lavender Oil, MCT Oil, Shea Butter"
+      ],
+      "questions": [
+        "Questions or Comments? Call 1-855-790-8169"
+      ],
+      "package_label_principal_display_panel": [
+        "Charlotte's Web PM Recovery Muscle & Joint Pain Relief Stick Camphor 10% | Menthol 15% Relaxing Essential Oils NET WT. 1 OZ (30 G) 1"
+      ],
+      "set_id": "3aa08859-809d-de8c-e063-6394a90a8e25",
+      "id": "3aa08859-809e-de8c-e063-6394a90a8e25",
+      "effective_time": "20250801",
+      "version": "1",
+      "openfda": {
+        "application_number": [
+          "M017"
+        ],
+        "brand_name": [
+          "PM Recovery Pain Relief"
+        ],
+        "generic_name": [
+          "CAMPHOR, MENTHOL"
+        ],
+        "manufacturer_name": [
+          "Charlotte's Web, Inc."
+        ],
+        "product_ndc": [
+          "79845-770"
+        ],
+        "product_type": [
+          "HUMAN OTC DRUG"
+        ],
+        "route": [
+          "TOPICAL"
+        ],
+        "substance_name": [
+          "CAMPHOR (NATURAL)",
+          "MENTHOL"
+        ],
+        "rxcui": [
+          "2720403"
+        ],
+        "spl_id": [
+          "3aa08859-809e-de8c-e063-6394a90a8e25"
+        ],
+        "spl_set_id": [
+          "3aa08859-809d-de8c-e063-6394a90a8e25"
+        ],
+        "package_ndc": [
+          "79845-770-30"
+        ],
+        "is_original_packager": [
+          true
+        ],
+        "upc": [
+          "0843119104326"
+        ],
+        "unii": [
+          "N20HL7Q941",
+          "L7T10EIP3A"
+        ]
+      }
+    }
+  }
+}
