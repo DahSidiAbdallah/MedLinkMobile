@@ -12,6 +12,8 @@ import { parseGs1DataMatrix } from '../utils/gs1';
 import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs } from '../core/barcode';
 import { getTelemetryService, makeScanTelemetryEvent } from '../core/telemetryService';
 import { hapticSuccess } from '../utils/haptics';
+import { summarizeText, safeJoinArrayField } from '../utils/textHelpers';
+import LabelInfoView from '../components/LabelInfoView';
 
 const styles = StyleSheet.create({
   container: {
@@ -246,6 +248,7 @@ const BarcodeScanner: React.FC = () => {
   const [showScanEffect, setShowScanEffect] = useState(false);
   const [guidance, setGuidance] = useState<string | null>(null);
   const [pulse, setPulse] = useState(true);
+  const [expandedFields, setExpandedFields] = useState<Record<string, boolean>>({});
   const [barcodeDetected, setBarcodeDetected] = useState(false);
   const scanTimeout = useRef<NodeJS.Timeout | null>(null);
   const pulseTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -538,28 +541,7 @@ const BarcodeScanner: React.FC = () => {
                 </View>
               )}
               {(verification.labelInfo || verification.label) && (
-                <View>
-                  <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage</Text>
-                  <Text style={{ color: colors.text }}>{
-                    verification.labelInfo?.indications ??
-                    (Array.isArray(verification.label?.indications_and_usage) ? verification.label!.indications_and_usage[0] : verification.label?.indications_and_usage) ??
-                    'N/A'
-                  }</Text>
-
-                  <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 8 }}>Dosage & Administration</Text>
-                  <Text style={{ color: colors.text }}>{
-                    verification.labelInfo?.dosage ??
-                    (Array.isArray(verification.label?.dosage_and_administration) ? verification.label!.dosage_and_administration[0] : verification.label?.dosage_and_administration) ??
-                    'N/A'
-                  }</Text>
-
-                  <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 8 }}>Adverse Reactions</Text>
-                  <Text style={{ color: colors.text }}>{
-                    verification.labelInfo?.sideEffects ??
-                    (Array.isArray(verification.label?.adverse_reactions) ? verification.label!.adverse_reactions[0] : verification.label?.adverse_reactions) ??
-                    'N/A'
-                  }</Text>
-                </View>
+                <LabelInfoView labelInfo={verification.labelInfo} label={verification.label} />
               )}
               {/* Show openFDA info if available, else webscraper info, or both if both exist */}
               {(verification.labelInfo || verification.webscraperInfo) && (

@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`scrapeLabelPage contract tests (recorded fixtures) scrapes sample1.html 1`] = `
+{
+  "contraindications": [
+    "Doliprane 500 mgStrength: 500 mgIngredientsParacetamolWarningsDo not exceed doseContraindicationsLiver disease",
+    "Doliprane 500 mgStrength: 500 mgIngredientsParacetamolWarningsDo not exceed doseContraindicationsLiver disease",
+    "ContraindicationsLiver disease",
+    "Contraindications",
+  ],
+  "ingredients": [
+    "Doliprane 500 mgStrength: 500 mgIngredientsParacetamolWarningsDo not exceed doseContraindicationsLiver disease",
+    "Doliprane 500 mgStrength: 500 mgIngredientsParacetamolWarningsDo not exceed doseContraindicationsLiver disease",
+    "IngredientsParacetamol",
+    "Ingredients",
+  ],
+  "name": "Doliprane 500 mg",
+  "strength": "Strength: 500 mg",
+  "warnings": [
+    "Doliprane 500 mgStrength: 500 mgIngredientsParacetamolWarningsDo not exceed doseContraindicationsLiver disease",
+    "Doliprane 500 mgStrength: 500 mgIngredientsParacetamolWarningsDo not exceed doseContraindicationsLiver disease",
+    "WarningsDo not exceed dose",
+    "Warnings",
+  ],
+}
+`;
+
+exports[`scrapeLabelPage contract tests (recorded fixtures) scrapes sample2.html 1`] = `
+{
+  "contraindications": [],
+  "ingredients": [
+    "Nurofen 400 mgStrength: 400 mgActive ingredientsIbuprpofenPrecautionsAvoid with asthma",
+    "Nurofen 400 mgStrength: 400 mgActive ingredientsIbuprpofenPrecautionsAvoid with asthma",
+    "Active ingredientsIbuprpofen",
+    "Active ingredients",
+  ],
+  "name": "Nurofen 400 mg",
+  "strength": "Strength: 400 mg",
+  "warnings": [
+    "Nurofen 400 mgStrength: 400 mgActive ingredientsIbuprpofenPrecautionsAvoid with asthma",
+    "Nurofen 400 mgStrength: 400 mgActive ingredientsIbuprpofenPrecautionsAvoid with asthma",
+    "PrecautionsAvoid with asthma",
+    "Precautions",
+  ],
+}
+`;
+
+exports[`scrapeLabelPage contract tests (recorded fixtures) scrapes sample3.html 1`] = `
+{
+  "contraindications": [],
+  "ingredients": [
+    "Paracetamol 500 mgStrength: 500 mgIngredientsParacetamolWarningsNot for children under 12",
+    "Paracetamol 500 mgStrength: 500 mgIngredientsParacetamolWarningsNot for children under 12",
+    "IngredientsParacetamol",
+    "Ingredients",
+  ],
+  "name": "Paracetamol 500 mg",
+  "strength": "Strength: 500 mg",
+  "warnings": [
+    "Paracetamol 500 mgStrength: 500 mgIngredientsParacetamolWarningsNot for children under 12",
+    "Paracetamol 500 mgStrength: 500 mgIngredientsParacetamolWarningsNot for children under 12",
+    "WarningsNot for children under 12",
+    "Warnings",
+  ],
+}
+`;
