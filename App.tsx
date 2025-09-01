@@ -83,15 +83,15 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         {state.routes.map((route, index) => {
           if (route.name === 'Barcode') {
             return (
-              <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', top: -24 }}>
+              <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', top: -20 }}>
                 <TouchableOpacity
                   onPress={() => navigation.navigate(route.name)}
                   activeOpacity={0.85}
                   style={{
                     backgroundColor: colors.primary,
-                    borderRadius: 40,
-                    width: 64,
-                    height: 64,
+                    borderRadius: 36,
+                    width: 72,
+                    height: 72,
                     alignItems: 'center',
                     justifyContent: 'center',
                     shadowColor: colors.primary,
@@ -99,9 +99,10 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                     shadowOpacity: 0.18,
                     shadowRadius: 8,
                     elevation: 8,
+                    transform: [{ translateY: -6 }],
                   }}
                 >
-                  {getTabIcon(route, state.index === index, '#fff', 32)}
+                  {getTabIcon(route, state.index === index, '#fff', 28)}
                 </TouchableOpacity>
               </View>
             );

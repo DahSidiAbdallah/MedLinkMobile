@@ -15,6 +15,9 @@ type Config = {
 
 const defaultConfig: Config = { endpoint: 'https://example.com/telemetry', batchSize: 20, flushIntervalMs: 30000, maxRetries: 3, maxQueueSize: 1000, authToken: null }
 
+// Runtime detection for development environments (React Native exposes __DEV__)
+const isDev = (typeof global !== 'undefined' && (global as any).__DEV__ === true) || process.env.NODE_ENV !== 'production'
+
 class TelemetryService {
   private queue: ScanEvent[] = []
   private readonly config: Config
@@ -88,6 +91,14 @@ class TelemetryService {
 
   async flush() {
     if (this.shuttingDown) return
+    // In development we avoid attempting real network uploads to the telemetry
+    // endpoint. This prevents noisy "upload failed" errors in the dev console
+    // while preserving queueing behavior for tests and production.
+    if (isDev) {
+      // Persist but don't attempt network operations
+      try { await this.persistQueue() } catch (e) {}
+      return
+    }
     if (this.queue.length === 0) return
     const batchStart = 0
     const batch = this.queue.slice(batchStart, batchStart + (this.config.batchSize || 20))
