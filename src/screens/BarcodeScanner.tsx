@@ -8,6 +8,8 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors, spacing } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
+import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs } from '../core/barcode';
+import { getTelemetryService, makeScanTelemetryEvent } from '../core/telemetryService';
 
 const styles = StyleSheet.create({
   container: {
@@ -295,9 +297,30 @@ const BarcodeScanner: React.FC = () => {
     let result: VerificationResult | null = null;
     let err: string | null = null;
     let risk = '';
+    const telemetryStart = Date.now();
+    let telemetry: any = { scanType: type };
     try {
+      // Normalization step
+      const norm = normalizeBarcode(data);
+      if (norm.gtin) telemetry.gtin = norm.gtin;
+      telemetry.normalizedType = norm.type;
+
+      // If EAN, validate check digit
+      if (norm.type === 'EAN' && norm.gtin) {
+        telemetry.eanCheck = validateEAN13CheckDigit(norm.gtin);
+      }
+
+      // If DataMatrix-like, parse GS1 AIs
+      if (norm.type === 'DATAMATRIX') {
+        const ais = parseGs1AIs(data);
+        telemetry.gs1 = { ais };
+        const extractedGtin = getGtinFromAIs(ais);
+        if (extractedGtin) telemetry.gtin = extractedGtin;
+      }
+
       result = await verifyScannedCode(data, type);
       setVerification(result);
+      telemetry.lookupSuccess = !!result;
       // Cross-check with user profile for risks
       if (profile && result && result.label) {
         const medName = (result.label.brand_name || result.label.generic_name || '').toLowerCase();
@@ -333,7 +356,19 @@ const BarcodeScanner: React.FC = () => {
     } catch (e) {
       err = 'Verification failed.';
       setError(err);
+  telemetry.errorCodes = ['verification_failed']
     } finally {
+      telemetry.decodeTimeMs = Date.now() - telemetryStart;
+      const event = makeScanTelemetryEvent({
+        scanType: telemetry.normalizedType || telemetry.scanType,
+        decodeTimeMs: telemetry.decodeTimeMs,
+        verificationTelemetry: telemetry,
+        cacheHit: telemetry.cacheHit || false,
+        sourceBadges: [],
+        errorCodes: telemetry.errorCodes || [],
+      })
+  const svc = getTelemetryService()
+  svc?.record(event as any)
       setLoading(false);
       setTimeout(() => setShowScanEffect(false), 600);
       const newItem = {
