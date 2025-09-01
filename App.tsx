@@ -17,6 +17,7 @@ import UserProfile from './src/screens/UserProfile';
 import Clinics from './src/screens/Clinics';
 import FacilityDetail from './src/screens/FacilityDetail';
 import BarcodeScanner from './src/screens/BarcodeScanner';
+import Settings from './src/screens/Settings';
 import { colors } from './src/theme';
 import Login from './src/screens/Login';
 import SplashScreen from './SplashScreen';
@@ -227,6 +228,7 @@ function MainTabs() {
       <Tab.Screen name="Dashboard" component={Dashboard} />
       <Tab.Screen name="Reminders" component={Reminders} />
       <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
+  <Tab.Screen name="Settings" component={Settings} />
       <Tab.Screen name="Clinics" component={Clinics} />
       <Tab.Screen name="UserProfile" component={UserProfile} />
     </Tab.Navigator>

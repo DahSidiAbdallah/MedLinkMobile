@@ -22,6 +22,7 @@ class TelemetryService {
   private retryCounts: Record<number, number> = {}
   private retryCountsByBatchId: Record<string, number> = {}
   private shuttingDown = false
+  private telemetryEnabled: boolean | undefined = undefined
 
   constructor(cfg?: Partial<Config>) {
     this.config = { ...defaultConfig, ...(cfg || {}) }
@@ -31,6 +32,10 @@ class TelemetryService {
   async init() {
     try {
       await this.loadQueue()
+      try {
+        const v = await AsyncStorage.getItem('settings_telemetry_enabled_v1')
+        this.telemetryEnabled = v === '0' ? false : true
+      } catch { this.telemetryEnabled = true }
     } catch (e) {
       console.warn('telemetry loadQueue failed', e)
     }
@@ -65,6 +70,9 @@ class TelemetryService {
   }
 
   record(event: ScanEvent) {
+    // Use cached telemetryEnabled (set during init) so record is synchronous for callers/tests.
+    const enabled = this.telemetryEnabled !== undefined ? this.telemetryEnabled : true
+    if (!enabled) return event
     const entry = { timestamp: Date.now(), ...event }
     // Backpressure: drop oldest if queue exceeds maxQueueSize
     if (this.queue.length >= (this.config.maxQueueSize || 1000)) {

@@ -1,6 +1,7 @@
 
 import { verifyDrugByQrCode } from '../core/drugInfo';
 import { parseGs1DataMatrix } from './gs1';
+import { resolveDigitalLink } from './gs1DigitalLink';
 import { getRecallByGTINorNDC, getLabelingByGTINorNDC } from './openfda';
 import { fetchDrugLabelByNDC } from './openfdaDrugInfo';
 import { fetchDrugInfoFromScraper } from './webscraperDrugInfo';
@@ -60,10 +61,20 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       } as VerificationResult
     }
     const codeToQuery = canonical || parsed.gtin;
-    const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
-    const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
-    const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => (/^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null)));
-    const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
+      const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+      const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
+      const labelInfoFromNdc = await timeAsync('fetchDrugLabelByNDC', () => (/^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null)));
+      let labelInfo = labelInfoFromNdc
+      if (!labelInfo && label) {
+        try {
+          labelInfo = {
+            indications: (label.indications_and_usage && label.indications_and_usage[0]) || undefined,
+            dosage: (label.dosage_and_administration && label.dosage_and_administration[0]) || undefined,
+            sideEffects: (label.adverse_reactions && label.adverse_reactions[0]) || undefined,
+          } as any
+        } catch {}
+      }
+      const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
     const message = expired ? 'Product expired' : (recall ? 'Product recalled' : 'No authenticity data available');
     return {
       verified: false,
@@ -96,7 +107,17 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     const codeToQuery = canonical || code;
     const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
     const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
-    const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => fetchDrugLabelByNDC(codeToQuery));
+    const labelInfoFromNdc = await timeAsync('fetchDrugLabelByNDC', () => fetchDrugLabelByNDC(codeToQuery));
+    let labelInfo = labelInfoFromNdc
+    if (!labelInfo && label) {
+      try {
+        labelInfo = {
+          indications: (label.indications_and_usage && label.indications_and_usage[0]) || undefined,
+          dosage: (label.dosage_and_administration && label.dosage_and_administration[0]) || undefined,
+          sideEffects: (label.adverse_reactions && label.adverse_reactions[0]) || undefined,
+        } as any
+      } catch {}
+    }
     const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
     const message = recall ? 'Product recalled' : 'No authenticity data available'
     return {
@@ -141,6 +162,11 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
   if (type === 'datamatrix') {
     const parsed = parseGs1DataMatrix(data);
     if (parsed) {
+      // Try GS1 Digital Link resolver first (may return brand/resource info)
+      const dl = await timeAsync('resolveDigitalLink', () => resolveDigitalLink(parsed.gtin || ''))
+      if (dl) {
+        cacheHits['resolveDigitalLink'] = true
+      }
       const expired = parsed.expiry ? parsed.expiry < new Date() : false;
       // Check local recall for GTIN
       const canonical = normalizeGtinTo14(parsed.gtin || '');
@@ -159,7 +185,7 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       }
       // Always call both openFDA and webscraper for GTIN/NDC, measure each
       const codeToQuery = canonical || parsed.gtin;
-      const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+  const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
       const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
       const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => (/^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null)));
       const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
@@ -197,7 +223,17 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     const codeToQuery = canonical || data;
     const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
     const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
-    const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => fetchDrugLabelByNDC(codeToQuery));
+    const labelInfoFromNdc = await timeAsync('fetchDrugLabelByNDC', () => fetchDrugLabelByNDC(codeToQuery));
+    let labelInfo = labelInfoFromNdc
+    if (!labelInfo && label) {
+      try {
+        labelInfo = {
+          indications: (label.indications_and_usage && label.indications_and_usage[0]) || undefined,
+          dosage: (label.dosage_and_administration && label.dosage_and_administration[0]) || undefined,
+          sideEffects: (label.adverse_reactions && label.adverse_reactions[0]) || undefined,
+        } as any
+      } catch {}
+    }
     const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
     return {
       verified: false,

@@ -5,11 +5,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchUserProfile, Profile } from '../core/userProfile';
 import { FlatList, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { ensureFocus } from '../utils/cameraHelper';
 import { colors, spacing } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
 import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs } from '../core/barcode';
 import { getTelemetryService, makeScanTelemetryEvent } from '../core/telemetryService';
+import { hapticSuccess } from '../utils/haptics';
 
 const styles = StyleSheet.create({
   container: {
@@ -229,6 +231,8 @@ const HISTORY_KEY = 'scan_history_v1';
 
 const BarcodeScanner: React.FC = () => {
   const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = React.useRef<any>(null)
+  const lastFrameTs = React.useRef<number | null>(null)
   const [scanned, setScanned] = useState(false);
   const [scanData, setScanData] = useState<any>(null);
   const [verification, setVerification] = useState<VerificationResult | null>(null);
@@ -281,6 +285,8 @@ const BarcodeScanner: React.FC = () => {
     }
     loadProfile();
     loadHistory();
+  // ensure focus when camera is available
+  ensureFocus(cameraRef).catch(() => {})
   }, [permission]);
 
   // Only allow one scan at a time
@@ -320,6 +326,10 @@ const BarcodeScanner: React.FC = () => {
 
       result = await verifyScannedCode(data, type);
       setVerification(result);
+      // Haptic feedback on positive findings
+      if (result && (result.verified || result.recall)) {
+        try { await hapticSuccess() } catch {}
+      }
       telemetry.lookupSuccess = !!result;
       // Cross-check with user profile for risks
       if (profile && result && result.label) {
@@ -435,8 +445,11 @@ const BarcodeScanner: React.FC = () => {
           <Text style={styles.text}>Scan any barcode or data matrix on a medication package</Text>
           <View style={[styles.scannerBox, { justifyContent: 'center', alignItems: 'center' }]}> 
             <CameraView
+              ref={cameraRef}
               style={StyleSheet.absoluteFillObject}
-              onBarcodeScanned={scanned ? undefined : (event) => {
+              // expo-camera uses 'autofocus' prop name in some typings; provide a best-effort hint
+              autofocus={'on' as any}
+              onBarcodeScanned={scanned ? undefined : (event: { data: string; type: string }) => {
                 // If barcode is detected but not yet scanned, show detected animation
                 if (!barcodeDetected) setBarcodeDetected(true);
                 handleBarCodeScanned(event);
@@ -524,14 +537,28 @@ const BarcodeScanner: React.FC = () => {
                   <Text>Status: {verification.recall.status}</Text>
                 </View>
               )}
-              {verification.label && (
+              {(verification.labelInfo || verification.label) && (
                 <View>
-                  <Text>Indications:</Text>
-                  <Text>{verification.label.indications_and_usage}</Text>
-                  <Text>Dosage:</Text>
-                  <Text>{verification.label.dosage_and_administration}</Text>
-                  <Text>Side Effects:</Text>
-                  <Text>{verification.label.adverse_reactions}</Text>
+                  <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage</Text>
+                  <Text style={{ color: colors.text }}>{
+                    verification.labelInfo?.indications ??
+                    (Array.isArray(verification.label?.indications_and_usage) ? verification.label!.indications_and_usage[0] : verification.label?.indications_and_usage) ??
+                    'N/A'
+                  }</Text>
+
+                  <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 8 }}>Dosage & Administration</Text>
+                  <Text style={{ color: colors.text }}>{
+                    verification.labelInfo?.dosage ??
+                    (Array.isArray(verification.label?.dosage_and_administration) ? verification.label!.dosage_and_administration[0] : verification.label?.dosage_and_administration) ??
+                    'N/A'
+                  }</Text>
+
+                  <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 8 }}>Adverse Reactions</Text>
+                  <Text style={{ color: colors.text }}>{
+                    verification.labelInfo?.sideEffects ??
+                    (Array.isArray(verification.label?.adverse_reactions) ? verification.label!.adverse_reactions[0] : verification.label?.adverse_reactions) ??
+                    'N/A'
+                  }</Text>
                 </View>
               )}
               {/* Show openFDA info if available, else webscraper info, or both if both exist */}
