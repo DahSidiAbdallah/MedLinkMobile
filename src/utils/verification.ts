@@ -19,13 +19,102 @@ export interface VerificationResult {
   labelInfo?: DrugLabelInfo | null;
   webscraperInfo?: any | null;
   message: string;
+  telemetry?: {
+    latencies?: Record<string, number>
+    cacheHits?: Record<string, boolean>
+  }
 }
 
 
 export async function verifyScannedCode(data: string, type: string): Promise<VerificationResult> {
+  const latencies: Record<string, number> = {}
+  const cacheHits: Record<string, boolean> = {}
+  async function timeAsync<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    const start = Date.now()
+    const res = await fn()
+    const elapsed = Date.now() - start
+    latencies[key] = elapsed
+    // detect cache hint
+    try {
+      if (res && typeof res === 'object' && ('__cacheHit' in (res as any))) {
+        cacheHits[key] = !!(res as any).__cacheHit
+      }
+    } catch {}
+    return res
+  }
+  // Extracted handlers (inside function scope so they can access latencies/cacheHits/timeAsync)
+  async function handleDataMatrix(parsed: any) {
+    const expired = parsed.expiry ? parsed.expiry < new Date() : false;
+    const canonical = normalizeGtinTo14(parsed.gtin || '');
+    const localRecall2 = findLocalRecall(canonical || parsed.gtin);
+    if (localRecall2) {
+      cacheHits['localRecall'] = true
+      return {
+        verified: false,
+        counterfeit: false,
+        expired,
+        recall: localRecall2,
+        label: undefined,
+        message: expired ? 'Product expired' : `Product recalled by ${localRecall2.source}`,
+        telemetry: { latencies, cacheHits },
+      } as VerificationResult
+    }
+    const codeToQuery = canonical || parsed.gtin;
+    const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+    const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
+    const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => (/^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null)));
+    const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
+    const message = expired ? 'Product expired' : (recall ? 'Product recalled' : 'No authenticity data available');
+    return {
+      verified: false,
+      counterfeit: false,
+      expired,
+      recall,
+      label,
+      labelInfo,
+      webscraperInfo,
+      message,
+      telemetry: { latencies, cacheHits },
+    } as VerificationResult
+  }
+
+  async function handleNdc(code: string) {
+    const canonical = normalizeNdc(code || '');
+    const localRecall3 = findLocalRecall(canonical || code);
+    if (localRecall3) {
+      cacheHits['localRecall'] = true
+      return {
+        verified: false,
+        counterfeit: false,
+        expired: false,
+        recall: localRecall3,
+        label: undefined,
+        message: `Product recalled by ${localRecall3.source}`,
+        telemetry: { latencies, cacheHits },
+      } as VerificationResult
+    }
+    const codeToQuery = canonical || code;
+    const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+    const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
+    const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => fetchDrugLabelByNDC(codeToQuery));
+    const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
+    const message = recall ? 'Product recalled' : 'No authenticity data available'
+    return {
+      verified: false,
+      counterfeit: false,
+      expired: false,
+      recall,
+      label,
+      labelInfo,
+      webscraperInfo,
+      message,
+      telemetry: { latencies, cacheHits },
+    } as VerificationResult
+  }
   // 1. Check local recall lists first (offline, EMA, SAHPRA, NAFDAC, PPB, etc.)
   const localRecall = findLocalRecall(data);
   if (localRecall) {
+    cacheHits['localRecall'] = true
     return {
       verified: false,
       counterfeit: false,
@@ -33,16 +122,18 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       recall: localRecall,
       label: undefined,
       message: `Product recalled by ${localRecall.source}`,
+      telemetry: { latencies, cacheHits },
     };
   }
   // Check MedLink QR authenticity
   if (data.startsWith('MedLink:AUTH:')) {
-    const { verified, drug } = await verifyDrugByQrCode(data);
+    const { verified, drug } = await timeAsync('verifyDrugByQrCode', () => verifyDrugByQrCode(data));
     return {
       verified,
       counterfeit: !verified,
       expired: false,
       message: verified ? 'Authenticity verified via MedLink code' : 'Invalid MedLink authenticity code',
+      telemetry: { latencies, cacheHits },
     };
   }
 
@@ -53,25 +144,25 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       const expired = parsed.expiry ? parsed.expiry < new Date() : false;
       // Check local recall for GTIN
       const canonical = normalizeGtinTo14(parsed.gtin || '');
-      const localRecall = findLocalRecall(canonical || parsed.gtin);
-      if (localRecall) {
+      const localRecall2 = findLocalRecall(canonical || parsed.gtin);
+      if (localRecall2) {
+        cacheHits['localRecall'] = true
         return {
           verified: false,
           counterfeit: false,
           expired,
-          recall: localRecall,
+          recall: localRecall2,
           label: undefined,
-          message: expired ? 'Product expired' : `Product recalled by ${localRecall.source}`,
+          message: expired ? 'Product expired' : `Product recalled by ${localRecall2.source}`,
+          telemetry: { latencies, cacheHits },
         };
       }
-      // Always call both openFDA and webscraper for GTIN/NDC
+      // Always call both openFDA and webscraper for GTIN/NDC, measure each
       const codeToQuery = canonical || parsed.gtin;
-      const [recall, label, labelInfo, webscraperInfo] = await Promise.all([
-        getRecallByGTINorNDC(codeToQuery),
-        getLabelingByGTINorNDC(codeToQuery),
-        /^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null),
-        fetchDrugInfoFromScraper(codeToQuery)
-      ]);
+      const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+      const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
+      const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => (/^\d{10,11}$/.test(codeToQuery) ? fetchDrugLabelByNDC(codeToQuery) : Promise.resolve(null)));
+      const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
       return {
         verified: false, // no authenticity code
         counterfeit: false,
@@ -81,6 +172,7 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
         labelInfo,
         webscraperInfo,
         message: expired ? 'Product expired' : (recall ? 'Product recalled' : 'No authenticity data available'),
+        telemetry: { latencies, cacheHits },
       };
     }
   }
@@ -88,25 +180,25 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
   // Check NDC codes (UPC/EAN may map to NDC)
   if (/^\d{10,11}$/.test(data)) {
     const canonical = normalizeNdc(data || '');
-    const localRecall = findLocalRecall(canonical || data);
-    if (localRecall) {
+    const localRecall3 = findLocalRecall(canonical || data);
+    if (localRecall3) {
+      cacheHits['localRecall'] = true
       return {
         verified: false,
         counterfeit: false,
         expired: false,
-        recall: localRecall,
+        recall: localRecall3,
         label: undefined,
-        message: `Product recalled by ${localRecall.source}`,
+        message: `Product recalled by ${localRecall3.source}`,
+        telemetry: { latencies, cacheHits },
       };
     }
-    // Always call both openFDA and webscraper for NDC
+    // Always call both openFDA and webscraper for NDC (measure each)
     const codeToQuery = canonical || data;
-    const [recall, label, labelInfo, webscraperInfo] = await Promise.all([
-      getRecallByGTINorNDC(codeToQuery),
-      getLabelingByGTINorNDC(codeToQuery),
-      fetchDrugLabelByNDC(codeToQuery),
-      fetchDrugInfoFromScraper(codeToQuery)
-    ]);
+    const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+    const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
+    const labelInfo = await timeAsync('fetchDrugLabelByNDC', () => fetchDrugLabelByNDC(codeToQuery));
+    const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(codeToQuery));
     return {
       verified: false,
       counterfeit: false,
@@ -116,6 +208,7 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       labelInfo,
       webscraperInfo,
       message: recall ? 'Product recalled' : 'No authenticity data available',
+      telemetry: { latencies, cacheHits },
     };
   }
 
@@ -123,6 +216,9 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     verified: false,
     counterfeit: false,
     expired: false,
-    message: 'Unrecognized code format',
+  message: 'Unrecognized code format',
+  telemetry: { latencies, cacheHits },
   };
 }
+
+

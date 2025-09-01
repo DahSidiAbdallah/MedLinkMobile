@@ -26,6 +26,7 @@ import { RemindersProvider } from './src/hooks/RemindersContext';
 import { NotificationsProvider } from './src/notifications/NotificationsContext';
 import { LoadingProvider, useLoading } from './src/hooks/LoadingContext';
 import GlobalLoader from './src/components/GlobalLoader';
+import { createTelemetryService, setTelemetryService } from './src/core/telemetryService';
 
 
 const Tab = createBottomTabNavigator();
@@ -124,6 +125,16 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Initialize telemetry service on app startup. This avoids module-import side effects
+    const svc = createTelemetryService({ endpoint: 'https://example.com/telemetry' })
+    svc.init().catch(() => {})
+    setTelemetryService(svc)
+    return () => {
+      try { svc.shutdown() } catch (e) {}
+    }
+  }, [])
 
   useEffect(() => {
     let unsub: any = null;
