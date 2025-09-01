@@ -1,0 +1,215 @@
+{
+  "rxcui": {
+    "url": null,
+    "body": null,
+    "rxcui": null
+  },
+  "label": {
+    "url": "https://api.fda.gov/drug/label.json?search=0087701427244&limit=1",
+    "body": {
+      "meta": {
+        "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+        "terms": "https://open.fda.gov/terms/",
+        "license": "https://open.fda.gov/license/",
+        "last_updated": "2025-09-01",
+        "results": {
+          "skip": 0,
+          "limit": 1,
+          "total": 2
+        }
+      },
+      "results": [
+        {
+          "spl_product_data_elements": [
+            "GNP Ethyl Rubbing Alcohol 70 Percent ethyl alcohol ACETONE METHYL ISOBUTYL KETONE DENATONIUM BENZOATE WATER ALCOHOL ALCOHOL"
+          ],
+          "spl_unclassified_section": [
+            "Drug Facts"
+          ],
+          "active_ingredient": [
+            "Active Ingredient Ethyl Alcohol 70% by volume"
+          ],
+          "purpose": [
+            "Purpose First aid antiseptic"
+          ],
+          "indications_and_usage": [
+            "Use First aid to help prevent the risk of infection in. minor cuts scrapes burns"
+          ],
+          "warnings": [
+            "Warnings For external use only. Flammable, keep way from spark, heat and flame."
+          ],
+          "ask_doctor": [
+            "Ask a doctor before use for deep wounds animal bites serious burns"
+          ],
+          "when_using": [
+            "When using this product do not get into eyes do not apply over large areas of the body do not use longer than 1 week"
+          ],
+          "stop_use": [
+            "Stop use and ask a doctor if condition persists or gets worse"
+          ],
+          "keep_out_of_reach_of_children": [
+            "Keep out of reach of children. In case of accidental ingestion, seek professional assistance or contact a Poison Control Center immediately."
+          ],
+          "dosage_and_administration": [
+            "Directions clean the affected area. apply a small amount of this product on the affected area 1 to 3 times daily. may be covered with sterile bandage. if bandaged, let it dry first."
+          ],
+          "other_safety_information": [
+            "Other Information store at room temperature will produce serious gastric disturbances if taken internally."
+          ],
+          "inactive_ingredient": [
+            "Inactive Ingredient Acetone 5% Methyl isobutyl ketone 1% bitrex purified water"
+          ],
+          "package_label_principal_display_panel": [
+            "Principal Display Panel NDC 46122-329 -43 RUBBING ALCOHOL ETHYL ALCOHOL 70% USP First Aid Antiseptic 16 fl oz (1 pt) 473 mL Principal Display Panel NDC 46122-329-43 RUBBING ALCOHOL ETHYL ALCOHOL 70% USP First Aid Antiseptic 16 fl oz (1 pt) 473 mL"
+          ],
+          "set_id": "33efb46b-e8c4-4282-96a9-db7a97bd8563",
+          "id": "0c827e0d-14a3-ad56-e063-6394a90a0de5",
+          "effective_time": "20231214",
+          "version": "5",
+          "openfda": {
+            "application_number": [
+              "M003"
+            ],
+            "brand_name": [
+              "GNP Ethyl Rubbing Alcohol 70 Percent"
+            ],
+            "generic_name": [
+              "ETHYL ALCOHOL"
+            ],
+            "manufacturer_name": [
+              "Amerisource Bergen"
+            ],
+            "product_ndc": [
+              "46122-329"
+            ],
+            "product_type": [
+              "HUMAN OTC DRUG"
+            ],
+            "route": [
+              "TOPICAL"
+            ],
+            "substance_name": [
+              "ALCOHOL"
+            ],
+            "rxcui": [
+              "582753"
+            ],
+            "spl_id": [
+              "0c827e0d-14a3-ad56-e063-6394a90a0de5"
+            ],
+            "spl_set_id": [
+              "33efb46b-e8c4-4282-96a9-db7a97bd8563"
+            ],
+            "package_ndc": [
+              "46122-329-43"
+            ],
+            "is_original_packager": [
+              true
+            ],
+            "upc": [
+              "0087701427244"
+            ],
+            "unii": [
+              "3K9958V90M"
+            ]
+          }
+        }
+      ]
+    },
+    "label": {
+      "spl_product_data_elements": [
+        "GNP Ethyl Rubbing Alcohol 70 Percent ethyl alcohol ACETONE METHYL ISOBUTYL KETONE DENATONIUM BENZOATE WATER ALCOHOL ALCOHOL"
+      ],
+      "spl_unclassified_section": [
+        "Drug Facts"
+      ],
+      "active_ingredient": [
+        "Active Ingredient Ethyl Alcohol 70% by volume"
+      ],
+      "purpose": [
+        "Purpose First aid antiseptic"
+      ],
+      "indications_and_usage": [
+        "Use First aid to help prevent the risk of infection in. minor cuts scrapes burns"
+      ],
+      "warnings": [
+        "Warnings For external use only. Flammable, keep way from spark, heat and flame."
+      ],
+      "ask_doctor": [
+        "Ask a doctor before use for deep wounds animal bites serious burns"
+      ],
+      "when_using": [
+        "When using this product do not get into eyes do not apply over large areas of the body do not use longer than 1 week"
+      ],
+      "stop_use": [
+        "Stop use and ask a doctor if condition persists or gets worse"
+      ],
+      "keep_out_of_reach_of_children": [
+        "Keep out of reach of children. In case of accidental ingestion, seek professional assistance or contact a Poison Control Center immediately."
+      ],
+      "dosage_and_administration": [
+        "Directions clean the affected area. apply a small amount of this product on the affected area 1 to 3 times daily. may be covered with sterile bandage. if bandaged, let it dry first."
+      ],
+      "other_safety_information": [
+        "Other Information store at room temperature will produce serious gastric disturbances if taken internally."
+      ],
+      "inactive_ingredient": [
+        "Inactive Ingredient Acetone 5% Methyl isobutyl ketone 1% bitrex purified water"
+      ],
+      "package_label_principal_display_panel": [
+        "Principal Display Panel NDC 46122-329 -43 RUBBING ALCOHOL ETHYL ALCOHOL 70% USP First Aid Antiseptic 16 fl oz (1 pt) 473 mL Principal Display Panel NDC 46122-329-43 RUBBING ALCOHOL ETHYL ALCOHOL 70% USP First Aid Antiseptic 16 fl oz (1 pt) 473 mL"
+      ],
+      "set_id": "33efb46b-e8c4-4282-96a9-db7a97bd8563",
+      "id": "0c827e0d-14a3-ad56-e063-6394a90a0de5",
+      "effective_time": "20231214",
+      "version": "5",
+      "openfda": {
+        "application_number": [
+          "M003"
+        ],
+        "brand_name": [
+          "GNP Ethyl Rubbing Alcohol 70 Percent"
+        ],
+        "generic_name": [
+          "ETHYL ALCOHOL"
+        ],
+        "manufacturer_name": [
+          "Amerisource Bergen"
+        ],
+        "product_ndc": [
+          "46122-329"
+        ],
+        "product_type": [
+          "HUMAN OTC DRUG"
+        ],
+        "route": [
+          "TOPICAL"
+        ],
+        "substance_name": [
+          "ALCOHOL"
+        ],
+        "rxcui": [
+          "582753"
+        ],
+        "spl_id": [
+          "0c827e0d-14a3-ad56-e063-6394a90a0de5"
+        ],
+        "spl_set_id": [
+          "33efb46b-e8c4-4282-96a9-db7a97bd8563"
+        ],
+        "package_ndc": [
+          "46122-329-43"
+        ],
+        "is_original_packager": [
+          true
+        ],
+        "upc": [
+          "0087701427244"
+        ],
+        "unii": [
+          "3K9958V90M"
+        ]
+      }
+    }
+  }
+}

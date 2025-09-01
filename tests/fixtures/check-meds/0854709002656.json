@@ -1,0 +1,209 @@
+{
+  "rxcui": {
+    "url": null,
+    "body": null,
+    "rxcui": null
+  },
+  "label": {
+    "url": "https://api.fda.gov/drug/label.json?search=0854709002656&limit=1",
+    "body": {
+      "meta": {
+        "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+        "terms": "https://open.fda.gov/terms/",
+        "license": "https://open.fda.gov/license/",
+        "last_updated": "2025-09-01",
+        "results": {
+          "skip": 0,
+          "limit": 1,
+          "total": 1
+        }
+      },
+      "results": [
+        {
+          "spl_product_data_elements": [
+            "RUBBING ALCOHOL 50 PERCENT with Wintergreen ISOPROPYL ALCOHOL ISOPROPYL ALCOHOL ISOPROPYL ALCOHOL METHYL SALICYLATE WATER FD&C BLUE NO. 1 FD&C YELLOW NO. 5"
+          ],
+          "active_ingredient": [
+            "Active ingredient ISOPROPYL ALCOHOL 50%"
+          ],
+          "purpose": [
+            "Purpose FIRST AID ANTISEPTIC"
+          ],
+          "indications_and_usage": [
+            "Uses FIRST AID TO HELP PREVENT THE RISK IN: MINOR CUTS SCRAPES BURNS"
+          ],
+          "keep_out_of_reach_of_children": [
+            "Keep Out of Reach of Children IF SWALLOWED, GET MEDICAL HELP OR CONTACT A POISON CONTROL CENTER RIGHT AWAY. FOR RUBBING AND MASSAGING: CAUTION - DO NOT APPLY TO IRRITATED SKIN OR IF EXCESSIVE IRRITATION DEVELOPS. AVOID GETTING INTO THE EYES OR ON MUCOUS MEMBRANES."
+          ],
+          "warnings": [
+            "WARNINGS For external use only. FLAMMABLE, KEEP AWAY FROM FIRE OR FLAME, HEAT, SPARK, ELECTRICAL."
+          ],
+          "ask_doctor": [
+            "ASK A DOCTOR BEFORE USE IF YOU HAVE DEEP PUNCTURE WOUNDS SERIOUS BURNS"
+          ],
+          "when_using": [
+            "WHEN USING THIS PRODUCT DO NOT GET INTO EYES DO NOT APPLY OVER LARGE AREAS OF THE BODY. DO NOT USE LONGER THAN 1 WEEK UNLESS DIRECTED BY A DOCTOR."
+          ],
+          "stop_use": [
+            "STOP USE AND ASK A DOCTOR IF CONDITION PERSISTS OR GET WORSE."
+          ],
+          "dosage_and_administration": [
+            "Directions CLEAN THE AFFECTED AREA. APPLY A SMALL AMOUNT OF THIS PRODUCT ON THE AREA 1 TO 3 TIMES DAILY MAY BE COVERED WITH A STERILE BANDAGE IF BANDAGED, LET DRY FIRST."
+          ],
+          "other_safety_information": [
+            "OTHER INFORMATION DOES NOT CONTAIN, NOR IS INTENDED AS A SUBSTITUTE FOR GRAIN OR ETHYL ALCOHOL WILL PRODUCE SERIOUS GASTRIC DISTURBANCES IF TAKEN INTERNALLY."
+          ],
+          "inactive_ingredient": [
+            "Inactive Ingredient BLUE 1, METHYL SALICYLATE, WATER, YELLOW 5"
+          ],
+          "package_label_principal_display_panel": [
+            "lbl"
+          ],
+          "set_id": "14837519-e88e-a9b7-e063-6394a90aee58",
+          "id": "14838801-8935-a8bd-e063-6394a90a46e7",
+          "effective_time": "20240325",
+          "version": "1",
+          "openfda": {
+            "application_number": [
+              "M003"
+            ],
+            "brand_name": [
+              "RUBBING ALCOHOL 50 PERCENT with Wintergreen"
+            ],
+            "generic_name": [
+              "ISOPROPYL ALCOHOL"
+            ],
+            "manufacturer_name": [
+              "Viny Health and Beauty Products Inc"
+            ],
+            "product_ndc": [
+              "76436-314"
+            ],
+            "product_type": [
+              "HUMAN OTC DRUG"
+            ],
+            "route": [
+              "TOPICAL"
+            ],
+            "substance_name": [
+              "ISOPROPYL ALCOHOL"
+            ],
+            "rxcui": [
+              "616456"
+            ],
+            "spl_id": [
+              "14838801-8935-a8bd-e063-6394a90a46e7"
+            ],
+            "spl_set_id": [
+              "14837519-e88e-a9b7-e063-6394a90aee58"
+            ],
+            "package_ndc": [
+              "76436-314-12"
+            ],
+            "is_original_packager": [
+              true
+            ],
+            "upc": [
+              "0854709002656"
+            ],
+            "unii": [
+              "ND2M416302"
+            ]
+          }
+        }
+      ]
+    },
+    "label": {
+      "spl_product_data_elements": [
+        "RUBBING ALCOHOL 50 PERCENT with Wintergreen ISOPROPYL ALCOHOL ISOPROPYL ALCOHOL ISOPROPYL ALCOHOL METHYL SALICYLATE WATER FD&C BLUE NO. 1 FD&C YELLOW NO. 5"
+      ],
+      "active_ingredient": [
+        "Active ingredient ISOPROPYL ALCOHOL 50%"
+      ],
+      "purpose": [
+        "Purpose FIRST AID ANTISEPTIC"
+      ],
+      "indications_and_usage": [
+        "Uses FIRST AID TO HELP PREVENT THE RISK IN: MINOR CUTS SCRAPES BURNS"
+      ],
+      "keep_out_of_reach_of_children": [
+        "Keep Out of Reach of Children IF SWALLOWED, GET MEDICAL HELP OR CONTACT A POISON CONTROL CENTER RIGHT AWAY. FOR RUBBING AND MASSAGING: CAUTION - DO NOT APPLY TO IRRITATED SKIN OR IF EXCESSIVE IRRITATION DEVELOPS. AVOID GETTING INTO THE EYES OR ON MUCOUS MEMBRANES."
+      ],
+      "warnings": [
+        "WARNINGS For external use only. FLAMMABLE, KEEP AWAY FROM FIRE OR FLAME, HEAT, SPARK, ELECTRICAL."
+      ],
+      "ask_doctor": [
+        "ASK A DOCTOR BEFORE USE IF YOU HAVE DEEP PUNCTURE WOUNDS SERIOUS BURNS"
+      ],
+      "when_using": [
+        "WHEN USING THIS PRODUCT DO NOT GET INTO EYES DO NOT APPLY OVER LARGE AREAS OF THE BODY. DO NOT USE LONGER THAN 1 WEEK UNLESS DIRECTED BY A DOCTOR."
+      ],
+      "stop_use": [
+        "STOP USE AND ASK A DOCTOR IF CONDITION PERSISTS OR GET WORSE."
+      ],
+      "dosage_and_administration": [
+        "Directions CLEAN THE AFFECTED AREA. APPLY A SMALL AMOUNT OF THIS PRODUCT ON THE AREA 1 TO 3 TIMES DAILY MAY BE COVERED WITH A STERILE BANDAGE IF BANDAGED, LET DRY FIRST."
+      ],
+      "other_safety_information": [
+        "OTHER INFORMATION DOES NOT CONTAIN, NOR IS INTENDED AS A SUBSTITUTE FOR GRAIN OR ETHYL ALCOHOL WILL PRODUCE SERIOUS GASTRIC DISTURBANCES IF TAKEN INTERNALLY."
+      ],
+      "inactive_ingredient": [
+        "Inactive Ingredient BLUE 1, METHYL SALICYLATE, WATER, YELLOW 5"
+      ],
+      "package_label_principal_display_panel": [
+        "lbl"
+      ],
+      "set_id": "14837519-e88e-a9b7-e063-6394a90aee58",
+      "id": "14838801-8935-a8bd-e063-6394a90a46e7",
+      "effective_time": "20240325",
+      "version": "1",
+      "openfda": {
+        "application_number": [
+          "M003"
+        ],
+        "brand_name": [
+          "RUBBING ALCOHOL 50 PERCENT with Wintergreen"
+        ],
+        "generic_name": [
+          "ISOPROPYL ALCOHOL"
+        ],
+        "manufacturer_name": [
+          "Viny Health and Beauty Products Inc"
+        ],
+        "product_ndc": [
+          "76436-314"
+        ],
+        "product_type": [
+          "HUMAN OTC DRUG"
+        ],
+        "route": [
+          "TOPICAL"
+        ],
+        "substance_name": [
+          "ISOPROPYL ALCOHOL"
+        ],
+        "rxcui": [
+          "616456"
+        ],
+        "spl_id": [
+          "14838801-8935-a8bd-e063-6394a90a46e7"
+        ],
+        "spl_set_id": [
+          "14837519-e88e-a9b7-e063-6394a90aee58"
+        ],
+        "package_ndc": [
+          "76436-314-12"
+        ],
+        "is_original_packager": [
+          true
+        ],
+        "upc": [
+          "0854709002656"
+        ],
+        "unii": [
+          "ND2M416302"
+        ]
+      }
+    }
+  }
+}
