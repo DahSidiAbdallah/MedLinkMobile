@@ -28,7 +28,9 @@ export default function Reminders() {
       setToggleMsg(prev => ({ ...prev, [reminder.id]: reminder.active ? 'Reminder turned off.' : 'Reminder activated.' }));
       refresh();
     } catch (e) {
-      // Optionally log error: console.error(e);
+      // Log error for diagnostics
+      // eslint-disable-next-line no-console
+      console.error('Failed to toggle reminder', e);
       setToggleMsg(prev => ({ ...prev, [reminder.id]: 'Failed to update reminder.' }));
     } finally {
       setToggling(prev => ({ ...prev, [reminder.id]: false }));
@@ -128,7 +130,7 @@ export default function Reminders() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: 80 }}>
+  <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: 80 }}>
       <View style={{ padding: spacing.xl }}>
         <SegmentedControl options={['Active', 'Past']} value={segment} onChange={setSegment} />
       </View>
@@ -201,7 +203,7 @@ export default function Reminders() {
                 onPress={handleCreateReminder}
                 disabled={creating}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{creating ? 'Saving...' : 'Save'}</Text>
+                <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{creating ? 'Saving...' : 'Save'}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalBtn, { backgroundColor: colors.card, flex: 1 }]}
@@ -234,7 +236,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+  backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   headerCard: {
     alignItems: 'center',
     paddingVertical: spacing.lg,
-    backgroundColor: '#fff',
+  backgroundColor: colors.surface,
     borderRadius: radius.lg,
     // ...shadow.lg, // Removed invalid property
     marginBottom: spacing.lg,
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnTxt: {
-    color: '#fff',
+  color: colors.surface,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.line,
+  backgroundColor: colors.line,
   },
   buttonGrid: {
     flexDirection: 'row',
@@ -82,11 +82,11 @@ const styles = StyleSheet.create({
 
 const modalStyles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+  flex: 1,
+  backgroundColor: colors.overlay,
   },
   content: {
-    backgroundColor: '#fff',
+  backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 24,
     width: '90%',
@@ -102,22 +102,22 @@ const modalStyles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 12,
     marginBottom: 4,
-    color: '#222',
+  color: colors.text,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+  borderColor: colors.line,
     borderRadius: 8,
     padding: 12,
     marginBottom: 4,
     fontSize: 16,
-    backgroundColor: '#F9FAFB',
+  backgroundColor: colors.surface,
   },
   inputError: {
-    borderColor: '#EF4444',
+  borderColor: colors.danger,
   },
   error: {
-    color: '#EF4444',
+  color: colors.danger,
     fontSize: 13,
     marginBottom: 4,
   },
@@ -129,15 +129,15 @@ const modalStyles = StyleSheet.create({
   chipInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F9FAFB',
+  borderColor: colors.line,
+  borderRadius: radius.md,
+  padding: 12,
+  backgroundColor: colors.surface,
     fontSize: 16,
   },
   chipAddBtn: {
-    marginLeft: 8,
-    backgroundColor: '#F3F4F6',
+  marginLeft: 8,
+  backgroundColor: colors.line,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -153,7 +153,7 @@ const modalStyles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5E7EB',
+  backgroundColor: colors.line,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -161,12 +161,12 @@ const modalStyles = StyleSheet.create({
     marginBottom: 4,
   },
   chipText: {
-    color: '#222',
+  color: colors.text,
     fontSize: 15,
     marginRight: 4,
   },
   chipRemove: {
-    color: '#EF4444',
+    color: colors.danger,
     fontWeight: 'bold',
     fontSize: 18,
     marginLeft: 2,
@@ -324,7 +324,7 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
               </Pressable>
             ))}
             <Pressable style={[modalStyles.btn, { backgroundColor: colors.primary, marginTop: spacing.lg }]} onPress={() => setLangModal(false)}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
+              <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
             </Pressable>
           </View>
         </View>

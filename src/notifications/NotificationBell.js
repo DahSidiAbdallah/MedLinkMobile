@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Pressable, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { colors } from '../theme';
 import { useNotifications } from './NotificationsContext';
+import PropTypes from 'prop-types';
 
 export default function NotificationBell({ onPress }) {
   const { unreadCount } = useNotifications();
 
   return (
     <Pressable onPress={onPress} style={styles.wrap} hitSlop={10} accessibilityLabel="Notifications">
-      <MaterialIcons name="notifications-none" size={26} />
+      <MaterialIcons name="notifications-none" size={26} color={colors.text} />
       {unreadCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
@@ -30,9 +32,17 @@ const styles = StyleSheet.create({
     height: 16,
     paddingHorizontal: 3,
     borderRadius: 8,
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { color: 'white', fontSize: 10, fontWeight: '600' },
+  badgeText: { color: colors.card, fontSize: 10, fontWeight: '600' },
 });
+
+NotificationBell.propTypes = {
+  onPress: PropTypes.func,
+};
+
+NotificationBell.defaultProps = {
+  onPress: () => {},
+};

@@ -6,7 +6,7 @@ import { fetchUserProfile, Profile } from '../core/userProfile';
 import { FlatList, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ensureFocus } from '../utils/cameraHelper';
-import { colors, spacing } from '../theme';
+import { colors, spacing, shadow } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
 import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs } from '../core/barcode';
@@ -35,8 +35,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 3,
-    borderColor: colors.primary,
-    backgroundColor: '#000',
+  borderColor: colors.primary,
+  backgroundColor: '#000',
     alignSelf: 'center',
   },
   resultBox: {
@@ -44,11 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 18,
     padding: spacing.xl,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+  ...shadow.card,
     minWidth: 260,
     maxWidth: 340,
     alignSelf: 'center',
@@ -100,7 +96,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 6,
-    backgroundColor: colors.card,
+  backgroundColor: colors.card,
     marginHorizontal: 4,
     borderWidth: 1,
     borderColor: colors.muted,
@@ -145,6 +141,19 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
+
+// Helper: produce an rgba string from accent hex with alpha
+const accentRgba = (alpha: number) => {
+  try {
+    const hex = colors.accent.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  } catch (e) {
+    return `rgba(34,197,94,${alpha})`;
+  }
+};
 
 type ScanHistoryItem = {
   timestamp: number;
@@ -459,16 +468,16 @@ const BarcodeScanner: React.FC = () => {
               }}
             />
             {/* Advanced scan guidance overlay */}
-            <View style={{
+              <View style={{
               position: 'absolute',
               borderWidth: pulse ? 3 : 1,
-              borderColor: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : '#fff'),
+              borderColor: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : colors.card),
               borderRadius: 14,
               width: 220,
               height: 80,
               top: 100,
               left: 30,
-              backgroundColor: showScanEffect ? 'rgba(34,197,94,0.08)' : (barcodeDetected ? 'rgba(34,197,94,0.04)' : 'transparent'),
+              backgroundColor: showScanEffect ? accentRgba(0.08) : (barcodeDetected ? accentRgba(0.04) : 'transparent'),
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 10,
@@ -477,7 +486,7 @@ const BarcodeScanner: React.FC = () => {
               shadowRadius: barcodeDetected ? 8 : 0,
               shadowOffset: { width: 0, height: 0 },
             }}>
-              <Text style={{ color: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : '#fff'), fontWeight: 'bold', fontSize: 16 }}>
+              <Text style={{ color: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : colors.card), fontWeight: 'bold', fontSize: 16 }}>
                 {showScanEffect ? 'Scan Complete!' : barcodeDetected ? 'Barcode Detected!' : 'Align barcode here'}
               </Text>
             </View>
@@ -503,7 +512,7 @@ const BarcodeScanner: React.FC = () => {
                     <Text style={styles.historyData}>{item.data}</Text>
                     <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error)}</Text>
                     {item.risk && item.risk.length > 0 && (
-                      <Text style={{ color: '#b45309', fontSize: 13, marginTop: 2 }}>⚠️ {item.risk}</Text>
+                      <Text style={{ color: colors.warn, fontSize: 13, marginTop: 2 }}>⚠️ {item.risk}</Text>
                     )}
                     <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
                   </View>
@@ -524,18 +533,18 @@ const BarcodeScanner: React.FC = () => {
           {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
           <Text style={styles.userMessage}>{getUserMessage(verification, error)}</Text>
           {riskWarning && (
-            <View style={{ marginTop: 16, alignSelf: 'stretch', backgroundColor: '#fffbe6', borderColor: '#f59e42', borderWidth: 1, borderRadius: 8, padding: 12 }}>
-              <Text style={{ color: '#b45309', fontWeight: 'bold' }}>⚠️ Medication Risk</Text>
-              <Text style={{ color: '#b45309', marginTop: 4 }}>{riskWarning}</Text>
+            <View style={{ marginTop: 16, alignSelf: 'stretch', backgroundColor: colors.surface, borderColor: colors.warn, borderWidth: 1, borderRadius: 8, padding: 12 }}>
+              <Text style={{ color: colors.warn, fontWeight: 'bold' }}>⚠️ Medication Risk</Text>
+              <Text style={{ color: colors.warn, marginTop: 4 }}>{riskWarning}</Text>
             </View>
           )}
           {verification && (
             <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
-              {verification.verified && <Text style={{ color: 'green' }}>Authenticity verified!</Text>}
-              {verification.expired && <Text style={{ color: 'red' }}>Expired: do not use.</Text>}
+              {verification.verified && <Text style={{ color: colors.accent }}>Authenticity verified!</Text>}
+              {verification.expired && <Text style={{ color: colors.danger }}>Expired: do not use.</Text>}
               {verification.recall && (
                 <View>
-                  <Text style={{ color: 'red' }}>Recall Alert:</Text>
+                    <Text style={{ color: colors.danger }}>Recall Alert:</Text>
                   <Text>{verification.recall.reason_for_recall}</Text>
                   <Text>Status: {verification.recall.status}</Text>
                 </View>
@@ -545,7 +554,7 @@ const BarcodeScanner: React.FC = () => {
               )}
               {/* Show openFDA info if available, else webscraper info, or both if both exist */}
               {(verification.labelInfo || verification.webscraperInfo) && (
-                <View style={{ marginTop: 12, backgroundColor: '#f3f4f6', borderRadius: 8, padding: 10 }}>
+                <View style={{ marginTop: 12, backgroundColor: colors.line, borderRadius: 8, padding: 10 }}>
                   {/* openFDA info */}
                   {verification.labelInfo && (
                     <>
@@ -603,13 +612,13 @@ const BarcodeScanner: React.FC = () => {
           {error && !loading && (
             <Text style={styles.error}>{error}</Text>
           )}
-          <TouchableOpacity
+            <TouchableOpacity
             style={[styles.rescanBtn, { backgroundColor: colors.primary, marginBottom: 10 }]}
             onPress={() => {
               setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
             }}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Scan Another</Text>
+            <Text style={{ color: colors.card, fontWeight: 'bold' }}>Scan Another</Text>
           </TouchableOpacity>
           {verification && (
             <TouchableOpacity
@@ -627,7 +636,7 @@ const BarcodeScanner: React.FC = () => {
                 setTimeout(() => setError(null), 1500);
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Save to My Medications</Text>
+              <Text style={{ color: colors.card, fontWeight: 'bold' }}>Save to My Medications</Text>
             </TouchableOpacity>
           )}
         </ScrollView>

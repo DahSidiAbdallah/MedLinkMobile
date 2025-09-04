@@ -6,11 +6,11 @@ import { colors } from '../theme';
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+  backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     marginVertical: 8,
-    shadowColor: '#000',
+  shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
@@ -98,7 +98,7 @@ export default function MyMedicationsList() {
               paddingHorizontal: 16,
             }}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
+            <Text style={{ color: colors.card, fontWeight: 'bold' }}>Delete</Text>
           </TouchableOpacity>
         </View>
       ))}
