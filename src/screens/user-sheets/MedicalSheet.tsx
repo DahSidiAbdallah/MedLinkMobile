@@ -24,8 +24,8 @@ export default function MedicalSheet({ visible, onClose, profile }: Readonly<Pro
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' }}>
-        <Animated.View style={{ backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 24, width: '100%', maxHeight: '80%', transform: [{ translateY }] }}>
+      <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
+        <Animated.View style={{ backgroundColor: colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 24, width: '100%', maxHeight: '80%', transform: [{ translateY }] }}>
           <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }}>{t('profile.medicalId', 'Medical ID')}</Text>
           <Text style={{ color: colors.text, fontWeight: '600', marginBottom: 6 }}>{t('auth.bloodType', 'Blood Type')}: <Text style={{ color: colors.muted }}>{profile?.blood_type || t('common.notSet', 'Not set')}</Text></Text>
           <Text style={{ color: colors.text, fontWeight: '600', marginTop: 10, marginBottom: 6 }}>{t('auth.allergies', 'Allergies')}:</Text>
@@ -35,7 +35,7 @@ export default function MedicalSheet({ visible, onClose, profile }: Readonly<Pro
           <Text style={{ color: colors.text, fontWeight: '600', marginTop: 10, marginBottom: 6 }}>{t('auth.medications', 'Medications')}:</Text>
           {profile?.medications && profile.medications.length > 0 ? profile.medications.map((m: string) => <Text key={m} style={{ color: colors.muted, marginLeft: 8 }}>• {m}</Text>) : <Text style={{ color: colors.muted, marginLeft: 8 }}>{t('common.none', 'None')}</Text>}
           <Pressable style={{ paddingVertical: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary, marginTop: spacing.lg }} onPress={() => { Animated.timing(anim, { toValue: 0, duration: 180, useNativeDriver: true }).start(onClose); }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
+            <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
           </Pressable>
         </Animated.View>
       </View>

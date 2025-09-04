@@ -19,7 +19,7 @@ export default function LocationSplash({ onRequest, loading, error }: Props) {
       </Text>
       {error && <Text style={styles.error}>{error}</Text>}
       <Pressable style={styles.button} onPress={onRequest} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Allow Location</Text>}
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.buttonText}>Allow Location</Text>}
       </Pressable>
     </View>
   );
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   buttonText: {
-    color: '#fff',
+  color: colors.card,
     fontWeight: '600',
     fontSize: 16,
   },

@@ -19,7 +19,7 @@ export function SegmentedControl({ options, value, onChange }:{
 const styles = StyleSheet.create({
   wrap:{ flexDirection:'row', backgroundColor:'#EFF3FF', borderRadius: radius.lg, padding:4, gap:6 },
   btn:{ flex:1, alignItems:'center', paddingVertical:10, borderRadius: radius.md },
-  active:{ backgroundColor:'#fff' },
+  active:{ backgroundColor: colors.card },
   lbl:{ color: colors.muted, fontWeight:'600' },
   albl:{ color: colors.primary },
 });

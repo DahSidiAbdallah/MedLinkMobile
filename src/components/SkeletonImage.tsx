@@ -9,7 +9,7 @@ type Props = Readonly<{
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
 }>;
 
-export default function SkeletonImage({ source, style, placeholderColor = '#EEF2FF', resizeMode = 'cover' }: Props) {
+export default function SkeletonImage({ source, style, placeholderColor, resizeMode = 'cover' }: Props) {
   const opacity = useRef(new Animated.Value(0)).current;
   const [loaded, setLoaded] = useState(false);
 
@@ -24,9 +24,10 @@ export default function SkeletonImage({ source, style, placeholderColor = '#EEF2
     Animated.timing(opacity, { toValue: 1, duration: 260, useNativeDriver: true }).start();
   };
 
+  const bgColor = placeholderColor || '#EEF2FF';
   return (
     <View style={[styles.container, Array.isArray(style) ? StyleSheet.flatten(style) : style]}>
-      {!loaded && <View style={[StyleSheet.absoluteFill, { backgroundColor: placeholderColor, borderRadius: (StyleSheet.flatten(style) as any)?.borderRadius || 0 }]} />}
+      {!loaded && <View style={[StyleSheet.absoluteFill, { backgroundColor: bgColor, borderRadius: (StyleSheet.flatten(style) as any)?.borderRadius || 0 }]} />}
       <Animated.Image
         source={source}
         onLoad={onLoad}

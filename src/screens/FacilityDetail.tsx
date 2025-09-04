@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions, Image as RNImage } from 'react-native';
-import { colors, spacing, type } from '../theme';
+import { colors, spacing, type, radius } from '../theme';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { Pill } from '../components/Pill';
@@ -82,14 +82,14 @@ export default function FacilityDetail() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 28,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    padding: spacing.xl,
     paddingBottom: 40,
     shadowColor: '#000',
     shadowOpacity: 0.08,

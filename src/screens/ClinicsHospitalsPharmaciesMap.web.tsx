@@ -9,6 +9,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import type { Facility } from '../types';
+import { colors } from '../theme';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -103,9 +104,9 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
   }
 
   const iconColors: Record<string, string> = {
-    pharmacy: '#22C55E', // green
-    clinic: '#00326d',   // blue
-    hospital: '#F59E0B', // orange
+    pharmacy: colors.accent,
+    clinic: colors.primary,
+    hospital: colors.warn,
   };
 
   // Responsive: sticky only on large screens, block on mobile
@@ -114,8 +115,8 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
     height: 420,
     borderRadius: 16,
     overflow: 'hidden',
-    background: '#fff',
-    boxShadow: '0 4px 24px 0 rgba(0,0,0,0.08)',
+  background: colors.card,
+  boxShadow: `0 4px 24px 0 ${colors.overlay}`,
     margin: '24px 0',
     position: 'relative',
   };
@@ -136,7 +137,7 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {userLocation && (
-            <Marker position={userLocation} icon={createColoredIcon('#2563eb')}>
+            <Marker position={userLocation} icon={createColoredIcon(colors.primary)}>
               <Popup>You are here</Popup>
             </Marker>
           )}

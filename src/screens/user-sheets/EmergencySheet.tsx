@@ -24,8 +24,8 @@ export default function EmergencySheet({ visible, onClose, profile }: Readonly<P
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' }}>
-        <Animated.View style={{ backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 24, width: '100%', maxHeight: '80%', transform: [{ translateY }] }}>
+      <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
+        <Animated.View style={{ backgroundColor: colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 24, width: '100%', maxHeight: '80%', transform: [{ translateY }] }}>
           <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }}>{t('profile.emergencyContacts', 'Emergency Contacts')}</Text>
           {profile?.emergency_contacts && profile.emergency_contacts.length > 0 ? profile.emergency_contacts.map((c: any, i: number) => (
             <View key={c.id || i} style={{ marginBottom: 10 }}>
@@ -36,7 +36,7 @@ export default function EmergencySheet({ visible, onClose, profile }: Readonly<P
             </View>
           )) : <Text style={{ color: colors.muted }}>{t('profile.noEmergencyContacts', 'No emergency contacts')}</Text>}
           <Pressable style={{ paddingVertical: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary, marginTop: spacing.lg }} onPress={() => { Animated.timing(anim, { toValue: 0, duration: 180, useNativeDriver: true }).start(onClose); }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
+            <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
           </Pressable>
         </Animated.View>
       </View>

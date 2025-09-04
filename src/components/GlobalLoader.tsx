@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
-import { colors } from '../theme';
+import { colors, radius, shadow } from '../theme';
 import { useLoading } from '../hooks/LoadingContext';
 
 export default function GlobalLoader() {
   const { isLoading } = useLoading();
   if (!isLoading) return null;
   return (
-    <View style={styles.overlay} accessibilityElementsHidden={false} importantForAccessibility="no-hide-descendants">
-      <View style={styles.container}>
+    <View style={[styles.overlay]} accessibilityElementsHidden={false} importantForAccessibility="no-hide-descendants">
+      <View style={[styles.container]}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.text}>Loading…</Text>
       </View>
@@ -25,20 +25,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    backgroundColor: colors.overlay,
     zIndex: 9999,
   },
   container: {
-    padding: 20,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    padding: 18,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 140,
-    elevation: 6,
+    ...shadow.soft,
   },
   text: {
     marginTop: 12,
-    color: '#333',
+    color: colors.text,
+    fontSize: 14,
   },
 });
