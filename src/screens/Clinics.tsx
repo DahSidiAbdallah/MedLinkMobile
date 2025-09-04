@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, ScrollView, Text, TextInput, Platform, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
 import type { Facility } from '../types';
-import { colors, spacing } from '../theme';
+import { colors, spacing, radius } from '../theme';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 import { Pill } from '../components/Pill';
@@ -112,13 +112,13 @@ export default function FacilitiesScreen({ navigation }: any) {
       {/* Search bar */}
 
       <View style={{ marginBottom: spacing.lg }}>
-        <TextInput
+    <TextInput
           placeholder="Search facilities..."
           value={search}
           onChangeText={setSearch}
           style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
             paddingHorizontal: 16,
             paddingVertical: Platform.OS === 'web' ? 12 : 8,
             fontSize: 16,
@@ -137,27 +137,27 @@ export default function FacilitiesScreen({ navigation }: any) {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: openNow ? colors.primary : '#F3F4F6',
-              borderRadius: 999,
+              backgroundColor: openNow ? colors.primary : colors.line,
+              borderRadius: radius.pill,
               paddingHorizontal: 14,
               paddingVertical: 7,
               marginRight: 8,
             }}>
-            <Text style={{ color: openNow ? '#fff' : colors.muted, fontSize: 15, marginRight: 6 }}>●</Text>
-            <Text style={{ color: openNow ? '#fff' : colors.text, fontWeight: '600', fontSize: 15 }}>Open Now</Text>
+            <Text style={{ color: openNow ? colors.card : colors.muted, fontSize: 15, marginRight: 6 }}>●</Text>
+            <Text style={{ color: openNow ? colors.card : colors.text, fontWeight: '600', fontSize: 15 }}>Open Now</Text>
           </Pressable>
           <Pressable
             onPress={() => setHasDelivery(v => !v)}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: hasDelivery ? colors.primary : '#F3F4F6',
-              borderRadius: 999,
+              backgroundColor: hasDelivery ? colors.primary : colors.line,
+              borderRadius: radius.pill,
               paddingHorizontal: 14,
               paddingVertical: 7,
             }}>
-            <Text style={{ color: hasDelivery ? '#fff' : colors.muted, fontSize: 15, marginRight: 6 }}>🚴‍♂️</Text>
-            <Text style={{ color: hasDelivery ? '#fff' : colors.text, fontWeight: '600', fontSize: 15 }}>Has Delivery</Text>
+            <Text style={{ color: hasDelivery ? colors.card : colors.muted, fontSize: 15, marginRight: 6 }}>🚴‍♂️</Text>
+            <Text style={{ color: hasDelivery ? colors.card : colors.text, fontWeight: '600', fontSize: 15 }}>Has Delivery</Text>
           </Pressable>
         </View>
       </View>
@@ -184,13 +184,13 @@ export default function FacilitiesScreen({ navigation }: any) {
         transparent
         onRequestClose={closeFacilityModal}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.08)', justifyContent: 'flex-end' }}>
+        <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
           <Animated.View
             style={{
-              backgroundColor: '#fff',
-              borderTopLeftRadius: 28,
-              borderTopRightRadius: 28,
-              padding: 28,
+              backgroundColor: colors.card,
+              borderTopLeftRadius: radius.xl,
+              borderTopRightRadius: radius.xl,
+              padding: spacing.xl,
               paddingBottom: 40,
               shadowColor: '#000',
               shadowOpacity: 0.08,
@@ -255,8 +255,8 @@ export default function FacilitiesScreen({ navigation }: any) {
             <View style={{ marginTop: 8 }}>
               {/* Images */}
               {!!fac.image && (
-                <View style={{ marginBottom: 8, borderRadius: 12, overflow: 'hidden', alignSelf: 'flex-start' }}>
-                  <SkeletonImage source={{ uri: fac.image }} style={{ width: listImageWidth, height: Math.round(listImageWidth * 0.66), borderRadius: 12 }} resizeMode="cover" />
+                <View style={{ marginBottom: 8, borderRadius: radius.md, overflow: 'hidden', alignSelf: 'flex-start' }}>
+                  <SkeletonImage source={{ uri: fac.image }} style={{ width: listImageWidth, height: Math.round(listImageWidth * 0.66), borderRadius: radius.md }} resizeMode="cover" />
                 </View>
               )}
               {/* Info */}

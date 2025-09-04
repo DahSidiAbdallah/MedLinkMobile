@@ -5,6 +5,7 @@ import { colors, radius, spacing, shadow } from '../theme';
 export default function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
+
 const styles = StyleSheet.create({
-  card:{ backgroundColor: colors.card, borderRadius: radius.xl, padding: spacing.xl, ...shadow.card },
+  card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.lg, ...shadow.card },
 });

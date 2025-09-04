@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import { Modal, View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { useNotifications } from './NotificationsContext';
+import { colors, spacing, radius } from '../theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import PropTypes from 'prop-types';
 
 export default function NotificationsSheet({ visible, onClose }) {
   const { notifications, markAllRead, clearAll, markRead, removeOne } = useNotifications();
@@ -29,8 +31,8 @@ export default function NotificationsSheet({ visible, onClose }) {
           </View>
         </View>
         {summary.length === 0 ? (
-          <View style={styles.empty}>
-            <MaterialIcons name="notifications-none" size={40} color="#6b7280" />
+      <View style={styles.empty}>
+        <MaterialIcons name="notifications-none" size={40} color={colors.muted} />
             <Text style={styles.emptyTitle}>All caught up</Text>
             <Text style={styles.emptyText}>You have no notifications.</Text>
           </View>
@@ -73,45 +75,55 @@ export default function NotificationsSheet({ visible, onClose }) {
   );
 }
 
+NotificationsSheet.propTypes = {
+  visible: PropTypes.bool,
+  onClose: PropTypes.func,
+};
+
+NotificationsSheet.defaultProps = {
+  visible: false,
+  onClose: () => {},
+};
+
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' },
+  backdrop: { flex: 1, backgroundColor: colors.overlay },
   sheet: {
     position: 'absolute',
     left: 0, right: 0, bottom: 0,
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
     paddingTop: 8,
     paddingHorizontal: 14,
     maxHeight: '80%',
     shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 12, elevation: 8,
   },
   grabber: {
-    alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: '#e5e7eb', marginBottom: 10,
+    alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: colors.line, marginBottom: spacing.sm,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   title: { fontSize: 18, fontWeight: '700' },
   headerActions: { flexDirection: 'row', gap: 8 },
-  headerBtn: { paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8, backgroundColor: '#f3f4f6' },
+  headerBtn: { paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8, backgroundColor: colors.line },
   headerBtnText: { fontSize: 12, fontWeight: '600' },
   empty: { alignItems: 'center', paddingVertical: 28, gap: 6 },
-  emptyTitle: { fontSize: 16, fontWeight: '600', color: '#374151' },
-  emptyText: { fontSize: 13, color: '#6b7280' },
+  emptyTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
+  emptyText: { fontSize: 13, color: colors.muted },
   card: {
     borderRadius: 14,
-    borderWidth: 1, borderColor: '#f1f5f9',
-    backgroundColor: '#fff',
+    borderWidth: 1, borderColor: colors.line,
+    backgroundColor: colors.card,
     padding: 12, marginVertical: 6,
     flexDirection: 'row', gap: 12, alignItems: 'center',
   },
   cardRead: { opacity: 0.7 },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  cardSubtitle: { fontSize: 13, color: '#374151', marginTop: 2 },
-  cardTime: { fontSize: 11, color: '#6b7280', marginTop: 6 },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+  cardSubtitle: { fontSize: 13, color: colors.text, marginTop: 2 },
+  cardTime: { fontSize: 11, color: colors.muted, marginTop: 6 },
   cardActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   pill: {
     paddingVertical: 6, paddingHorizontal: 10, borderRadius: 9999,
-    backgroundColor: '#111827',
+    backgroundColor: colors.text,
   },
-  pillText: { color: 'white', fontSize: 12, fontWeight: '700' },
-  pillGhost: { backgroundColor: '#f3f4f6' },
+  pillText: { color: colors.card, fontSize: 12, fontWeight: '700' },
+  pillGhost: { backgroundColor: colors.line },
 });

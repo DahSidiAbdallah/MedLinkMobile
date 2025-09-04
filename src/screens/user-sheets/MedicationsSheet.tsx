@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Animated, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing } from '../../theme';
+import { colors, radius } from '../../theme';
 import MyMedicationsList from '../../components/MyMedicationsList';
 
 type Props = {
@@ -24,12 +24,12 @@ export default function MedicationsSheet({ visible, onClose }: Readonly<Props>) 
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.08)', justifyContent: 'flex-end' }}>
-        <Animated.View style={{ backgroundColor: '#fff', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 32, paddingHorizontal: 20, minHeight: '50%', maxHeight: '90%', overflow: 'hidden', transform: [{ translateY }] }}>
+      <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
+        <Animated.View style={{ backgroundColor: colors.card, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingTop: 32, paddingHorizontal: 20, minHeight: '50%', maxHeight: '90%', overflow: 'hidden', transform: [{ translateY }] }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
             <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>{t('profile.myMedications', 'My Medications')}</Text>
             <Pressable onPress={() => { Animated.timing(anim, { toValue: 0, duration: 180, useNativeDriver: true }).start(onClose); }} hitSlop={10}>
-              <Text style={{ color: '#888', fontWeight: '600', fontSize: 16 }}>{t('common.close', 'Close')}</Text>
+              <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>{t('common.close', 'Close')}</Text>
             </Pressable>
           </View>
           <MyMedicationsList />

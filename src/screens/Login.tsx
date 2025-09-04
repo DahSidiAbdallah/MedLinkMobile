@@ -249,18 +249,18 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.card} />
               ) : (
                 <Text style={styles.buttonText}>Login</Text>
               )}
             </Pressable>
             {/* Forgot Password Dialog */}
             {showForgot && (
-              <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
-                <View style={{ backgroundColor: '#fff', borderRadius: 18, padding: 28, width: 340, alignItems: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12 }}>
+                <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: colors.overlay, justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
+                <View style={{ backgroundColor: colors.card, borderRadius: 18, padding: spacing.xl, width: 340, alignItems: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12 }}>
                   <Ionicons name="lock-closed-outline" size={40} color={colors.primary} style={{ marginBottom: 10 }} />
                   <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 8, color: colors.primary }}>Reset Password</Text>
-                  <Text style={{ color: '#444', marginBottom: 18, textAlign: 'center', fontSize: 15, lineHeight: 20 }}>
+                  <Text style={{ color: colors.text, marginBottom: 18, textAlign: 'center', fontSize: 15, lineHeight: 20 }}>
                     Enter your email address and we'll send you a password reset link.
                   </Text>
                   <TextInput
@@ -271,7 +271,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
                     value={forgotEmail}
                     onChangeText={setForgotEmail}
                   />
-                  <View style={{ flexDirection: 'row', marginTop: 22, width: '100%', gap: 0 }}>
+                    <View style={{ flexDirection: 'row', marginTop: 22, width: '100%', gap: 0 }}>
                     <Pressable style={{ flex: 1, marginRight: 8, height: 48, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.card, borderRadius: 8, borderWidth: 1, borderColor: colors.line }} onPress={() => { setShowForgot(false); setForgotEmail(''); }}>
                       <Text style={styles.buttonSecondaryText}>Cancel</Text>
                     </Pressable>
@@ -296,7 +296,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
                       }}
                       disabled={forgotLoading}
                     >
-                      {forgotLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send</Text>}
+                      {forgotLoading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.buttonText}>Send</Text>}
                     </Pressable>
                   </View>
                 </View>
@@ -471,7 +471,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
                   }
                 }}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>+</Text>
+                <Text style={{ color: colors.card, fontWeight: 'bold', fontSize: 18 }}>+</Text>
               </Pressable>
             </View>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 }}>
@@ -511,7 +511,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
                   }
                 }}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>+</Text>
+                <Text style={{ color: colors.card, fontWeight: 'bold', fontSize: 18 }}>+</Text>
               </Pressable>
             </View>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 }}>
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   buttonText: {
-    color: '#fff',
+  color: colors.card,
     fontWeight: 'bold',
     fontSize: 18,
   },

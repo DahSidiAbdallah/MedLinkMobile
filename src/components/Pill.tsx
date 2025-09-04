@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius } from '../theme';
 export function Pill({ children, tone='primary' }:{children:string; tone?:'primary'|'warn'|'neutral'}) {
-  const map = { primary:['#E8F0FF', colors.primary], warn:['#FFF7E6', colors.warn], neutral:['#EEF2F7', colors.muted] } as any;
+  const map = { primary:[ '#E8F0FF', colors.primary ], warn:[ '#FFF7E6', colors.warn ], neutral:[ '#EEF2F7', colors.muted ] } as any;
   const [bg, fg] = map[tone];
   return <View style={[styles.pill,{backgroundColor:bg}]}><Text style={[styles.txt,{color:fg}]}>{children}</Text></View>;
 }

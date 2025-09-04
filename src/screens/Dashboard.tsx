@@ -20,9 +20,9 @@ import NotificationsSheet from '../notifications/NotificationsSheet';
 const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 // Expo’s gradient works on web, iOS, and Android
 import { LinearGradient } from 'expo-linear-gradient';
-import Card from '../components/Card';
+// Card import removed (not used in this file)
 import MyMedicationsList from '../components/MyMedicationsList';
-import { colors, spacing, type, shadow } from '../theme';
+import { colors, spacing, type, shadow, radius } from '../theme';
 
 
 export default function Dashboard({ navigation }: any) {
@@ -33,6 +33,21 @@ export default function Dashboard({ navigation }: any) {
   const { startLoading, finishLoading } = useLoading();
   const _prefetched = useRef(new Set<string>());
   const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
+
+  // Render reminders via a small helper to avoid nested ternaries
+  const renderReminders = () => {
+    if (remindersLoading) return <ActivityIndicator color={colors.primary} />;
+    if (remindersError) return <Text style={{ color: colors.danger }}>{remindersError}</Text>;
+    const activeReminders = reminders?.filter(r => r.active) ?? [];
+    if (activeReminders.length === 0) return <Text style={{ color: colors.muted }}>No reminders found.</Text>;
+    return activeReminders.map(rem => (
+      <View key={rem.id} style={{ backgroundColor: colors.line, borderRadius: radius.md, padding: spacing.lg, marginBottom: 10 }}>
+        <Text style={{ fontWeight: '600', color: colors.text }}>{rem.title}</Text>
+        <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime}{rem.frequency ? `  ${rem.frequency}` : ''}</Text>
+        {rem.description && <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.description}</Text>}
+      </View>
+    ));
+  };
 
   // Load profile on mount and when modal opens — use centralized loading
   useEffect(() => {
@@ -52,7 +67,11 @@ export default function Dashboard({ navigation }: any) {
           try {
             await RNImage.prefetch(uri);
             _prefetched.current.add(uri);
-          } catch (e) {}
+          } catch (e) {
+            // Log prefetch failures for diagnostics
+            // eslint-disable-next-line no-console
+            console.debug('Avatar prefetch failed', e);
+          }
           finally { finishLoading(imgKey); }
         }
       } finally {
@@ -71,63 +90,71 @@ export default function Dashboard({ navigation }: any) {
   }, [subscribe, refresh]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#EEF4FF' }} edges={['top', 'left', 'right']}>
-      <LinearGradient colors={["#EEF4FF", "#FFFFFF"]} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: Platform.OS === 'ios' ? 32 : 16 }}>
+    <SafeAreaView style={[styles.container]} edges={['top', 'left', 'right']}>
+      <LinearGradient colors={[colors.bg, colors.surface]} style={styles.flex}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, Platform.OS === 'ios' ? { paddingBottom: 32 } : { paddingBottom: 16 }]}> 
         <View style={styles.dashboardHeader}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Profile">
+          <View style={styles.headerRow}>
+            <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Open profile" accessibilityRole="button">
               <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
             </Pressable>
             <NotificationBell onPress={() => setNotificationsVisible(true)} />
   <NotificationsSheet visible={notificationsVisible} onClose={() => setNotificationsVisible(false)} />
           </View>
-          <Text style={[type.h1, { marginTop: 18 }]}>Welcome{profile && profile.name ? `, ${profile.name}` : ''}</Text>
-          <Text style={[type.meta, { marginBottom: 18 }]}>How is it going today?</Text>
-          <Pressable style={styles.cta} android_ripple={{ color: colors.primary600 }} onPress={() => setUrgentCareModal(true)}>
-            <Text style={{ color: '#fff', fontWeight: '700' }}>Urgent Care</Text>
+          <Text style={[type.h1, styles.welcome]}>Welcome{profile?.name ? `, ${profile.name}` : ''}</Text>
+          <Text style={[type.meta, styles.subheading]}>How is it going today?</Text>
+          <Pressable
+            onPress={() => setUrgentCareModal(true)}
+            style={styles.cta}
+            android_ripple={{ color: colors.primary600 }}
+            accessibilityRole="button"
+            accessibilityLabel="Open urgent care"
+            accessibilityHint="View nearby urgent care facilities and emergency contacts"
+            hitSlop={8}
+          >
+            <Text style={styles.ctaText}>Urgent Care</Text>
           </Pressable>
         {/* Urgent Care Modal/Sheet */}
-        <Modal visible={urgentCareModal} animationType="slide" transparent onRequestClose={() => setUrgentCareModal(false)}>
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.08)', justifyContent: 'flex-end' }}>
+          <Modal visible={urgentCareModal} animationType="slide" transparent onRequestClose={() => setUrgentCareModal(false)}>
+          <View style={[styles.modalOverlay]}>
             <View style={styles.facilityModalSheet}>
               <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>Urgent Care</Text>
-                  <Pressable onPress={() => setUrgentCareModal(false)} hitSlop={10}>
-                    <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>Close</Text>
+                <View style={styles.modalHeaderRow}>
+                  <Text style={styles.modalTitle}>Urgent Care</Text>
+                  <Pressable onPress={() => setUrgentCareModal(false)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close urgent care sheet">
+                    <Text style={styles.modalCloseText}>Close</Text>
                   </Pressable>
                 </View>
                 {/* Emergency Contacts */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Emergency Contacts</Text>
+                <Text style={styles.sectionTitle}>Emergency Contacts</Text>
                 <View style={{ marginBottom: spacing.lg }}>
-                  {profile && profile.emergency_contacts && profile.emergency_contacts.length > 0 ? (
-                    profile.emergency_contacts.map((contact, idx) => (
-                      <View key={idx} style={{ marginBottom: 8 }}>
-                        <Text style={{ color: colors.text, fontWeight: '600' }}>{contact.name}</Text>
-                        <Text style={{ color: colors.muted }}>{contact.phone}</Text>
-                        <Text style={{ color: colors.muted }}>{contact.relationship}</Text>
-                        <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 2 }}>
-                          <Text style={{ color: colors.primary, fontWeight: '600' }}>Call</Text>
+                  {profile?.emergency_contacts?.length ? (
+                    profile.emergency_contacts.map(contact => (
+                      <View key={contact.phone ?? contact.name} style={styles.contactBlock}>
+                        <Text style={styles.contactName}>{contact.name}</Text>
+                        <Text style={styles.sectionText}>{contact.phone}</Text>
+                        <Text style={styles.sectionText}>{contact.relationship}</Text>
+                        <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 6 }} accessibilityRole="button">
+                          <Text style={styles.callLink}>Call</Text>
                         </Pressable>
                       </View>
                     ))
                   ) : (
-                    <Text style={{ color: colors.muted }}>No emergency contacts listed.</Text>
+                    <Text style={styles.sectionText}>No emergency contacts listed.</Text>
                   )}
                 </View>
                 {/* Open & Nearby Facilities */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Open & Nearby Facilities</Text>
+                <Text style={styles.sectionTitle}>Open & Nearby Facilities</Text>
                 <View style={{ marginBottom: spacing.lg }}>
                   {sortByDistance(facilities.filter(f => f.isOpen && (f.type === 'clinic' || f.type === 'hospital' || f.type === 'pharmacy'))).map((fac: Facility) => (
-                    <View key={fac.id} style={{ marginBottom: 12 }}>
-                      <Text style={{ color: colors.text, fontWeight: '600' }}>{fac.name} <Text style={{ color: colors.muted, fontWeight: '400' }}>({fac.type})</Text></Text>
-                      <Text style={{ color: colors.muted }}>{fac.location}</Text>
-                      {'phoneNumber' in fac && fac.phoneNumber && <Text style={{ color: colors.muted }}>Phone: {fac.phoneNumber}</Text>}
-                      <Text style={{ color: colors.muted }}>Distance: {fac.distance || 'N/A'}</Text>
+                    <View key={fac.id} style={styles.facilityItem}>
+                      <Text style={styles.facilityName}>{fac.name} <Text style={styles.facilityMeta}>({fac.type})</Text></Text>
+                      <Text style={styles.sectionText}>{fac.location}</Text>
+                      {'phoneNumber' in fac && fac.phoneNumber && <Text style={styles.sectionText}>Phone: {fac.phoneNumber}</Text>}
+                      <Text style={styles.sectionText}>Distance: {fac.distance || 'N/A'}</Text>
                       {'phoneNumber' in fac && fac.phoneNumber && (
-                        <Pressable onPress={() => Linking.openURL(`tel:${fac.phoneNumber}`)} style={{ marginTop: 2 }}>
-                          <Text style={{ color: colors.primary, fontWeight: '600' }}>Call</Text>
+                        <Pressable onPress={() => Linking.openURL(`tel:${fac.phoneNumber}`)} style={{ marginTop: 6 }} accessibilityRole="button">
+                          <Text style={styles.callLink}>Call</Text>
                         </Pressable>
                       )}
                     </View>
@@ -162,19 +189,7 @@ export default function Dashboard({ navigation }: any) {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Text style={{ fontWeight: '700', fontSize: 17, color: colors.text }}>Reminders</Text>
           </View>
-          {remindersLoading ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : remindersError ? (
-            <Text style={{ color: colors.danger }}>{remindersError}</Text>
-          ) : reminders.filter(r => r.active).length === 0 ? (
-            <Text style={{ color: colors.muted }}>No reminders found.</Text>
-          ) : reminders.filter(r => r.active).map(rem => (
-            <View key={rem.id} style={{ backgroundColor: '#F3F4F6', borderRadius: 16, padding: 14, marginBottom: 10 }}>
-              <Text style={{ fontWeight: '600', color: colors.text }}>{rem.title}</Text>
-              <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime}{rem.frequency ? `  b7 ${rem.frequency}` : ''}</Text>
-              {rem.description && <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.description}</Text>}
-            </View>
-          ))}
+          {renderReminders()}
         </View>
         {/* My Medications Section */}
         <View style={styles.appointmentCard}>
@@ -184,7 +199,7 @@ export default function Dashboard({ navigation }: any) {
 
         {/* Profile Modal */}
         <Modal visible={profileModal} animationType="slide" transparent onRequestClose={() => setProfileModal(false)}>
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.08)', justifyContent: 'flex-end' }}>
+          <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
             <View style={styles.facilityModalSheet}>
               <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
@@ -209,9 +224,9 @@ export default function Dashboard({ navigation }: any) {
                 {/* Allergies Section */}
                 <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Allergies</Text>
                 <View style={{ marginBottom: spacing.lg }}>
-                  {profile && profile.allergies && profile.allergies.length > 0 ? (
-                    profile.allergies.map((allergy, idx) => (
-                      <Text key={idx} style={{ color: colors.muted, fontSize: 15, marginBottom: 2 }}>• {allergy}</Text>
+                  {profile?.allergies?.length ? (
+                    profile.allergies.map((allergy) => (
+                      <Text key={allergy} style={{ color: colors.muted, fontSize: 15, marginBottom: 2 }}>• {allergy}</Text>
                     ))
                   ) : (
                     <Text style={{ color: colors.muted }}>No allergies listed.</Text>
@@ -220,7 +235,7 @@ export default function Dashboard({ navigation }: any) {
                 {/* Urgent Contact Section */}
                 <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Urgent Contact</Text>
                 <View style={{ marginBottom: spacing.lg }}>
-                  {profile && profile.emergency_contacts && profile.emergency_contacts.length > 0 ? (
+                  {profile?.emergency_contacts?.length ? (
                     <>
                       <Text style={{ color: colors.text, fontWeight: '600' }}>{profile.emergency_contacts[0].name}</Text>
                       <Text style={{ color: colors.muted }}>{profile.emergency_contacts[0].phone}</Text>
@@ -256,6 +271,9 @@ export default function Dashboard({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg },
+  flex: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
   dashboardHeader: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.xxl,
@@ -267,6 +285,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: 'transparent',
   },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   doctorImage: {
     position: 'absolute',
     right: 0,
@@ -277,8 +296,8 @@ const styles = StyleSheet.create({
     opacity: 0.95,
   },
   servicesCard: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
+  backgroundColor: colors.surface,
+  borderRadius: radius.xl,
     marginHorizontal: spacing.xl,
     marginTop: -32,
     padding: 18,
@@ -298,17 +317,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   appointmentCard: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
+  backgroundColor: colors.surface,
+  borderRadius: radius.xl,
     marginHorizontal: spacing.xl,
     marginTop: 24,
     padding: 18,
     ...shadow.card,
   },
   appointmentItem: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: colors.line,
+    borderRadius: radius.md,
+    padding: spacing.md,
     marginTop: 8,
   },
   appointmentAvatar: {
@@ -321,7 +340,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.card,
@@ -332,7 +351,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     marginLeft: 8,
-    backgroundColor: '#fff',
+  backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.card,
@@ -344,24 +363,36 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   facilityModalSheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingTop: 32,
-    paddingHorizontal: 28,
-    minHeight: '60%',
-    maxHeight: '90%',
-    backgroundColor: '#fff',
-    overflow: 'hidden',
+  borderTopLeftRadius: 32,
+  borderTopRightRadius: 32,
+  paddingTop: 32,
+  paddingHorizontal: 28,
+  minHeight: '60%',
+  maxHeight: '90%',
+  backgroundColor: colors.surface,
+  overflow: 'hidden',
   },
   profileAvatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: colors.card,
     marginBottom: 8,
     resizeMode: 'cover',
   },
+  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  modalTitle: { fontWeight: '700', fontSize: 22, color: colors.text },
+  modalCloseText: { color: colors.muted, fontWeight: '600', fontSize: 16 },
+  sectionTitle: { fontWeight: '700', fontSize: 16, marginBottom: 8, color: colors.text },
+  contactBlock: { marginBottom: 8 },
+  contactName: { color: colors.text, fontWeight: '600' },
+  sectionText: { color: colors.muted },
+  callLink: { color: colors.primary, fontWeight: '600' },
+  facilityItem: { marginBottom: 12 },
+  facilityName: { color: colors.text, fontWeight: '600' },
+  facilityMeta: { color: colors.muted, fontWeight: '400' },
   cta: {
     marginHorizontal: spacing.xl,
     backgroundColor: colors.primary,
@@ -371,6 +402,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     ...shadow.card,
   },
+  ctaText: { color: colors.card, fontWeight: '700' },
+  welcome: { marginTop: 18 },
+  subheading: { marginBottom: 18 },
   grid: {
     paddingHorizontal: spacing.xl,
     flexDirection: 'row',

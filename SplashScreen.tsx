@@ -1,39 +1,45 @@
 import React, { useRef, useEffect } from 'react';
-import { Animated, Easing, View, Image, Text, StyleSheet } from 'react-native';
+import { Animated, Easing, View, Image, Text, StyleSheet, AccessibilityInfo } from 'react-native';
+import { colors } from './src/theme';
 
 export default function SplashScreen({ onFinish }: { readonly onFinish: () => void }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.7)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 900,
+        duration: 700,
         useNativeDriver: true,
         easing: Easing.out(Easing.exp),
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        friction: 4,
+        friction: 6,
         tension: 80,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // notify screen readers the app is ready (non-intrusive)
+      AccessibilityInfo.announceForAccessibility('App ready');
+    });
 
     const timer = setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 400,
+        duration: 420,
         useNativeDriver: true,
       }).start(() => onFinish());
-    }, 2000);
+    }, 1800);
     return () => clearTimeout(timer);
   }, [onFinish, fadeAnim, scaleAnim]);
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}> 
+    <Animated.View accessibilityLiveRegion="polite" style={[styles.container, { opacity: fadeAnim }]}> 
       <Animated.Image
+        accessible
+        accessibilityLabel="App logo"
         source={require('./src/assets/logo.png')}
         style={[
           styles.logo,
@@ -42,14 +48,14 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
               { scale: scaleAnim },
               { rotate: fadeAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: ['-10deg', '0deg'],
+                  outputRange: ['-6deg', '0deg'],
                 }) },
             ],
           },
         ]}
         resizeMode="contain"
       />
-      <View style={styles.bottom}>
+      <View style={styles.bottom} pointerEvents="none">
         <Text style={styles.fromText}>from</Text>
         <Image source={require('./src/assets/xahara.png')} style={styles.xaharaLogo} resizeMode="contain" />
       </View>
@@ -60,33 +66,29 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logo: {
-    width: 180,
-    height: 180,
-    marginBottom: 16,
-  },
-  favicon: {
-    width: 48,
-    height: 48,
-    marginBottom: 32,
+    width: 160,
+    height: 160,
+    marginBottom: 12,
+    borderRadius: 12,
   },
   bottom: {
     position: 'absolute',
-    bottom: 32,
+    bottom: 28,
     alignItems: 'center',
     width: '100%',
   },
   fromText: {
-    fontSize: 16,
-    color: '#888',
+    fontSize: 14,
+    color: colors.muted,
     marginBottom: 4,
   },
   xaharaLogo: {
-    width: 100,
-    height: 32,
+    width: 96,
+    height: 28,
   },
 });
