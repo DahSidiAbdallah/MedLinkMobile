@@ -1,13 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
-import './src/i18n';
+// i18n initialization can perform async work and access storage.
+// Lazy-load it during startup to avoid module-evaluation side-effects
+// that may run before AppRegistry.registerComponent is called.
+// This prevents runtime failures on some runtimes (Hermes) where
+// certain modules or native bindings may not be ready yet.
 
 import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, Platform, Text, Dimensions } from 'react-native';
 import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Dashboard from './src/screens/Dashboard';
@@ -62,6 +66,20 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
   const insets = useSafeAreaInsets();
   const height = 64;
   const totalHeight = height + insets.bottom;
+  // Responsive tweaks for very short screens to reduce FAB overlap
+  const windowHeight = Platform.OS === 'web' && typeof window !== 'undefined'
+    ? (window as any).innerHeight
+    : Dimensions.get('window').height;
+  const ultraCompact = windowHeight < 540;
+  const compact = windowHeight < 620 && !ultraCompact;
+  const fabTopOffset = ultraCompact ? -10 : compact ? -18 : -26;
+  const centerSpacerWidth = ultraCompact ? 70 : compact ? 78 : 86;
+  const routes = state.routes;
+  const barcodeRoute = routes.find(r => r.name === 'Barcode');
+  const otherRoutes = routes.filter(r => r.name !== 'Barcode');
+  const leftCount = Math.floor(otherRoutes.length / 2);
+  const leftRoutes = otherRoutes.slice(0, leftCount);
+  const rightRoutes = otherRoutes.slice(leftCount);
   return (
     <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: totalHeight, paddingBottom: insets.bottom, backgroundColor: 'transparent' }} accessibilityElementsHidden={false} importantForAccessibility="no-hide-descendants">
       <View
@@ -78,47 +96,124 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
           shadowOpacity: 0.04,
           shadowRadius: 8,
           elevation: 8,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          overflow: 'visible',
+          paddingHorizontal: 12,
+          // Web-only niceties
+          ...(Platform.OS === 'web' ? ({
+            backdropFilter: 'blur(10px)',
+            backgroundColor: 'rgba(255,255,255,0.85)',
+          } as any) : null),
         }}
       >
-        {state.routes.map((route, index) => {
-          if (route.name === 'Barcode') {
-            return (
-              <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', top: -20 }}>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate(route.name)}
-                  activeOpacity={0.85}
-                  style={{
-                    backgroundColor: colors.primary,
-                    borderRadius: 36,
-                    width: 72,
-                    height: 72,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    shadowColor: colors.primary,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 8,
-                    transform: [{ translateY: -6 }],
-                  }}
-                >
-                  {getTabIcon(route, state.index === index, '#fff', 28)}
-                </TouchableOpacity>
-              </View>
-            );
-          }
+        {leftRoutes.map((route) => {
+          const isActive = state.routeNames[state.index] === route.name;
           return (
             <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
               <TouchableOpacity
                 onPress={() => navigation.navigate(route.name)}
-                activeOpacity={0.7}
-                style={{ paddingVertical: 8, alignItems: 'center', justifyContent: 'center' }}
+                activeOpacity={0.8}
+                style={{
+                  paddingVertical: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 12,
+                  paddingHorizontal: 6,
+                  transform: [{ scale: isActive ? 1.06 : 1 }],
+                  ...(Platform.OS === 'web' && isActive ? ({
+                    backgroundColor: 'rgba(37,99,235,0.08)',
+                  } as any) : null),
+                }}
               >
-                {getTabIcon(route, state.index === index, state.index === index ? colors.primary : colors.muted, 28)}
+                {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, 26)}
+                {/* Text label under icon for clarity */}
+                <Text
+                  style={{
+                    marginTop: 4,
+                    fontSize: 11,
+                    color: isActive ? colors.primary : colors.muted,
+                    fontWeight: isActive ? '600' as const : '500' as const,
+                  }}
+                  numberOfLines={1}
+                >
+                  {route.name}
+                </Text>
               </TouchableOpacity>
             </View>
           );
         })}
+
+        {/* Spacer to accommodate the centered FAB so items don't overlap */}
+        <View style={{ width: centerSpacerWidth }} />
+
+        {rightRoutes.map((route) => {
+          const isActive = state.routeNames[state.index] === route.name;
+          return (
+            <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate(route.name)}
+                activeOpacity={0.8}
+                style={{
+                  paddingVertical: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 12,
+                  paddingHorizontal: 6,
+                  transform: [{ scale: isActive ? 1.06 : 1 }],
+                  ...(Platform.OS === 'web' && isActive ? ({
+                    backgroundColor: 'rgba(37,99,235,0.08)',
+                  } as any) : null),
+                }}
+              >
+                {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, 26)}
+                <Text
+                  style={{
+                    marginTop: 4,
+                    fontSize: 11,
+                    color: isActive ? colors.primary : colors.muted,
+                    fontWeight: isActive ? '600' as const : '500' as const,
+                  }}
+                  numberOfLines={1}
+                >
+                  {route.name}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+
+        {/* Centered Barcode FAB */}
+        {barcodeRoute ? (
+          <View pointerEvents="box-none" style={{ position: 'absolute', left: '50%', top: fabTopOffset, marginLeft: -36, zIndex: 20 }}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate(barcodeRoute.name)}
+              accessibilityRole="button"
+              accessibilityLabel="Open barcode scanner"
+              activeOpacity={0.9}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 36,
+                width: 72,
+                height: 72,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.22,
+                shadowRadius: 12,
+                elevation: 10,
+                borderWidth: 4,
+                borderColor: colors.card,
+                ...(Platform.OS === 'web' ? ({
+                  boxShadow: '0 10px 26px rgba(37,99,235,0.35)'
+                } as any) : null),
+              }}
+            >
+              <MaterialCommunityIcons name="barcode-scan" size={34} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -127,6 +222,22 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+
+  // Initialize i18n lazily so its async storage access doesn't run
+  // during module evaluation. This avoids startup crashes in some
+  // environments where native modules are not yet available.
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        await import('./src/i18n');
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('i18n failed to initialize', e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     // Initialize telemetry service on app startup. This avoids module-import side effects

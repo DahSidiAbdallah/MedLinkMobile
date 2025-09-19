@@ -161,7 +161,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #F3F6FF 0%, #FFFFFF 60%)' } as any : null]}>
       <View style={styles.card}>
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
           <Image
@@ -583,10 +583,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: spacing.xl,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 4,
     alignItems: 'center',
   },
   input: {
@@ -603,9 +603,9 @@ const styles = StyleSheet.create({
   inputFocused: {
     borderColor: colors.primary,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 4,
   },
   inputError: {
     borderColor: '#e53935',

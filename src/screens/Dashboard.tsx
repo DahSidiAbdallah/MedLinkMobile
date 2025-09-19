@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator, ScrollView, Linking, Platform, Image as RNImage } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator, ScrollView, Linking, Platform, Image as RNImage, TextInput } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
 import { useLoading } from '../hooks/LoadingContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +22,10 @@ const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 import { LinearGradient } from 'expo-linear-gradient';
 // Card import removed (not used in this file)
 import MyMedicationsList from '../components/MyMedicationsList';
+import Chip from '../components/Chip';
+import ProgressBar from '../components/ProgressBar';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { getTodayStats } from '../core/completion';
 import { colors, spacing, type, shadow, radius } from '../theme';
 
 
@@ -89,6 +93,17 @@ export default function Dashboard({ navigation }: any) {
     return unsubscribe;
   }, [subscribe, refresh]);
 
+  // derive simple progress from active reminders completed vs total (placeholder logic)
+  const activeReminders = reminders?.filter(r => r.active) ?? [];
+  const [pillsDone, setPillsDone] = useState<{ done: number; total: number }>({ done: 0, total: activeReminders.length });
+  useEffect(() => {
+    (async () => {
+      const stats = await getTodayStats(activeReminders.map(r => r.id));
+      setPillsDone(stats);
+    })();
+  }, [activeReminders.length]);
+  const progress = pillsDone.total ? pillsDone.done / pillsDone.total : 0;
+
   return (
     <SafeAreaView style={[styles.container]} edges={['top', 'left', 'right']}>
       <LinearGradient colors={[colors.bg, colors.surface]} style={styles.flex}>
@@ -103,6 +118,31 @@ export default function Dashboard({ navigation }: any) {
           </View>
           <Text style={[type.h1, styles.welcome]}>Welcome{profile?.name ? `, ${profile.name}` : ''}</Text>
           <Text style={[type.meta, styles.subheading]}>How is it going today?</Text>
+          {/* Search box */}
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={18} color={colors.muted} style={{ marginHorizontal: 10 }} />
+            <TextInput
+              placeholder="Search doctors, facilities, meds"
+              placeholderTextColor={colors.muted}
+              style={styles.searchInput}
+              returnKeyType="search"
+            />
+          </View>
+          {/* Category chips */}
+          <View style={styles.chipsRow}>
+            <Chip label="Cardiologist" onPress={() => navigation.navigate('Clinics', { filter: 'cardiologist' })} />
+            <Chip label="Dentist" onPress={() => navigation.navigate('Clinics', { filter: 'dentist' })} />
+            <Chip label="Therapist" onPress={() => navigation.navigate('Clinics', { filter: 'therapist' })} />
+            <Chip label="Geneticist" onPress={() => navigation.navigate('Clinics', { filter: 'geneticist' })} />
+          </View>
+          {/* Today’s progress */}
+          <View style={styles.progressCard}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontWeight: '700', fontSize: 16, color: colors.text }}>Today's Progress</Text>
+              <Text style={{ color: colors.muted, fontSize: 12 }}>{pillsDone.done}/{pillsDone.total}</Text>
+            </View>
+            <ProgressBar progress={progress} style={{ marginTop: 10 }} />
+          </View>
           <Pressable
             onPress={() => setUrgentCareModal(true)}
             style={styles.cta}
@@ -171,16 +211,16 @@ export default function Dashboard({ navigation }: any) {
           <Text style={{ fontWeight: '700', fontSize: 17, marginBottom: 12, color: colors.text }}>Our Services</Text>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
             <View style={styles.serviceItem}>
-              <Text style={styles.serviceIcon}>🩺</Text>
+              <View style={styles.serviceIconWrap}><MaterialCommunityIcons name="barcode-scan" size={22} color={colors.primary} /></View>
               <Text style={styles.serviceLabel}>Meds Verification</Text>
             </View>
             <View style={styles.serviceItem}>
-              <Text style={styles.serviceIcon}>💊</Text>
+              <View style={styles.serviceIconWrap}><Ionicons name="medkit" size={20} color={colors.primary} /></View>
               <Text style={styles.serviceLabel}>Medical ID</Text>
             </View>
             <View style={styles.serviceItem}>
-              <Text style={styles.serviceIcon}>🚑</Text>
-              <Text style={styles.serviceLabel}>Facilities </Text>
+              <View style={styles.serviceIconWrap}><Ionicons name="business" size={20} color={colors.primary} /></View>
+              <Text style={styles.serviceLabel}>Facilities</Text>
             </View>
           </View>
         </View>
@@ -280,10 +320,42 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     position: 'relative',
     minHeight: 260,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
     overflow: 'hidden',
     backgroundColor: 'transparent',
+  },
+  searchWrap: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingVertical: 8,
+    ...shadow.soft,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.text,
+    paddingRight: 12,
+    fontSize: 15,
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 14,
+  },
+  progressCard: {
+    marginTop: 16,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.line,
+    ...shadow.soft,
   },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   doctorImage: {
@@ -296,11 +368,11 @@ const styles = StyleSheet.create({
     opacity: 0.95,
   },
   servicesCard: {
-  backgroundColor: colors.surface,
-  borderRadius: radius.xl,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
     marginHorizontal: spacing.xl,
-    marginTop: -32,
-    padding: 18,
+    marginTop: -30,
+    padding: 20,
     ...shadow.card,
   },
   serviceItem: {
@@ -311,17 +383,26 @@ const styles = StyleSheet.create({
     fontSize: 32,
     marginBottom: 4,
   },
+  serviceIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.chipBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
   serviceLabel: {
     fontSize: 13,
     color: colors.muted,
     fontWeight: '600',
   },
   appointmentCard: {
-  backgroundColor: colors.surface,
-  borderRadius: radius.xl,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
     marginHorizontal: spacing.xl,
     marginTop: 24,
-    padding: 18,
+    padding: 20,
     ...shadow.card,
   },
   appointmentItem: {
@@ -363,14 +444,14 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   facilityModalSheet: {
-  borderTopLeftRadius: 32,
-  borderTopRightRadius: 32,
-  paddingTop: 32,
-  paddingHorizontal: 28,
-  minHeight: '60%',
-  maxHeight: '90%',
-  backgroundColor: colors.surface,
-  overflow: 'hidden',
+    borderTopLeftRadius: 34,
+    borderTopRightRadius: 34,
+    paddingTop: 32,
+    paddingHorizontal: 28,
+    minHeight: '60%',
+    maxHeight: '90%',
+    backgroundColor: colors.surface,
+    overflow: 'hidden',
   },
   profileAvatar: {
     width: 80,
@@ -396,7 +477,7 @@ const styles = StyleSheet.create({
   cta: {
     marginHorizontal: spacing.xl,
     backgroundColor: colors.primary,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 999,
     alignItems: 'center',
     marginBottom: spacing.xl,

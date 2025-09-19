@@ -1,0 +1,140 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Jest tests (focused)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"test",
+				"--",
+				"Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$jest-stare"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot (retry)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot (retry 2)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot (retry 3)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot (retry 4)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot (retry 5)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Jest dashboard snapshot (retry 6)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"test",
+				"--",
+				"__tests__/Dashboard.snapshot.test.tsx",
+				"-u"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		}
+	]
+}
