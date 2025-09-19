@@ -27,6 +27,63 @@ interface Props {
   handleMap: (lat: number, lng: number, name: string) => void;
 }
 
+// Lightweight Error Boundary to catch rare Leaflet init errors
+class MapErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; message?: string }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(err: any) {
+    return { hasError: true, message: String(err?.message || err) };
+  }
+  componentDidCatch(err: any) {
+    // swallow error; optionally log
+    // console.warn('Leaflet map failed to initialize', err);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          width: '100%',
+          borderRadius: 16,
+          background: '#fff',
+          border: `1px solid ${colors.line}`,
+          boxShadow: `0 4px 18px ${colors.overlay}`,
+          padding: 16,
+          minHeight: 120,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(37,99,235,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: colors.primary, fontSize: 18 }}>🗺️</span>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: '#0f172a' }}>Map unavailable</div>
+              <div style={{ color: '#475569', fontSize: 13 }}>We couldn’t load the map. You can still browse the list and details.</div>
+            </div>
+          </div>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: `1px solid ${colors.line}`,
+              background: '#fff',
+              color: '#0f172a',
+              cursor: 'pointer'
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children as any;
+  }
+}
 
 
 function getDistance(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -73,12 +130,15 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
     }
   }, [filtered, userLocation]);
 
-  // Center map on user or first facility or fallback
+  // Filter out facilities with missing coordinates (defensive)
+  const valid = sortedFacilities.filter(f => f?.coordinates && typeof f.coordinates.lat === 'number' && typeof f.coordinates.lng === 'number');
+
+  // Center map on user or first valid facility or fallback
   let center: [number, number];
   if (userLocation) {
     center = userLocation;
-  } else if (sortedFacilities.length > 0) {
-    center = [sortedFacilities[0].coordinates.lat, sortedFacilities[0].coordinates.lng];
+  } else if (valid.length > 0) {
+    center = [valid[0].coordinates.lat, valid[0].coordinates.lng];
   } else {
     center = [18.08, -15.98];
   }
@@ -128,10 +188,16 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
     mapContainerStyle.zIndex = 2;
   }
 
+  // If running in a non-DOM environment, avoid rendering the map (safety)
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   return (
     <div style={{ width: '100%' }}>
       <div style={mapContainerStyle}>
-        <MapContainer center={center} zoom={13} style={{ width: '100%', height: '100%' }} scrollWheelZoom={true}>
+        <MapErrorBoundary>
+        <MapContainer center={center as any} zoom={13} style={{ width: '100%', height: '100%' }} scrollWheelZoom={true}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -141,7 +207,7 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
               <Popup>You are here</Popup>
             </Marker>
           )}
-          {sortedFacilities.map(fac => (
+          {valid.map(fac => (
             <Marker
               key={fac.id}
               position={[fac.coordinates.lat, fac.coordinates.lng]}
@@ -162,6 +228,7 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
             </Marker>
           ))}
         </MapContainer>
+        </MapErrorBoundary>
       </div>
     </div>
   );

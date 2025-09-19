@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, shadow } from '../theme';
@@ -7,6 +7,9 @@ import { SegmentedControl } from '../components/SegmentedControl';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 import { useReminders } from '../hooks/useReminders';
+import Chip from '../components/Chip';
+import CalendarStrip from '../components/CalendarStrip';
+import { getTodayStats, setCompleted, getDayCompletion } from '../core/completion';
 
 export default function Reminders() {
   const [segment, setSegment] = useState('Active');
@@ -19,6 +22,15 @@ export default function Reminders() {
   const { reminders, loading, error, updateReminder, createReminder, refresh } = useReminders();
 
   const filtered = reminders.filter(r => (segment === 'Active' ? r.active : !r.active));
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [doneMap, setDoneMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    (async () => {
+      const map = await getDayCompletion(selectedDate || new Date());
+      setDoneMap(map);
+    })();
+  }, [selectedDate, reminders.length]);
 
   const toggleActive = async (reminder: any) => {
     setToggling(prev => ({ ...prev, [reminder.id]: true }));
@@ -35,6 +47,12 @@ export default function Reminders() {
     } finally {
       setToggling(prev => ({ ...prev, [reminder.id]: false }));
     }
+  };
+
+  const toggleDoneToday = async (reminderId: string) => {
+    const next = !doneMap[reminderId];
+    setDoneMap(m => ({ ...m, [reminderId]: next }));
+    await setCompleted(reminderId, next, selectedDate || new Date());
   };
 
   // Real-time validation helpers
@@ -98,6 +116,14 @@ export default function Reminders() {
         }}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Calendar strip and quick filters */}
+        <View style={{ marginBottom: spacing.md }}>
+          <CalendarStrip value={selectedDate} onChange={setSelectedDate} />
+        </View>
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: spacing.md }}>
+          <Chip label="All" selected={segment === 'Active'} onPress={() => setSegment('Active')} />
+          <Chip label="Past" selected={segment === 'Past'} onPress={() => setSegment('Past')} />
+        </View>
         {filtered.length === 0 ? (
           <Text style={{ textAlign: 'center', color: colors.muted }}>No reminders</Text>
         ) : null}
@@ -120,6 +146,24 @@ export default function Reminders() {
             {r.description ? (
               <Text style={{ color: colors.muted, marginLeft: 56, marginTop: 4 }}>{r.description}</Text>
             ) : null}
+            {/* Done today pill button */}
+            <View style={{ flexDirection: 'row', marginLeft: 56, marginTop: 10 }}>
+              <Pressable
+                onPress={() => toggleDoneToday(r.id)}
+                style={{
+                  backgroundColor: doneMap[r.id] ? colors.primary : colors.card,
+                  borderWidth: 1,
+                  borderColor: doneMap[r.id] ? colors.primary : colors.line,
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  borderRadius: 999,
+                }}
+              >
+                <Text style={{ color: doneMap[r.id] ? colors.card : colors.text, fontWeight: '600' }}>
+                  {doneMap[r.id] ? 'Done today' : 'Mark done today'}
+                </Text>
+              </Pressable>
+            </View>
             {!!toggleMsg[r.id] && (
               <Text style={{ color: toggleMsg[r.id].includes('Failed') ? colors.danger : colors.primary, marginLeft: 56, marginTop: 2, fontSize: 13 }}>{toggleMsg[r.id]}</Text>
             )}

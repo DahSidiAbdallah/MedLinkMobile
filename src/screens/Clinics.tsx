@@ -10,6 +10,7 @@ import { Pill } from '../components/Pill';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { useLoading } from '../hooks/LoadingContext';
 import { SegmentedControl } from '../components/SegmentedControl';
+import Chip from '../components/Chip';
 import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
 
 const FILTERS = ['All', 'Clinic', 'Hospital', 'Pharmacy'];
@@ -130,35 +131,10 @@ export default function FacilitiesScreen({ navigation }: any) {
         />
         <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
 
-        {/* Filter Pills */}
-        <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
-          <Pressable
-            onPress={() => setOpenNow(v => !v)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: openNow ? colors.primary : colors.line,
-              borderRadius: radius.pill,
-              paddingHorizontal: 14,
-              paddingVertical: 7,
-              marginRight: 8,
-            }}>
-            <Text style={{ color: openNow ? colors.card : colors.muted, fontSize: 15, marginRight: 6 }}>●</Text>
-            <Text style={{ color: openNow ? colors.card : colors.text, fontWeight: '600', fontSize: 15 }}>Open Now</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setHasDelivery(v => !v)}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: hasDelivery ? colors.primary : colors.line,
-              borderRadius: radius.pill,
-              paddingHorizontal: 14,
-              paddingVertical: 7,
-            }}>
-            <Text style={{ color: hasDelivery ? colors.card : colors.muted, fontSize: 15, marginRight: 6 }}>🚴‍♂️</Text>
-            <Text style={{ color: hasDelivery ? colors.card : colors.text, fontWeight: '600', fontSize: 15 }}>Has Delivery</Text>
-          </Pressable>
+        {/* Filter Chips */}
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+          <Chip label={openNow ? 'Open Now ✓' : 'Open Now'} selected={openNow} onPress={() => setOpenNow(v => !v)} />
+          <Chip label={hasDelivery ? 'Has Delivery ✓' : 'Has Delivery'} selected={hasDelivery} onPress={() => setHasDelivery(v => !v)} />
         </View>
       </View>
 

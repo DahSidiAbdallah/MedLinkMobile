@@ -5,3 +5,10 @@ jest.mock('@react-native-async-storage/async-storage')
 if (!(global as any).fetch) {
   (global as any).fetch = async () => ({ ok: true, status: 200 })
 }
+
+// Mock expo-linear-gradient for node test environment
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react')
+  const MockGrad = ({ children }: any) => React.createElement('div', null, children)
+  return { LinearGradient: MockGrad }
+})

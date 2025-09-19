@@ -1,0 +1,457 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders Dashboard snapshot 1`] = `
+<RNCSafeAreaView
+  edges={
+    {
+      "bottom": "off",
+      "left": "additive",
+      "right": "additive",
+      "top": "additive",
+    }
+  }
+  style={
+    [
+      {
+        "backgroundColor": "#F3F6FF",
+        "flex": 1,
+      },
+    ]
+  }
+>
+  <div>
+    <RCTScrollView
+      contentContainerStyle={
+        [
+          {
+            "flexGrow": 1,
+          },
+          {
+            "paddingBottom": 32,
+          },
+        ]
+      }
+    >
+      <View>
+        <View
+          style={
+            {
+              "backgroundColor": "transparent",
+              "borderBottomLeftRadius": 36,
+              "borderBottomRightRadius": 36,
+              "minHeight": 260,
+              "overflow": "hidden",
+              "paddingBottom": 0,
+              "paddingHorizontal": 22,
+              "paddingTop": 30,
+              "position": "relative",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+              }
+            }
+          >
+            <View
+              accessibilityLabel="Open profile"
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "alignItems": "center",
+                  "backgroundColor": "#FFFFFF",
+                  "borderRadius": 20,
+                  "elevation": 5,
+                  "height": 40,
+                  "justifyContent": "center",
+                  "marginLeft": 8,
+                  "overflow": "hidden",
+                  "shadowColor": "#0B132B",
+                  "shadowOffset": {
+                    "height": 7,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.08,
+                  "shadowRadius": 12,
+                  "width": 40,
+                }
+              }
+            >
+              <img
+                alt="skeleton"
+                resizeMode="cover"
+                source="test-file-stub"
+                style={
+                  {
+                    "borderRadius": 18,
+                    "height": 36,
+                    "resizeMode": "cover",
+                    "width": 36,
+                  }
+                }
+              />
+            </View>
+            <span />
+            <span />
+          </View>
+          <Text
+            style={
+              [
+                {
+                  "color": "#0F172A",
+                  "fontSize": 30,
+                  "fontWeight": "700",
+                },
+                {
+                  "marginTop": 18,
+                },
+              ]
+            }
+          >
+            Welcome
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#64748B",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                },
+                {
+                  "marginBottom": 18,
+                },
+              ]
+            }
+          >
+            How is it going today?
+          </Text>
+          <View
+            accessibilityHint="View nearby urgent care facilities and emergency contacts"
+            accessibilityLabel="Open urgent care"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            hitSlop={8}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#2563EB",
+                "borderRadius": 999,
+                "elevation": 5,
+                "marginBottom": 22,
+                "marginHorizontal": 22,
+                "paddingVertical": 16,
+                "shadowColor": "#0B132B",
+                "shadowOffset": {
+                  "height": 7,
+                  "width": 0,
+                },
+                "shadowOpacity": 0.08,
+                "shadowRadius": 12,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#FFFFFF",
+                  "fontWeight": "700",
+                }
+              }
+            >
+              Urgent Care
+            </Text>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "backgroundColor": "#FFFFFF",
+              "borderRadius": 22,
+              "elevation": 5,
+              "marginHorizontal": 22,
+              "marginTop": -30,
+              "padding": 20,
+              "shadowColor": "#0B132B",
+              "shadowOffset": {
+                "height": 7,
+                "width": 0,
+              },
+              "shadowOpacity": 0.08,
+              "shadowRadius": 12,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#0F172A",
+                "fontSize": 17,
+                "fontWeight": "700",
+                "marginBottom": 12,
+              }
+            }
+          >
+            Our Services
+          </Text>
+          <View
+            style={
+              {
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "marginBottom": 8,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flex": 1,
+                }
+              }
+            >
+              <Text
+                style={
+                  {
+                    "fontSize": 32,
+                    "marginBottom": 4,
+                  }
+                }
+              >
+                🩺
+              </Text>
+              <Text
+                style={
+                  {
+                    "color": "#64748B",
+                    "fontSize": 13,
+                    "fontWeight": "600",
+                  }
+                }
+              >
+                Meds Verification
+              </Text>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flex": 1,
+                }
+              }
+            >
+              <Text
+                style={
+                  {
+                    "fontSize": 32,
+                    "marginBottom": 4,
+                  }
+                }
+              >
+                💊
+              </Text>
+              <Text
+                style={
+                  {
+                    "color": "#64748B",
+                    "fontSize": 13,
+                    "fontWeight": "600",
+                  }
+                }
+              >
+                Medical ID
+              </Text>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flex": 1,
+                }
+              }
+            >
+              <Text
+                style={
+                  {
+                    "fontSize": 32,
+                    "marginBottom": 4,
+                  }
+                }
+              >
+                🚑
+              </Text>
+              <Text
+                style={
+                  {
+                    "color": "#64748B",
+                    "fontSize": 13,
+                    "fontWeight": "600",
+                  }
+                }
+              >
+                Facilities 
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "backgroundColor": "#FFFFFF",
+              "borderRadius": 22,
+              "elevation": 5,
+              "marginHorizontal": 22,
+              "marginTop": 24,
+              "padding": 20,
+              "shadowColor": "#0B132B",
+              "shadowOffset": {
+                "height": 7,
+                "width": 0,
+              },
+              "shadowOpacity": 0.08,
+              "shadowRadius": 12,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "marginBottom": 8,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#0F172A",
+                  "fontSize": 17,
+                  "fontWeight": "700",
+                }
+              }
+            >
+              Reminders
+            </Text>
+          </View>
+          <Text
+            style={
+              {
+                "color": "#64748B",
+              }
+            }
+          >
+            No reminders found.
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "backgroundColor": "#FFFFFF",
+              "borderRadius": 22,
+              "elevation": 5,
+              "marginHorizontal": 22,
+              "marginTop": 24,
+              "padding": 20,
+              "shadowColor": "#0B132B",
+              "shadowOffset": {
+                "height": 7,
+                "width": 0,
+              },
+              "shadowOpacity": 0.08,
+              "shadowRadius": 12,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#0F172A",
+                "fontSize": 17,
+                "fontWeight": "700",
+                "marginBottom": 8,
+              }
+            }
+          >
+            My Medications
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#64748B",
+                "marginTop": 12,
+                "textAlign": "center",
+              }
+            }
+          >
+            No medications saved.
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </div>
+</RNCSafeAreaView>
+`;
