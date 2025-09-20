@@ -62,130 +62,120 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
 };
 
 function CustomTabBar(props: Readonly<BottomTabBarProps>) {
-  const { state, navigation } = props;
+  const { state, navigation, descriptors } = props;
   const insets = useSafeAreaInsets();
-  const height = 64;
-  const totalHeight = height + insets.bottom;
-  // Responsive tweaks for very short screens to reduce FAB overlap
+  const baseHeight = 64;
+  const totalHeight = baseHeight + insets.bottom;
   const windowHeight = Platform.OS === 'web' && typeof window !== 'undefined'
     ? (window as any).innerHeight
     : Dimensions.get('window').height;
   const ultraCompact = windowHeight < 540;
   const compact = windowHeight < 620 && !ultraCompact;
-  const fabTopOffset = ultraCompact ? -10 : compact ? -18 : -26;
-  const centerSpacerWidth = ultraCompact ? 70 : compact ? 78 : 86;
-  const routes = state.routes;
-  const barcodeRoute = routes.find(r => r.name === 'Barcode');
-  const otherRoutes = routes.filter(r => r.name !== 'Barcode');
-  const leftCount = Math.floor(otherRoutes.length / 2);
-  const leftRoutes = otherRoutes.slice(0, leftCount);
-  const rightRoutes = otherRoutes.slice(leftCount);
+  const fabSize = compact ? 62 : 70;
+  const iconSize = compact ? 22 : 24;
+  const labelFont = compact ? 11 : 12;
+  const barcodeRoute = state.routes.find(r => r.name === 'Barcode');
+
   return (
-    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: totalHeight, paddingBottom: insets.bottom, backgroundColor: 'transparent' }} accessibilityElementsHidden={false} importantForAccessibility="no-hide-descendants">
+    <View
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: totalHeight,
+        paddingBottom: insets.bottom,
+        backgroundColor: 'transparent',
+      }}
+      accessibilityElementsHidden={false}
+      importantForAccessibility="no-hide-descendants"
+    >
       <View
         style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          height,
+          height: baseHeight,
+          marginHorizontal: 16,
+          borderRadius: 28,
           backgroundColor: colors.card,
-          borderTopWidth: 1,
-          borderTopColor: colors.line,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.04,
-          shadowRadius: 8,
-          elevation: 8,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          borderWidth: Platform.OS === 'web' ? 0 : 1,
+          borderColor: colors.line,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 18,
+          shadowColor: 'rgba(15,23,42,0.2)',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.14,
+          shadowRadius: 14,
+          elevation: 12,
+          position: 'relative',
           overflow: 'visible',
-          paddingHorizontal: 12,
-          // Web-only niceties
-          ...(Platform.OS === 'web' ? ({
-            backdropFilter: 'blur(10px)',
-            backgroundColor: 'rgba(255,255,255,0.85)',
-          } as any) : null),
+          ...(Platform.OS === 'web'
+            ? ({
+                backdropFilter: 'blur(14px)',
+                backgroundColor: 'rgba(255,255,255,0.92)',
+                boxShadow: '0 16px 36px rgba(37, 99, 235, 0.14)',
+              } as any)
+            : null),
         }}
       >
-        {leftRoutes.map((route) => {
-          const isActive = state.routeNames[state.index] === route.name;
-          return (
-            <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate(route.name)}
-                activeOpacity={0.8}
-                style={{
-                  paddingVertical: 8,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 12,
-                  paddingHorizontal: 6,
-                  transform: [{ scale: isActive ? 1.06 : 1 }],
-                  ...(Platform.OS === 'web' && isActive ? ({
-                    backgroundColor: 'rgba(37,99,235,0.08)',
-                  } as any) : null),
-                }}
-              >
-                {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, 26)}
-                {/* Text label under icon for clarity */}
-                <Text
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          {state.routes.map((route) => {
+            if (route.name === 'Barcode') {
+              return <View key={`${route.key}-spacer`} style={{ width: fabSize }} />;
+            }
+            const isActive = state.routeNames[state.index] === route.name;
+            const label =
+              descriptors[route.key]?.options?.tabBarLabel ??
+              descriptors[route.key]?.options?.title ??
+              route.name;
+            return (
+              <View key={route.key} style={{ flex: 1, alignItems: 'center' }}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate(route.name)}
+                  activeOpacity={0.85}
                   style={{
-                    marginTop: 4,
-                    fontSize: 11,
-                    color: isActive ? colors.primary : colors.muted,
-                    fontWeight: isActive ? '600' as const : '500' as const,
+                    width: '100%',
+                    maxWidth: 110,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: compact ? 6 : 8,
+                    paddingHorizontal: 10,
+                    borderRadius: 18,
+                    backgroundColor: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
+                    ...(Platform.OS === 'web' && !isActive
+                      ? ({ transition: 'all 160ms ease' } as any)
+                      : null),
                   }}
-                  numberOfLines={1}
                 >
-                  {route.name}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
+                  {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, iconSize)}
+                  <Text
+                    style={{
+                      marginTop: 4,
+                      fontSize: labelFont,
+                      color: isActive ? colors.primary : colors.muted,
+                      fontWeight: isActive ? ('600' as const) : ('500' as const),
+                    }}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
+        </View>
 
-        {/* Spacer to accommodate the centered FAB so items don't overlap */}
-        <View style={{ width: centerSpacerWidth }} />
-
-        {rightRoutes.map((route) => {
-          const isActive = state.routeNames[state.index] === route.name;
-          return (
-            <View key={route.key} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate(route.name)}
-                activeOpacity={0.8}
-                style={{
-                  paddingVertical: 8,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 12,
-                  paddingHorizontal: 6,
-                  transform: [{ scale: isActive ? 1.06 : 1 }],
-                  ...(Platform.OS === 'web' && isActive ? ({
-                    backgroundColor: 'rgba(37,99,235,0.08)',
-                  } as any) : null),
-                }}
-              >
-                {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, 26)}
-                <Text
-                  style={{
-                    marginTop: 4,
-                    fontSize: 11,
-                    color: isActive ? colors.primary : colors.muted,
-                    fontWeight: isActive ? '600' as const : '500' as const,
-                  }}
-                  numberOfLines={1}
-                >
-                  {route.name}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
-
-        {/* Centered Barcode FAB */}
         {barcodeRoute ? (
-          <View pointerEvents="box-none" style={{ position: 'absolute', left: '50%', top: fabTopOffset, marginLeft: -36, zIndex: 20 }}>
+          <View
+            pointerEvents="box-none"
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: ultraCompact ? -12 : -Math.max(22, fabSize / 2),
+              marginLeft: -(fabSize / 2),
+              zIndex: 20,
+            }}
+          >
             <TouchableOpacity
               onPress={() => navigation.navigate(barcodeRoute.name)}
               accessibilityRole="button"
@@ -193,24 +183,24 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
               activeOpacity={0.9}
               style={{
                 backgroundColor: colors.primary,
-                borderRadius: 36,
-                width: 72,
-                height: 72,
+                borderRadius: fabSize / 2,
+                width: fabSize,
+                height: fabSize,
                 alignItems: 'center',
                 justifyContent: 'center',
                 shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.22,
-                shadowRadius: 12,
-                elevation: 10,
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.28,
+                shadowRadius: 18,
+                elevation: 16,
                 borderWidth: 4,
                 borderColor: colors.card,
-                ...(Platform.OS === 'web' ? ({
-                  boxShadow: '0 10px 26px rgba(37,99,235,0.35)'
-                } as any) : null),
+                ...(Platform.OS === 'web'
+                  ? ({ boxShadow: '0 18px 34px rgba(37,99,235,0.35)' } as any)
+                  : null),
               }}
             >
-              <MaterialCommunityIcons name="barcode-scan" size={34} color="#fff" />
+              <MaterialCommunityIcons name="barcode-scan" size={compact ? 30 : 34} color="#fff" />
             </TouchableOpacity>
           </View>
         ) : null}
@@ -222,22 +212,41 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [i18nReady, setI18nReady] = useState(false);
 
   // Initialize i18n lazily so its async storage access doesn't run
   // during module evaluation. This avoids startup crashes in some
-  // environments where native modules are not yet available.
+  // environments where native modules are not yet available. We
+  // gate rendering on the init completing so hooks like useTranslation
+  // always see an initialized instance and do not throw.
   useEffect(() => {
-    let mounted = true;
+    let cancelled = false;
     (async () => {
       try {
         await import('./src/i18n');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn('i18n failed to initialize', e);
+      } finally {
+        if (!cancelled) {
+          setI18nReady(true);
+        }
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  if (!i18nReady) {
+    return (
+      <SafeAreaProvider>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaProvider>
+    );
+  }
 
   useEffect(() => {
     // Initialize telemetry service on app startup. This avoids module-import side effects
