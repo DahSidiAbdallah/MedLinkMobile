@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions, Image as RNImage } from 'react-native';
-import { colors, spacing, type, radius } from '../theme';
+import { colors, spacing, type, radius, shadow } from '../theme';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { Pill } from '../components/Pill';
@@ -86,16 +86,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.glass,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     padding: spacing.xl,
     paddingBottom: 40,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: -4 },
-    elevation: 8,
+    ...shadow.card,
   },
   headerRow: {
     flexDirection: 'row',
@@ -129,5 +125,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 15,
     marginBottom: 4,
+    lineHeight: 20,
   },
 });
