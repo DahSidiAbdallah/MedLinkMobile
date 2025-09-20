@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, shadow } from '../theme';
 import { useLoading } from '../hooks/LoadingContext';
 
@@ -8,10 +9,15 @@ export default function GlobalLoader() {
   if (!isLoading) return null;
   return (
     <View style={[styles.overlay]} accessibilityElementsHidden={false} importantForAccessibility="no-hide-descendants">
-      <View style={[styles.container]}>
+      <LinearGradient
+        colors={colors.subtleGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.text}>Loading…</Text>
-      </View>
+      </LinearGradient>
     </View>
   );
 }

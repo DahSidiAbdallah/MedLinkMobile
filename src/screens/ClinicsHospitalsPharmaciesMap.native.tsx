@@ -1,8 +1,9 @@
 
 import React from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { colors } from '../theme';
-import { View, Dimensions } from 'react-native';
+import { colors, radius } from '../theme';
+import { Dimensions, StyleSheet } from 'react-native';
+import Card from '../components/Card';
 
 interface Facility {
   id: string;
@@ -37,9 +38,9 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
     : fallbackRegion;
 
   return (
-    <View style={{ flex: 1, width: '100%', height: Dimensions.get('window').height * 0.6 }}>
+    <Card style={styles.card}>
       <MapView
-        style={{ flex: 1 }}
+        style={styles.map}
         initialRegion={region}
       >
         {filtered.map(fac => (
@@ -53,8 +54,20 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
           />
         ))}
       </MapView>
-    </View>
+    </Card>
   );
 };
 
 export default ClinicsHospitalsPharmaciesMap;
+
+const styles = StyleSheet.create({
+  card: {
+    padding: 0,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    height: Dimensions.get('window').height * 0.6,
+  },
+  map: {
+    flex: 1,
+  },
+});
