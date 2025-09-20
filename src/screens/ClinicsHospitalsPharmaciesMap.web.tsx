@@ -102,6 +102,23 @@ function getDistance(lat1: number, lng1: number, lat2: number, lng2: number) {
 const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap }) => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [sortedFacilities, setSortedFacilities] = useState<Facility[]>(filtered);
+  const [canRenderLeaflet, setCanRenderLeaflet] = useState(false);
+
+  useEffect(() => {
+    // Defer map rendering until after first paint so react-leaflet can
+    // access the DOM context it expects. This avoids hook.js Context.Consumer
+    // errors that show up in development when the component mounts before
+    // the DOM is fully ready.
+    let animation: number | undefined;
+    if (typeof window !== 'undefined') {
+      animation = window.requestAnimationFrame(() => setCanRenderLeaflet(true));
+    }
+    return () => {
+      if (animation && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(animation);
+      }
+    };
+  }, []);
 
   // Get user location on mount
   useEffect(() => {
@@ -193,11 +210,33 @@ const ClinicsHospitalsPharmaciesMap: React.FC<Props> = ({ filtered, handleMap })
     return null;
   }
 
+  if (!canRenderLeaflet) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          margin: '24px 0',
+          borderRadius: 16,
+          background: colors.card,
+          boxShadow: `0 4px 24px 0 ${colors.overlay}`,
+          minHeight: 220,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: colors.muted,
+          fontSize: 14,
+        }}
+      >
+        Loading map…
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: '100%' }}>
       <div style={mapContainerStyle}>
         <MapErrorBoundary>
-        <MapContainer center={center as any} zoom={13} style={{ width: '100%', height: '100%' }} scrollWheelZoom={true}>
+        <MapContainer center={center as any} zoom={13} style={{ width: '100%', height: '100%' }} scrollWheelZoom>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

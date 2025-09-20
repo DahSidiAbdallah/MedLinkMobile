@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, ScrollView, Text, TextInput, Platform, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage } from 'react-native';
+import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage, StyleSheet } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
 import type { Facility } from '../types';
-import { colors, spacing, radius } from '../theme';
+import { colors, spacing, radius, shadow } from '../theme';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
 import { Pill } from '../components/Pill';
@@ -12,6 +12,7 @@ import { useLoading } from '../hooks/LoadingContext';
 import { SegmentedControl } from '../components/SegmentedControl';
 import Chip from '../components/Chip';
 import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
+import ScreenContainer from '../components/ScreenContainer';
 
 const FILTERS = ['All', 'Clinic', 'Hospital', 'Pharmacy'];
 
@@ -109,95 +110,35 @@ export default function FacilitiesScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing.xl }}>
-      {/* Search bar */}
-
-      <View style={{ marginBottom: spacing.lg }}>
-    <TextInput
+    <ScreenContainer scrollable contentContainerStyle={styles.content}>
+      <Card style={styles.filterCard}>
+        <TextInput
           placeholder="Search facilities..."
           value={search}
           onChangeText={setSearch}
-          style={{
-      backgroundColor: colors.card,
-      borderRadius: radius.md,
-            paddingHorizontal: 16,
-            paddingVertical: Platform.OS === 'web' ? 12 : 8,
-            fontSize: 16,
-            borderWidth: 1,
-            borderColor: colors.line,
-            marginBottom: 8,
-          }}
+          style={styles.searchInput}
           placeholderTextColor={colors.muted}
         />
         <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
-
-        {/* Filter Chips */}
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+        <View style={styles.chipRow}>
           <Chip label={openNow ? 'Open Now ✓' : 'Open Now'} selected={openNow} onPress={() => setOpenNow(v => !v)} />
           <Chip label={hasDelivery ? 'Has Delivery ✓' : 'Has Delivery'} selected={hasDelivery} onPress={() => setHasDelivery(v => !v)} />
         </View>
-      </View>
+      </Card>
 
-      {/* Map */}
-      <View style={{ marginBottom: spacing.xl }}>
+      <Card style={styles.mapCard}>
         <ClinicsHospitalsPharmaciesMap filtered={filtered} handleMap={handleMap} />
-      </View>
+      </Card>
 
-      {/* Facility list */}
-      <View style={{ gap: spacing.lg }}>
+      <View style={styles.list}>
         {filtered.map(fac => (
-          <Card key={fac.id} style={{ marginBottom: spacing.lg }}>
+          <Card key={fac.id} style={styles.facilityCard}>
             <ListRow
               title={fac.name}
               subtitle={fac.address || fac.location}
               right={fac.specialty ? <Pill tone="primary">{fac.specialty}</Pill> : undefined}
               onPress={() => openFacilityModal(fac)}
             />
-      {/* Facility Details Modal Sheet */}
-      <Modal
-        visible={modalVisible}
-        animationType="none"
-        transparent
-        onRequestClose={closeFacilityModal}
-      >
-        <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
-          <Animated.View
-            style={{
-              backgroundColor: colors.card,
-              borderTopLeftRadius: radius.xl,
-              borderTopRightRadius: radius.xl,
-              padding: spacing.xl,
-              paddingBottom: 40,
-              shadowColor: '#000',
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              shadowOffset: { width: 0, height: -4 },
-              elevation: 8,
-              transform: [
-                {
-                  translateY: sheetAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [Dimensions.get('window').height, 0],
-                  }),
-                },
-              ],
-            }}
-          >
-            {selectedFacility && (
-              <>
-                {/* Header */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>Summary</Text>
-                  <Pressable onPress={closeFacilityModal} hitSlop={10}>
-                    <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>Cancel</Text>
-                  </Pressable>
-                </View>
-                {/* Avatar, Name, Specialty */}
-                <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-                  {selectedFacility.image ? (
-                    <SkeletonImage source={{ uri: selectedFacility.image }} style={{ width: 64, height: 64, borderRadius: 32, marginBottom: 8 }} resizeMode="cover" />
-                  ) : null}
-                  <Text style={[{ fontSize: 20, fontWeight: '700', color: colors.text, marginTop: spacing.sm }]}>{selectedFacility.name}</Text>
                   <Text style={{ color: colors.muted }}>{selectedFacility.specialty}</Text>
                 </View>
                 {/* Status */}
@@ -253,12 +194,140 @@ export default function FacilitiesScreen({ navigation }: any) {
             </View>
           </Card>
         ))}
-        {loading && <Text style={{ textAlign: 'center' }}>Loading...</Text>}
-        {error && <Text style={{ color: colors.danger }}>{error}</Text>}
-        {filtered.length === 0 && !loading && !error && (
-          <Text style={{ textAlign: 'center', color: colors.muted }}>No facilities found.</Text>
-        )}
       </View>
-    </ScrollView>
+
+      {loading && <Text style={styles.stateText}>Loading...</Text>}
+      {error && <Text style={[styles.stateText, { color: colors.danger }]}>{error}</Text>}
+      {filtered.length === 0 && !loading && !error && (
+        <Text style={styles.stateText}>No facilities found.</Text>
+      )}
+
+      <Modal
+        visible={modalVisible}
+        animationType="none"
+        transparent
+        onRequestClose={closeFacilityModal}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.modalSheet,
+              {
+                transform: [
+                  {
+                    translateY: sheetAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [Dimensions.get('window').height, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            {selectedFacility && (
+              <>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Summary</Text>
+                  <Pressable onPress={closeFacilityModal} hitSlop={10}>
+                    <Text style={styles.modalClose}>Close</Text>
+                  </Pressable>
+                </View>
+                <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
+                  {selectedFacility.image ? (
+                    <SkeletonImage source={{ uri: selectedFacility.image }} style={styles.modalAvatar} resizeMode="cover" />
+                  ) : null}
+                  <Text style={styles.modalName}>{selectedFacility.name}</Text>
+                  <Text style={styles.modalSubtitle}>{selectedFacility.specialty}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: spacing.lg }}>
+                  <Pill tone="primary">{selectedFacility.type.charAt(0).toUpperCase() + selectedFacility.type.slice(1)}</Pill>
+                  {selectedFacility.isOpen && <Pill tone="neutral">Open Now</Pill>}
+                  {selectedFacility.hasDelivery && <Pill tone="neutral">Has Delivery</Pill>}
+                </View>
+                <View style={{ gap: 6 }}>
+                  {selectedFacility.address && <Text style={styles.modalDetail}>Address: {selectedFacility.address}</Text>}
+                  {selectedFacility.phoneNumber && <Text style={styles.modalDetail}>Phone: {selectedFacility.phoneNumber}</Text>}
+                  {selectedFacility.hours && <Text style={styles.modalDetail}>Hours: {selectedFacility.hours}</Text>}
+                  {selectedFacility.rating && <Text style={styles.modalDetail}>Rating: {selectedFacility.rating.toFixed(1)}</Text>}
+                  {selectedFacility.services && selectedFacility.services.length > 0 && (
+                    <Text style={styles.modalDetail}>Services: {selectedFacility.services.join(', ')}</Text>
+                  )}
+                  {selectedFacility.languages && selectedFacility.languages.length > 0 && (
+                    <Text style={styles.modalDetail}>Languages: {selectedFacility.languages.join(', ')}</Text>
+                  )}
+                  {selectedFacility.acceptedInsurance && selectedFacility.acceptedInsurance.length > 0 && (
+                    <Text style={styles.modalDetail}>Insurance: {selectedFacility.acceptedInsurance.join(', ')}</Text>
+                  )}
+                </View>
+              </>
+            )}
+          </Animated.View>
+        </View>
+      </Modal>
+    </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    gap: spacing.xl,
+    paddingBottom: spacing.xxl,
+  },
+  filterCard: {
+    gap: spacing.md,
+  },
+  searchInput: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: colors.line,
+    fontSize: 16,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  mapCard: {
+    padding: 0,
+    overflow: 'hidden',
+  },
+  list: {
+    gap: spacing.lg,
+  },
+  facilityCard: {
+    gap: spacing.sm,
+  },
+  stateText: {
+    textAlign: 'center',
+    color: colors.muted,
+    marginTop: spacing.md,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: colors.glass,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    padding: spacing.xl,
+    paddingBottom: 40,
+    ...shadow.card,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  modalTitle: { fontWeight: 'bold', fontSize: 22, color: colors.text },
+  modalClose: { color: colors.muted, fontWeight: '600', fontSize: 16 },
+  modalAvatar: { width: 64, height: 64, borderRadius: 32, marginBottom: 8 },
+  modalName: { fontSize: 20, fontWeight: '700', color: colors.text },
+  modalSubtitle: { color: colors.muted, marginTop: 4 },
+  modalDetail: { color: colors.text, fontSize: 15 },
+});
