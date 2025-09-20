@@ -36,4 +36,26 @@ const auth = (!isWeb && getReactNativePersistence && ReactNativeAsyncStorage)
   : getAuth(app);
 const db = getFirestore(app);
 
+// Optional: connect to Firestore emulator when running locally and the flag is set.
+// Set environment variable REACT_APP_USE_FIRESTORE_EMULATOR=1 or set
+// `window.__USE_FIRESTORE_EMULATOR__ = true` in the browser console.
+try {
+  const useEmulator = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_USE_FIRESTORE_EMULATOR === '1')
+    || (typeof window !== 'undefined' && (window as any).__USE_FIRESTORE_EMULATOR__ === true);
+  if (useEmulator) {
+    // Import connectFirestoreEmulator dynamically so web builds that don't want it
+    // won't be affected.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { connectFirestoreEmulator } = require('firebase/firestore');
+    // Default host/port for emulator. Adjust if your emulator uses different settings.
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    // eslint-disable-next-line no-console
+    console.info('Firestore emulator connected: localhost:8080');
+  }
+} catch (e) {
+  // If emulator connection fails, just continue and allow Firestore to operate normally.
+  // eslint-disable-next-line no-console
+  console.warn('Failed to connect to Firestore emulator (if requested):', e);
+}
+
 export { app, auth, db };
