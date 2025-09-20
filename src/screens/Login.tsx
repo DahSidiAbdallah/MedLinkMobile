@@ -1,26 +1,68 @@
 import React, { useState } from 'react';
-import { Platform } from 'react-native';
-import BloodTypePicker from '../components/BloodTypePicker';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
+import {
+  Platform,
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Alert,
+  Image,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
+import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { colors, spacing, type } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import BloodTypePicker from '../components/BloodTypePicker';
+import ScreenContainer from '../components/ScreenContainer';
+import Card from '../components/Card';
+import { SegmentedControl } from '../components/SegmentedControl';
+import { auth, db } from '../lib/firebase';
+import { colors, spacing, type, radius } from '../theme';
 
-export default function Login({ navigation, onLogin }: { navigation?: any; onLogin?: () => void }) {
+type LoginProps = { navigation?: any; onLogin?: () => void };
+
+type StepKey = 0 | 1;
+
+type RegisterErrorState = {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+};
+
+type RegisterPersonalErrors = {
+  name?: string;
+  phone?: string;
+  dateOfBirth?: string;
+};
+
+type HealthErrors = {
+  bloodType?: string;
+  allergies?: string;
+  conditions?: string;
+};
+
+const STEPS: { key: StepKey; label: string }[] = [
+  { key: 0, label: 'Account' },
+  { key: 1, label: 'Personal' },
+];
+
+export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isRegister, setIsRegister] = useState(false);
-  const [registerStep, setRegisterStep] = useState(0);
+  const [registerStep, setRegisterStep] = useState<StepKey>(0);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   // Personal info fields
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+
   // Health fields
   const [bloodType, setBloodType] = useState('');
   const [customBloodType, setCustomBloodType] = useState('');
@@ -28,24 +70,22 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   const [allergies, setAllergies] = useState<string[]>([]);
   const [conditionInput, setConditionInput] = useState('');
   const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
-  const [healthErrors, setHealthErrors] = useState<{ bloodType?: string; allergies?: string; conditions?: string }>({});
+
+  // Error states
+  const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
+  const [registerAccountErrors, setRegisterAccountErrors] = useState<RegisterErrorState>({});
+  const [registerPersonalErrors, setRegisterPersonalErrors] = useState<RegisterPersonalErrors>({});
+  const [healthErrors, setHealthErrors] = useState<HealthErrors>({});
 
   // Forgot password dialog state
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  // Inline error state for login fields
-  const [loginErrors, setLoginErrors] = useState<{ email?: string; password?: string }>({});
-  // Inline error state for register fields (account step)
-  const [registerAccountErrors, setRegisterAccountErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
-  // Inline error state for register fields (personal step)
-  const [registerPersonalErrors, setRegisterPersonalErrors] = useState<{ name?: string; phone?: string; dateOfBirth?: string }>({});
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const validateLogin = () => {
-    let errors: { email?: string; password?: string } = {};
+    const errors: { email?: string; password?: string } = {};
     if (!email) {
       errors.email = 'Email is required.';
     } else if (!emailRegex.test(email)) {
@@ -59,7 +99,7 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   };
 
   const validateAccountStep = () => {
-    let errors: { email?: string; password?: string; confirmPassword?: string } = {};
+    const errors: RegisterErrorState = {};
     if (!email) {
       errors.email = 'Email is required.';
     } else if (!emailRegex.test(email)) {
@@ -80,8 +120,8 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
   };
 
   const validatePersonalStep = () => {
-    let errors: { name?: string; phone?: string; dateOfBirth?: string } = {};
-    let health: { bloodType?: string; allergies?: string; conditions?: string } = {};
+    const errors: RegisterPersonalErrors = {};
+    const health: HealthErrors = {};
     if (!name.trim()) {
       errors.name = 'Full name is required.';
     }
@@ -91,16 +131,13 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
     if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
       errors.dateOfBirth = 'Date of Birth must be in YYYY-MM-DD format.';
     }
-    // Blood type validation
     const bt = bloodType === 'custom' ? customBloodType.trim() : bloodType;
     if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt)) {
       health.bloodType = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.';
     }
-    // Allergies validation
     if (allergies.some(a => !a.trim())) {
       health.allergies = 'Allergy cannot be empty.';
     }
-    // Conditions validation
     if (medicalConditions.some(c => !c.trim())) {
       health.conditions = 'Condition cannot be empty.';
     }
@@ -160,551 +197,663 @@ export default function Login({ navigation, onLogin }: { navigation?: any; onLog
     }
   };
 
-  return (
-    <View style={[styles.container, Platform.OS === 'web' ? { backgroundImage: 'linear-gradient(135deg, #F3F6FF 0%, #FFFFFF 60%)' } as any : null]}>
-      <View style={styles.card}>
-        <View style={{ alignItems: 'center', marginBottom: 24 }}>
-          <Image
-            source={require('../assets/logo.png')}
-            style={{ width: 100, height: 100, resizeMode: 'contain', marginBottom: 8 }}
-          />
-          <Text style={[type.h1, { marginBottom: 8 }]}>
-            {isRegister ? 'Create Account' : 'Login'}
-          </Text>
-        </View>
-        {isRegister && (
-          <View style={styles.stepper}>
-            <View style={styles.stepWrapper}>
-              <View
-                style={[styles.stepCircle, registerStep >= 0 && styles.stepCircleActive]}
-              >
-                <Text style={styles.stepNumber}>1</Text>
-              </View>
-              <Text
-                style={[styles.stepLabel, registerStep === 0 && styles.stepLabelActive]}
-              >
-                Account
-              </Text>
-            </View>
-            <View style={[styles.stepLine, registerStep > 0 && styles.stepLineActive]} />
-            <View style={styles.stepWrapper}>
-              <View
-                style={[styles.stepCircle, registerStep >= 1 && styles.stepCircleActive]}
-              >
-                <Text style={styles.stepNumber}>2</Text>
-              </View>
-              <Text
-                style={[styles.stepLabel, registerStep === 1 && styles.stepLabelActive]}
-              >
-                Personal
-              </Text>
-            </View>
-          </View>
-        )}
+  const renderInput = (
+    props: React.ComponentProps<typeof TextInput> & {
+      error?: string;
+      id: string;
+    },
+  ) => {
+    const { error, id, ...rest } = props;
+    return (
+      <View style={{ width: '100%' }}>
+        <TextInput
+          {...rest}
+          style={[
+            styles.input,
+            focusedInput === id && styles.inputFocused,
+            error && styles.inputError,
+          ]}
+          onFocus={() => setFocusedInput(id)}
+          onBlur={event => {
+            rest.onBlur?.(event);
+            setFocusedInput(null);
+          }}
+          placeholderTextColor={colors.muted}
+        />
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      </View>
+    );
+  };
 
-        {!isRegister && (
-          <>
-            <TextInput
-              style={[styles.input, focusedInput === 'email' && styles.inputFocused, loginErrors.email && styles.inputError]}
-              placeholder="Email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={text => {
-                setEmail(text);
-                if (loginErrors.email) setLoginErrors(e => ({ ...e, email: undefined }));
-              }}
-              onFocus={() => setFocusedInput('email')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (!email) setLoginErrors(e => ({ ...e, email: 'Email is required.' }));
-                else if (!emailRegex.test(email)) setLoginErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
-                else setLoginErrors(e => ({ ...e, email: undefined }));
-              }}
-            />
-            {loginErrors.email ? <Text style={styles.errorText}>{loginErrors.email}</Text> : null}
-            <TextInput
-              style={[styles.input, focusedInput === 'password' && styles.inputFocused, loginErrors.password && styles.inputError]}
-              placeholder="Password"
-              secureTextEntry
-              value={password}
-              onChangeText={text => {
-                setPassword(text);
-                if (loginErrors.password) setLoginErrors(e => ({ ...e, password: undefined }));
-              }}
-              onFocus={() => setFocusedInput('password')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (!password) setLoginErrors(e => ({ ...e, password: 'Password is required.' }));
-                else setLoginErrors(e => ({ ...e, password: undefined }));
-              }}
-            />
-            {loginErrors.password ? <Text style={styles.errorText}>{loginErrors.password}</Text> : null}
-            <Pressable onPress={() => setShowForgot(true)}>
-              <Text style={{ color: colors.primary, marginTop: -4, marginBottom: 12, alignSelf: 'flex-end', textDecorationLine: 'underline' }}>Forgot password?</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, loading && { opacity: 0.7 }]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.card} />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
-            </Pressable>
-            {/* Forgot Password Dialog */}
-            {showForgot && (
-                <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: colors.overlay, justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
-                <View style={{ backgroundColor: colors.card, borderRadius: 18, padding: spacing.xl, width: 340, alignItems: 'center', elevation: 7, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12 }}>
-                  <Ionicons name="lock-closed-outline" size={40} color={colors.primary} style={{ marginBottom: 10 }} />
-                  <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 8, color: colors.primary }}>Reset Password</Text>
-                  <Text style={{ color: colors.text, marginBottom: 18, textAlign: 'center', fontSize: 15, lineHeight: 20 }}>
-                    Enter your email address and we'll send you a password reset link.
-                  </Text>
-                  <TextInput
-                    style={[styles.input, { marginBottom: 0, width: '100%' }]}
-                    placeholder="Email"
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    value={forgotEmail}
-                    onChangeText={setForgotEmail}
-                  />
-                    <View style={{ flexDirection: 'row', marginTop: 22, width: '100%', gap: 0 }}>
-                    <Pressable style={{ flex: 1, marginRight: 8, height: 48, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.card, borderRadius: 8, borderWidth: 1, borderColor: colors.line }} onPress={() => { setShowForgot(false); setForgotEmail(''); }}>
-                      <Text style={styles.buttonSecondaryText}>Cancel</Text>
-                    </Pressable>
-                    <Pressable
-                      style={{ flex: 1, height: 48, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.primary, borderRadius: 8 }}
-                      onPress={async () => {
-                        if (!forgotEmail || !emailRegex.test(forgotEmail)) {
-                          Alert.alert('Invalid Email', 'Please enter a valid email address.');
-                          return;
-                        }
-                        setForgotLoading(true);
-                        try {
-                          await sendPasswordResetEmail(auth, forgotEmail);
-                          Alert.alert('Password Reset', 'A password reset link has been sent to your email.');
-                          setShowForgot(false);
-                          setForgotEmail('');
-                        } catch (e: any) {
-                          Alert.alert('Error', e.message || 'Failed to send reset email.');
-                        } finally {
-                          setForgotLoading(false);
-                        }
-                      }}
-                      disabled={forgotLoading}
-                    >
-                      {forgotLoading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.buttonText}>Send</Text>}
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-            )}
-          </>
-        )}
+  const renderLogin = () => (
+    <>
+      {renderInput({
+        id: 'login-email',
+        placeholder: 'Email',
+        autoCapitalize: 'none',
+        keyboardType: 'email-address',
+        value: email,
+        onChangeText: text => {
+          setEmail(text);
+          if (loginErrors.email) setLoginErrors(e => ({ ...e, email: undefined }));
+        },
+        onBlur: () => {
+          if (!email) setLoginErrors(e => ({ ...e, email: 'Email is required.' }));
+          else if (!emailRegex.test(email)) setLoginErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
+          else setLoginErrors(e => ({ ...e, email: undefined }));
+        },
+        error: loginErrors.email,
+      })}
+      {renderInput({
+        id: 'login-password',
+        placeholder: 'Password',
+        secureTextEntry: true,
+        value: password,
+        onChangeText: text => {
+          setPassword(text);
+          if (loginErrors.password) setLoginErrors(e => ({ ...e, password: undefined }));
+        },
+        onBlur: () => {
+          if (!password) setLoginErrors(e => ({ ...e, password: 'Password is required.' }));
+          else setLoginErrors(e => ({ ...e, password: undefined }));
+        },
+        error: loginErrors.password,
+      })}
+      <Pressable onPress={() => setShowForgot(true)} style={styles.forgotLink}>
+        <Text style={styles.forgotText}>Forgot password?</Text>
+      </Pressable>
+      <Pressable style={[styles.primaryButton, loading && styles.disabled]} onPress={handleLogin} disabled={loading}>
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Login</Text>}
+      </Pressable>
+    </>
+  );
 
-        {isRegister && registerStep === 0 && (
-          <>
-            <TextInput
-              style={[styles.input, focusedInput === 'email' && styles.inputFocused, registerAccountErrors.email && styles.inputError]}
-              placeholder="Email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={text => {
-                setEmail(text);
-                if (registerAccountErrors.email) setRegisterAccountErrors(e => ({ ...e, email: undefined }));
-              }}
-              onFocus={() => setFocusedInput('email')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (!email) setRegisterAccountErrors(e => ({ ...e, email: 'Email is required.' }));
-                else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
-                else setRegisterAccountErrors(e => ({ ...e, email: undefined }));
-              }}
-            />
-            {registerAccountErrors.email ? <Text style={styles.errorText}>{registerAccountErrors.email}</Text> : null}
-            <TextInput
-              style={[styles.input, focusedInput === 'password' && styles.inputFocused, registerAccountErrors.password && styles.inputError]}
-              placeholder="Password"
-              secureTextEntry
-              value={password}
-              onChangeText={text => {
-                setPassword(text);
-                if (registerAccountErrors.password) setRegisterAccountErrors(e => ({ ...e, password: undefined }));
-              }}
-              onFocus={() => setFocusedInput('password')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (!password) setRegisterAccountErrors(e => ({ ...e, password: 'Password is required.' }));
-                else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) setRegisterAccountErrors(e => ({ ...e, password: 'Password must be at least 8 characters and include both letters and numbers.' }));
-                else setRegisterAccountErrors(e => ({ ...e, password: undefined }));
-              }}
-            />
-            {registerAccountErrors.password ? <Text style={styles.errorText}>{registerAccountErrors.password}</Text> : null}
-            <TextInput
-              style={[styles.input, focusedInput === 'confirm' && styles.inputFocused, registerAccountErrors.confirmPassword && styles.inputError]}
-              placeholder="Confirm Password"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={text => {
-                setConfirmPassword(text);
-                if (registerAccountErrors.confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
-              }}
-              onFocus={() => setFocusedInput('confirm')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (!confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Please confirm your password.' }));
-                else if (password !== confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Passwords do not match.' }));
-                else setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
-              }}
-            />
-            {registerAccountErrors.confirmPassword ? <Text style={styles.errorText}>{registerAccountErrors.confirmPassword}</Text> : null}
-            <Pressable
-              style={[styles.button, loading && { opacity: 0.7 }]}
-              onPress={() => {
-                if (validateAccountStep()) setRegisterStep(1);
-              }}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Next</Text>
-              )}
-            </Pressable>
-          </>
-        )}
+  const renderAccountStep = () => (
+    <>
+      {renderInput({
+        id: 'register-email',
+        placeholder: 'Email',
+        autoCapitalize: 'none',
+        keyboardType: 'email-address',
+        value: email,
+        onChangeText: text => {
+          setEmail(text);
+          if (registerAccountErrors.email) setRegisterAccountErrors(e => ({ ...e, email: undefined }));
+        },
+        onBlur: () => {
+          if (!email) setRegisterAccountErrors(e => ({ ...e, email: 'Email is required.' }));
+          else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
+          else setRegisterAccountErrors(e => ({ ...e, email: undefined }));
+        },
+        error: registerAccountErrors.email,
+      })}
+      {renderInput({
+        id: 'register-password',
+        placeholder: 'Password',
+        secureTextEntry: true,
+        value: password,
+        onChangeText: text => {
+          setPassword(text);
+          if (registerAccountErrors.password) setRegisterAccountErrors(e => ({ ...e, password: undefined }));
+        },
+        onBlur: () => {
+          if (!password) setRegisterAccountErrors(e => ({ ...e, password: 'Password is required.' }));
+          else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password))
+            setRegisterAccountErrors(e => ({ ...e, password: 'Password must be at least 8 characters and include both letters and numbers.' }));
+          else setRegisterAccountErrors(e => ({ ...e, password: undefined }));
+        },
+        error: registerAccountErrors.password,
+      })}
+      {renderInput({
+        id: 'register-confirm',
+        placeholder: 'Confirm Password',
+        secureTextEntry: true,
+        value: confirmPassword,
+        onChangeText: text => {
+          setConfirmPassword(text);
+          if (registerAccountErrors.confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
+        },
+        onBlur: () => {
+          if (!confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Please confirm your password.' }));
+          else if (password !== confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Passwords do not match.' }));
+          else setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
+        },
+        error: registerAccountErrors.confirmPassword,
+      })}
+      <Pressable
+        style={[styles.primaryButton, loading && styles.disabled]}
+        onPress={() => {
+          if (validateAccountStep()) setRegisterStep(1);
+        }}
+        disabled={loading}
+      >
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Next</Text>}
+      </Pressable>
+    </>
+  );
 
-        {isRegister && registerStep === 1 && (
-          <>
-            <TextInput
-              style={[styles.input, focusedInput === 'name' && styles.inputFocused, registerPersonalErrors.name && styles.inputError]}
-              placeholder="Full Name"
-              value={name}
-              onChangeText={text => {
-                setName(text);
-                if (registerPersonalErrors.name) setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
-              }}
-              onFocus={() => setFocusedInput('name')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (!name.trim()) setRegisterPersonalErrors(e => ({ ...e, name: 'Full name is required.' }));
-                else setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
-              }}
-            />
-            {registerPersonalErrors.name ? <Text style={styles.errorText}>{registerPersonalErrors.name}</Text> : null}
-            <TextInput
-              style={[styles.input, focusedInput === 'phone' && styles.inputFocused, registerPersonalErrors.phone && styles.inputError]}
-              placeholder="Phone"
-              value={phone}
-              onChangeText={text => {
-                setPhone(text);
-                if (registerPersonalErrors.phone) setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
-              }}
-              keyboardType="phone-pad"
-              onFocus={() => setFocusedInput('phone')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: 'Please enter a valid phone number (at least 7 digits).' }));
-                else setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
-              }}
-            />
-            {registerPersonalErrors.phone ? <Text style={styles.errorText}>{registerPersonalErrors.phone}</Text> : null}
-            <TextInput
-              style={[styles.input, focusedInput === 'dob' && styles.inputFocused, registerPersonalErrors.dateOfBirth && styles.inputError]}
-              placeholder="Date of Birth (YYYY-MM-DD)"
-              value={dateOfBirth}
-              onChangeText={text => {
-                setDateOfBirth(text);
-                if (registerPersonalErrors.dateOfBirth) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
-              }}
-              onFocus={() => setFocusedInput('dob')}
-              onBlur={() => {
-                setFocusedInput(null);
-                if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: 'Date of Birth must be in YYYY-MM-DD format.' }));
-                else setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
-              }}
-            />
-            {registerPersonalErrors.dateOfBirth ? <Text style={styles.errorText}>{registerPersonalErrors.dateOfBirth}</Text> : null}
+  const renderPersonalStep = () => (
+    <>
+      {renderInput({
+        id: 'register-name',
+        placeholder: 'Full Name',
+        value: name,
+        onChangeText: text => {
+          setName(text);
+          if (registerPersonalErrors.name) setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
+        },
+        onBlur: () => {
+          if (!name.trim()) setRegisterPersonalErrors(e => ({ ...e, name: 'Full name is required.' }));
+          else setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
+        },
+        error: registerPersonalErrors.name,
+      })}
+      {renderInput({
+        id: 'register-phone',
+        placeholder: 'Phone Number',
+        keyboardType: 'phone-pad',
+        value: phone,
+        onChangeText: text => {
+          setPhone(text);
+          if (registerPersonalErrors.phone) setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
+        },
+        onBlur: () => {
+          if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: 'Please enter a valid phone number (at least 7 digits).' }));
+          else setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
+        },
+        error: registerPersonalErrors.phone,
+      })}
+      {renderInput({
+        id: 'register-dob',
+        placeholder: 'Date of Birth (YYYY-MM-DD)',
+        keyboardType: 'numbers-and-punctuation',
+        value: dateOfBirth,
+        onChangeText: text => {
+          setDateOfBirth(text);
+          if (registerPersonalErrors.dateOfBirth) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
+        },
+        onBlur: () => {
+          if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth))
+            setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: 'Date of Birth must be in YYYY-MM-DD format.' }));
+          else setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
+        },
+        error: registerPersonalErrors.dateOfBirth,
+      })}
 
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Health basics</Text>
+        {healthErrors.bloodType ? <Text style={styles.errorText}>{healthErrors.bloodType}</Text> : null}
+      </View>
+      <BloodTypePicker value={bloodType} onChange={setBloodType} />
+      {bloodType === 'custom' && renderInput({
+        id: 'register-blood-custom',
+        placeholder: 'Custom Blood Type',
+        value: customBloodType,
+        onChangeText: text => setCustomBloodType(text),
+        onBlur: () => {
+          const bt = customBloodType.trim();
+          if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt))
+            setHealthErrors(e => ({ ...e, bloodType: 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.' }));
+          else setHealthErrors(e => ({ ...e, bloodType: undefined }));
+        },
+        error: healthErrors.bloodType,
+      })}
 
-            {/* Blood Type Dropdown (cross-platform) */}
-            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Blood Type</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <BloodTypePicker value={bloodType} onChange={setBloodType} />
-              {bloodType === 'custom' && (
-                <TextInput
-                  style={[styles.input, { flex: 1, marginLeft: 8 }]}
-                  placeholder="Enter blood type"
-                  value={customBloodType}
-                  onChangeText={setCustomBloodType}
-                />
-              )}
-            </View>
-            {healthErrors.bloodType && <Text style={styles.errorText}>{healthErrors.bloodType}</Text>}
-
-            {/* Allergies Chip Input */}
-            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Allergies</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Add allergy"
-                value={allergyInput}
-                onChangeText={setAllergyInput}
-                onSubmitEditing={() => {
-                  if (allergyInput.trim() && !allergies.includes(allergyInput.trim())) {
-                    setAllergies([...allergies, allergyInput.trim()]);
-                    setAllergyInput('');
-                  }
-                }}
-                returnKeyType="done"
-              />
-              <Pressable
-                style={{ marginLeft: 8, backgroundColor: colors.primary, borderRadius: 999, padding: 8 }}
-                onPress={() => {
-                  if (allergyInput.trim() && !allergies.includes(allergyInput.trim())) {
-                    setAllergies([...allergies, allergyInput.trim()]);
-                    setAllergyInput('');
-                  }
-                }}
-              >
-                <Text style={{ color: colors.card, fontWeight: 'bold', fontSize: 18 }}>+</Text>
-              </Pressable>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 }}>
-              {allergies.map((a, i) => (
-                <View key={a + i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#E5E7EB', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginRight: 6, marginBottom: 4 }}>
-                  <Text style={{ color: '#222', fontSize: 15, marginRight: 4 }}>{a}</Text>
-                  <Pressable onPress={() => setAllergies(allergies.filter((_, idx) => idx !== i))}>
-                    <Text style={{ color: '#EF4444', fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>×</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-            {healthErrors.allergies && <Text style={styles.errorText}>{healthErrors.allergies}</Text>}
-
-            {/* Medical Conditions Chip Input */}
-            <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Medical Conditions</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Add condition"
-                value={conditionInput}
-                onChangeText={setConditionInput}
-                onSubmitEditing={() => {
-                  if (conditionInput.trim() && !medicalConditions.includes(conditionInput.trim())) {
-                    setMedicalConditions([...medicalConditions, conditionInput.trim()]);
-                    setConditionInput('');
-                  }
-                }}
-                returnKeyType="done"
-              />
-              <Pressable
-                style={{ marginLeft: 8, backgroundColor: colors.primary, borderRadius: 999, padding: 8 }}
-                onPress={() => {
-                  if (conditionInput.trim() && !medicalConditions.includes(conditionInput.trim())) {
-                    setMedicalConditions([...medicalConditions, conditionInput.trim()]);
-                    setConditionInput('');
-                  }
-                }}
-              >
-                <Text style={{ color: colors.card, fontWeight: 'bold', fontSize: 18 }}>+</Text>
-              </Pressable>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 }}>
-              {medicalConditions.map((c, i) => (
-                <View key={c + i} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#E5E7EB', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginRight: 6, marginBottom: 4 }}>
-                  <Text style={{ color: '#222', fontSize: 15, marginRight: 4 }}>{c}</Text>
-                  <Pressable onPress={() => setMedicalConditions(medicalConditions.filter((_, idx) => idx !== i))}>
-                    <Text style={{ color: '#EF4444', fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>×</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-            {healthErrors.conditions && <Text style={styles.errorText}>{healthErrors.conditions}</Text>}
-
-            <View style={styles.buttonRow}>
-              <Pressable
-                style={[styles.buttonSecondary, loading && { opacity: 0.7 }]}
-                onPress={() => setRegisterStep(0)}
-                disabled={loading}
-              >
-                <Text style={styles.buttonSecondaryText}>Back</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.button, { flex: 1, marginLeft: 8 }, loading && { opacity: 0.7 }]}
-                onPress={() => {
-                  if (validatePersonalStep()) handleRegister();
-                }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Register</Text>
-                )}
-              </Pressable>
-            </View>
-          </>
-        )}
-
+      <View style={styles.chipRow}>
+        <TextInput
+          placeholder="Add allergy"
+          value={allergyInput}
+          onChangeText={setAllergyInput}
+          style={[styles.input, { flex: 1 }]}
+          placeholderTextColor={colors.muted}
+        />
         <Pressable
+          style={styles.addChip}
           onPress={() => {
-            setIsRegister(r => !r);
-            setRegisterStep(0);
+            if (!allergyInput.trim()) return;
+            setAllergies(prev => [...prev, allergyInput.trim()]);
+            setAllergyInput('');
+            setHealthErrors(e => ({ ...e, allergies: undefined }));
           }}
         >
-          <Text style={styles.link}>
-            {isRegister
-              ? 'Already have an account? Login'
-              : "Don't have an account? Register"}
-          </Text>
+          <Ionicons name="add" size={18} color={colors.primary} />
         </Pressable>
       </View>
-    </View>
+      {healthErrors.allergies ? <Text style={styles.errorText}>{healthErrors.allergies}</Text> : null}
+      <View style={styles.tagList}>
+        {allergies.map((a, idx) => (
+          <Pressable key={`${a}-${idx}`} onPress={() => setAllergies(prev => prev.filter((_, i) => i !== idx))} style={styles.tag}>
+            <Text style={styles.tagText}>{a}</Text>
+            <Ionicons name="close" size={16} color={colors.primary} />
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.chipRow}>
+        <TextInput
+          placeholder="Add condition"
+          value={conditionInput}
+          onChangeText={setConditionInput}
+          style={[styles.input, { flex: 1 }]}
+          placeholderTextColor={colors.muted}
+        />
+        <Pressable
+          style={styles.addChip}
+          onPress={() => {
+            if (!conditionInput.trim()) return;
+            setMedicalConditions(prev => [...prev, conditionInput.trim()]);
+            setConditionInput('');
+            setHealthErrors(e => ({ ...e, conditions: undefined }));
+          }}
+        >
+          <Ionicons name="add" size={18} color={colors.primary} />
+        </Pressable>
+      </View>
+      {healthErrors.conditions ? <Text style={styles.errorText}>{healthErrors.conditions}</Text> : null}
+      <View style={styles.tagList}>
+        {medicalConditions.map((c, idx) => (
+          <Pressable key={`${c}-${idx}`} onPress={() => setMedicalConditions(prev => prev.filter((_, i) => i !== idx))} style={styles.tag}>
+            <Text style={styles.tagText}>{c}</Text>
+            <Ionicons name="close" size={16} color={colors.primary} />
+          </Pressable>
+        ))}
+      </View>
+
+      <Pressable style={[styles.primaryButton, loading && styles.disabled]} onPress={handleRegister} disabled={loading}>
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Create account</Text>}
+      </Pressable>
+    </>
+  );
+
+  return (
+    <ScreenContainer
+      scrollable
+      withPadding={false}
+      contentContainerStyle={styles.container}
+    >
+      <LinearGradient
+        colors={colors.primaryGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.hero}
+      >
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
+        <Text style={styles.heroTitle}>{isRegister ? 'Create your medical ID' : 'Welcome back'}</Text>
+        <Text style={styles.heroSubtitle}>
+          {isRegister ? 'Join MedLink to keep your medical essentials in one place.' : 'Sign in to continue your connected care journey.'}
+        </Text>
+        <SegmentedControl
+          options={['Login', 'Register']}
+          value={isRegister ? 'Register' : 'Login'}
+          onChange={value => {
+            const register = value === 'Register';
+            setIsRegister(register);
+            if (!register) setRegisterStep(0);
+          }}
+        />
+      </LinearGradient>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ width: '100%' }}
+      >
+        <View style={styles.formWrapper}>
+          <Card style={styles.cardSurface}>
+            {isRegister ? (
+              <>
+                <View style={styles.stepper}>
+                  {STEPS.map((step, index) => (
+                    <View key={step.key} style={styles.stepItem}>
+                      <View style={[styles.stepCircle, registerStep >= step.key && styles.stepCircleActive]}>
+                        <Text style={styles.stepNumber}>{index + 1}</Text>
+                      </View>
+                      <Text style={[styles.stepLabel, registerStep === step.key && styles.stepLabelActive]}>
+                        {step.label}
+                      </Text>
+                      {index < STEPS.length - 1 ? (
+                        <View style={[styles.stepDivider, registerStep > step.key && styles.stepDividerActive]} />
+                      ) : null}
+                    </View>
+                  ))}
+                </View>
+                <View style={{ gap: spacing.md }}>
+                  {registerStep === 0 ? renderAccountStep() : renderPersonalStep()}
+                </View>
+                {registerStep === 1 ? (
+                  <Pressable style={styles.secondaryButton} onPress={() => setRegisterStep(0)}>
+                    <Text style={styles.secondaryText}>Back</Text>
+                  </Pressable>
+                ) : null}
+              </>
+            ) : (
+              <View style={{ gap: spacing.md }}>{renderLogin()}</View>
+            )}
+          </Card>
+        </View>
+      </KeyboardAvoidingView>
+
+      <View style={styles.footerHint}>
+        <Text style={styles.footerText}>
+          By continuing you agree to our <Text style={styles.footerLink}>Terms</Text> and <Text style={styles.footerLink}>Privacy Policy</Text>.
+        </Text>
+      </View>
+
+      {showForgot && (
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalCard}>
+            <View style={{ alignItems: 'center', gap: spacing.sm }}>
+              <View style={styles.modalIconWrap}>
+                <Ionicons name="lock-closed" size={28} color={colors.primary} />
+              </View>
+              <Text style={styles.modalTitle}>Reset password</Text>
+              <Text style={styles.modalSubtitle}>
+                Enter your email address and we'll send you a password reset link.
+              </Text>
+            </View>
+            {renderInput({
+              id: 'forgot-email',
+              placeholder: 'Email',
+              autoCapitalize: 'none',
+              keyboardType: 'email-address',
+              value: forgotEmail,
+              onChangeText: setForgotEmail,
+            })}
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => {
+                  setShowForgot(false);
+                  setForgotEmail('');
+                }}
+              >
+                <Text style={styles.secondaryText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.primaryButton, styles.modalPrimary]}
+                onPress={async () => {
+                  if (!forgotEmail || !emailRegex.test(forgotEmail)) {
+                    Alert.alert('Invalid Email', 'Please enter a valid email address.');
+                    return;
+                  }
+                  setForgotLoading(true);
+                  try {
+                    await sendPasswordResetEmail(auth, forgotEmail);
+                    Alert.alert('Password Reset', 'A password reset link has been sent to your email.');
+                    setShowForgot(false);
+                    setForgotEmail('');
+                  } catch (e: any) {
+                    Alert.alert('Error', e.message || 'Failed to send reset email.');
+                  } finally {
+                    setForgotLoading(false);
+                  }
+                }}
+                disabled={forgotLoading}
+              >
+                {forgotLoading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Send link</Text>}
+              </Pressable>
+            </View>
+          </Card>
+        </View>
+      )}
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bg,
-    padding: spacing.xl,
+    flexGrow: 1,
+    paddingBottom: spacing.xxl,
   },
-  card: {
-    width: '100%',
-    maxWidth: 370,
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: spacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
-    shadowRadius: 12,
-    elevation: 4,
+  hero: {
+    paddingTop: spacing.xxl * 1.4,
+    paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    borderBottomLeftRadius: radius.xl + 6,
+    borderBottomRightRadius: radius.xl + 6,
     alignItems: 'center',
+    gap: spacing.md,
+  },
+  logo: {
+    width: 96,
+    height: 96,
+    resizeMode: 'contain',
+  },
+  heroTitle: {
+    ...type.h1,
+    color: '#fff',
+  },
+  heroSubtitle: {
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  formWrapper: {
+    marginTop: -spacing.xxl * 0.7,
+    paddingHorizontal: spacing.xl,
+  },
+  cardSurface: {
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    gap: spacing.lg,
   },
   input: {
     width: '100%',
-    maxWidth: 320,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 8,
-    padding: spacing.md,
-    marginVertical: spacing.md,
-    backgroundColor: colors.card,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
     fontSize: 16,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: 'rgba(37,99,235,0.15)',
   },
   inputFocused: {
     borderColor: colors.primary,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.10,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
   },
   inputError: {
-    borderColor: '#e53935',
+    borderColor: colors.danger,
   },
   errorText: {
-    color: '#e53935',
+    color: colors.danger,
     fontSize: 13,
-    marginTop: -10,
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-    maxWidth: 320,
+    marginTop: 6,
+  },
+  forgotLink: {
+    alignSelf: 'flex-end',
+  },
+  forgotText: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.primary,
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 8 },
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  primaryButtonText: {
+    color: colors.card,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  disabled: {
+    opacity: 0.7,
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryText: {
+    color: colors.muted,
+    fontWeight: '600',
+  },
+  sectionHeader: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.xs,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontWeight: '600',
+    color: colors.text,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  addChip: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.md,
+    backgroundColor: colors.chipBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tagList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.chipBg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+  },
+  tagText: {
+    color: colors.chipText,
+    fontWeight: '600',
   },
   stepper: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-    width: '100%',
-    maxWidth: 320,
     justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.sm,
+    borderRadius: radius.lg,
+    backgroundColor: 'rgba(37,99,235,0.08)',
   },
-  stepWrapper: {
+  stepItem: {
+    flex: 1,
     alignItems: 'center',
   },
   stepCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: colors.line,
-    justifyContent: 'center',
+    borderColor: 'rgba(37,99,235,0.4)',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.7)',
   },
   stepCircleActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
   stepNumber: {
-    color: colors.text,
-    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '700',
   },
   stepLabel: {
-    marginTop: 4,
-    fontSize: 12,
-    color: colors.text,
+    marginTop: 8,
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '600',
   },
   stepLabelActive: {
-    fontWeight: 'bold',
     color: colors.primary,
   },
-  stepLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.line,
-    marginHorizontal: 8,
+  stepDivider: {
+    position: 'absolute',
+    top: 18,
+    right: -spacing.md,
+    height: 2,
+    width: '100%',
+    backgroundColor: 'rgba(37,99,235,0.2)',
   },
-  stepLineActive: {
+  stepDividerActive: {
     backgroundColor: colors.primary,
   },
-  button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
+  footerHint: {
+    marginTop: spacing.xl,
     paddingHorizontal: spacing.xl,
-    borderRadius: 8,
-    marginTop: spacing.lg,
-    width: '100%',
-    maxWidth: 320,
+  },
+  footerText: {
+    color: colors.muted,
+    textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  footerLink: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'center',
     alignItems: 'center',
+    padding: spacing.xl,
   },
-  buttonRow: {
-    flexDirection: 'row',
+  modalCard: {
     width: '100%',
-    maxWidth: 320,
-    marginTop: spacing.lg,
+    maxWidth: 380,
+    gap: spacing.lg,
   },
-  buttonSecondary: {
-    flex: 1,
-    backgroundColor: colors.card,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.line,
+  modalIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(37,99,235,0.12)',
     alignItems: 'center',
-    marginRight: 8,
+    justifyContent: 'center',
   },
-  buttonSecondaryText: {
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.text,
-    fontWeight: 'bold',
-    fontSize: 18,
   },
-  buttonText: {
-  color: colors.card,
-    fontWeight: 'bold',
-    fontSize: 18,
+  modalSubtitle: {
+    color: colors.muted,
+    textAlign: 'center',
+    lineHeight: 18,
   },
-  link: {
-    color: colors.primary,
-    marginTop: spacing.lg,
-    textDecorationLine: 'underline',
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  modalPrimary: {
+    flex: 1,
   },
 });

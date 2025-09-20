@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator, ScrollView, Linking, Platform, Image as RNImage, TextInput } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
 import { useLoading } from '../hooks/LoadingContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchUserProfile, type Profile } from '../core/userProfile';
 import { facilities } from '../data';
 import type { Facility } from '../types';
@@ -20,8 +19,9 @@ import NotificationsSheet from '../notifications/NotificationsSheet';
 const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 // Expo’s gradient works on web, iOS, and Android
 import { LinearGradient } from 'expo-linear-gradient';
-// Card import removed (not used in this file)
+import ScreenContainer from '../components/ScreenContainer';
 import MyMedicationsList from '../components/MyMedicationsList';
+import Card from '../components/Card';
 import Chip from '../components/Chip';
 import ProgressBar from '../components/ProgressBar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -45,10 +45,15 @@ export default function Dashboard({ navigation }: any) {
     const activeReminders = reminders?.filter(r => r.active) ?? [];
     if (activeReminders.length === 0) return <Text style={{ color: colors.muted }}>No reminders found.</Text>;
     return activeReminders.map(rem => (
-      <View key={rem.id} style={{ backgroundColor: colors.line, borderRadius: radius.md, padding: spacing.lg, marginBottom: 10 }}>
-        <Text style={{ fontWeight: '600', color: colors.text }}>{rem.title}</Text>
-        <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.datetime}{rem.frequency ? `  ${rem.frequency}` : ''}</Text>
-        {rem.description && <Text style={{ color: colors.muted, fontSize: 13 }}>{rem.description}</Text>}
+      <View key={rem.id} style={styles.reminderCard}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.reminderTitle}>{rem.title}</Text>
+          <View style={styles.reminderBadge}>
+            <Text style={styles.reminderBadgeText}>{rem.frequency || 'Once'}</Text>
+          </View>
+        </View>
+        <Text style={styles.reminderMeta}>{rem.datetime}</Text>
+        {rem.description ? <Text style={styles.reminderDescription}>{rem.description}</Text> : null}
       </View>
     ));
   };
@@ -105,395 +110,355 @@ export default function Dashboard({ navigation }: any) {
   const progress = pillsDone.total ? pillsDone.done / pillsDone.total : 0;
 
   return (
-    <SafeAreaView style={[styles.container]} edges={['top', 'left', 'right']}>
-      <LinearGradient colors={[colors.bg, colors.surface]} style={styles.flex}>
-        <ScrollView contentContainerStyle={[styles.scrollContent, Platform.OS === 'ios' ? { paddingBottom: 32 } : { paddingBottom: 16 }]}> 
-        <View style={styles.dashboardHeader}>
-          <View style={styles.headerRow}>
-            <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Open profile" accessibilityRole="button">
-              <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
-            </Pressable>
-            <NotificationBell onPress={() => setNotificationsVisible(true)} />
-  <NotificationsSheet visible={notificationsVisible} onClose={() => setNotificationsVisible(false)} />
-          </View>
-          <Text style={[type.h1, styles.welcome]}>Welcome{profile?.name ? `, ${profile.name}` : ''}</Text>
-          <Text style={[type.meta, styles.subheading]}>How is it going today?</Text>
-          {/* Search box */}
-          <View style={styles.searchWrap}>
-            <Ionicons name="search" size={18} color={colors.muted} style={{ marginHorizontal: 10 }} />
-            <TextInput
-              placeholder="Search doctors, facilities, meds"
-              placeholderTextColor={colors.muted}
-              style={styles.searchInput}
-              returnKeyType="search"
-            />
-          </View>
-          {/* Category chips */}
-          <View style={styles.chipsRow}>
-            <Chip label="Cardiologist" onPress={() => navigation.navigate('Clinics', { filter: 'cardiologist' })} />
-            <Chip label="Dentist" onPress={() => navigation.navigate('Clinics', { filter: 'dentist' })} />
-            <Chip label="Therapist" onPress={() => navigation.navigate('Clinics', { filter: 'therapist' })} />
-            <Chip label="Geneticist" onPress={() => navigation.navigate('Clinics', { filter: 'geneticist' })} />
-          </View>
-          {/* Today’s progress */}
-          <View style={styles.progressCard}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ fontWeight: '700', fontSize: 16, color: colors.text }}>Today's Progress</Text>
-              <Text style={{ color: colors.muted, fontSize: 12 }}>{pillsDone.done}/{pillsDone.total}</Text>
-            </View>
-            <ProgressBar progress={progress} style={{ marginTop: 10 }} />
-          </View>
-          <Pressable
-            onPress={() => setUrgentCareModal(true)}
-            style={styles.cta}
-            android_ripple={{ color: colors.primary600 }}
-            accessibilityRole="button"
-            accessibilityLabel="Open urgent care"
-            accessibilityHint="View nearby urgent care facilities and emergency contacts"
-            hitSlop={8}
-          >
-            <Text style={styles.ctaText}>Urgent Care</Text>
+    <ScreenContainer scrollable contentContainerStyle={styles.content}>
+      <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
+        <View style={styles.heroTopRow}>
+          <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Open profile" accessibilityRole="button">
+            <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
           </Pressable>
-        {/* Urgent Care Modal/Sheet */}
-          <Modal visible={urgentCareModal} animationType="slide" transparent onRequestClose={() => setUrgentCareModal(false)}>
-          <View style={[styles.modalOverlay]}>
-            <View style={styles.facilityModalSheet}>
-              <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-                <View style={styles.modalHeaderRow}>
-                  <Text style={styles.modalTitle}>Urgent Care</Text>
-                  <Pressable onPress={() => setUrgentCareModal(false)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close urgent care sheet">
-                    <Text style={styles.modalCloseText}>Close</Text>
-                  </Pressable>
-                </View>
-                {/* Emergency Contacts */}
-                <Text style={styles.sectionTitle}>Emergency Contacts</Text>
-                <View style={{ marginBottom: spacing.lg }}>
-                  {profile?.emergency_contacts?.length ? (
-                    profile.emergency_contacts.map(contact => (
-                      <View key={contact.phone ?? contact.name} style={styles.contactBlock}>
-                        <Text style={styles.contactName}>{contact.name}</Text>
-                        <Text style={styles.sectionText}>{contact.phone}</Text>
-                        <Text style={styles.sectionText}>{contact.relationship}</Text>
-                        <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 6 }} accessibilityRole="button">
-                          <Text style={styles.callLink}>Call</Text>
-                        </Pressable>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={styles.sectionText}>No emergency contacts listed.</Text>
-                  )}
-                </View>
-                {/* Open & Nearby Facilities */}
-                <Text style={styles.sectionTitle}>Open & Nearby Facilities</Text>
-                <View style={{ marginBottom: spacing.lg }}>
-                  {sortByDistance(facilities.filter(f => f.isOpen && (f.type === 'clinic' || f.type === 'hospital' || f.type === 'pharmacy'))).map((fac: Facility) => (
-                    <View key={fac.id} style={styles.facilityItem}>
-                      <Text style={styles.facilityName}>{fac.name} <Text style={styles.facilityMeta}>({fac.type})</Text></Text>
-                      <Text style={styles.sectionText}>{fac.location}</Text>
-                      {'phoneNumber' in fac && fac.phoneNumber && <Text style={styles.sectionText}>Phone: {fac.phoneNumber}</Text>}
-                      <Text style={styles.sectionText}>Distance: {fac.distance || 'N/A'}</Text>
-                      {'phoneNumber' in fac && fac.phoneNumber && (
-                        <Pressable onPress={() => Linking.openURL(`tel:${fac.phoneNumber}`)} style={{ marginTop: 6 }} accessibilityRole="button">
-                          <Text style={styles.callLink}>Call</Text>
-                        </Pressable>
-                      )}
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-          {/* Removed Xahara logo */}
+          <NotificationBell onPress={() => setNotificationsVisible(true)} />
         </View>
-
-        <View style={styles.servicesCard}>
-          <Text style={{ fontWeight: '700', fontSize: 17, marginBottom: 12, color: colors.text }}>Our Services</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-            <View style={styles.serviceItem}>
-              <View style={styles.serviceIconWrap}><MaterialCommunityIcons name="barcode-scan" size={22} color={colors.primary} /></View>
-              <Text style={styles.serviceLabel}>Meds Verification</Text>
-            </View>
-            <View style={styles.serviceItem}>
-              <View style={styles.serviceIconWrap}><Ionicons name="medkit" size={20} color={colors.primary} /></View>
-              <Text style={styles.serviceLabel}>Medical ID</Text>
-            </View>
-            <View style={styles.serviceItem}>
-              <View style={styles.serviceIconWrap}><Ionicons name="business" size={20} color={colors.primary} /></View>
-              <Text style={styles.serviceLabel}>Facilities</Text>
-            </View>
-          </View>
+        <Text style={[type.h1, styles.heroTitle]}>Welcome{profile?.name ? `, ${profile.name}` : ''}</Text>
+        <Text style={[type.meta, styles.heroSubtitle]}>How is it going today?</Text>
+        <View style={styles.searchWrap}>
+          <Ionicons name="search" size={18} color={colors.muted} style={{ marginRight: 10 }} />
+          <TextInput
+            placeholder="Search doctors, facilities, meds"
+            placeholderTextColor={colors.muted}
+            style={styles.searchInput}
+            returnKeyType="search"
+          />
         </View>
-
-        <View style={styles.appointmentCard}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <Text style={{ fontWeight: '700', fontSize: 17, color: colors.text }}>Reminders</Text>
-          </View>
-          {renderReminders()}
+        <View style={styles.chipsRow}>
+          <Chip label="Cardiologist" onPress={() => navigation.navigate('Clinics', { filter: 'cardiologist' })} />
+          <Chip label="Dentist" onPress={() => navigation.navigate('Clinics', { filter: 'dentist' })} />
+          <Chip label="Therapist" onPress={() => navigation.navigate('Clinics', { filter: 'therapist' })} />
+          <Chip label="Geneticist" onPress={() => navigation.navigate('Clinics', { filter: 'geneticist' })} />
         </View>
-        {/* My Medications Section */}
-        <View style={styles.appointmentCard}>
-          <Text style={{ fontWeight: '700', fontSize: 17, color: colors.text, marginBottom: 8 }}>My Medications</Text>
-          <MyMedicationsList />
-        </View>
-
-        {/* Profile Modal */}
-        <Modal visible={profileModal} animationType="slide" transparent onRequestClose={() => setProfileModal(false)}>
-          <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
-            <View style={styles.facilityModalSheet}>
-              <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>Profile</Text>
-                  <Pressable onPress={() => setProfileModal(false)} hitSlop={10}>
-                    <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>Close</Text>
-                  </Pressable>
-                </View>
-                <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-                  <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.profileAvatar} resizeMode="cover" />
-                  {profile ? (
-                    <>
-                      <Text style={{ fontWeight: '700', fontSize: 22, color: colors.text, marginTop: 8 }}>{profile.name}</Text>
-                      <Text style={{ color: colors.muted }}>{profile.email}</Text>
-                      <Text style={{ color: colors.muted }}>{profile.phone}</Text>
-                      <Text style={{ color: colors.muted }}>{profile.date_of_birth}</Text>
-                    </>
-                  ) : (
-                    <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />
-                  )}
-                </View>
-                {/* Allergies Section */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Allergies</Text>
-                <View style={{ marginBottom: spacing.lg }}>
-                  {profile?.allergies?.length ? (
-                    profile.allergies.map((allergy) => (
-                      <Text key={allergy} style={{ color: colors.muted, fontSize: 15, marginBottom: 2 }}>• {allergy}</Text>
-                    ))
-                  ) : (
-                    <Text style={{ color: colors.muted }}>No allergies listed.</Text>
-                  )}
-                </View>
-                {/* Urgent Contact Section */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Urgent Contact</Text>
-                <View style={{ marginBottom: spacing.lg }}>
-                  {profile?.emergency_contacts?.length ? (
-                    <>
-                      <Text style={{ color: colors.text, fontWeight: '600' }}>{profile.emergency_contacts[0].name}</Text>
-                      <Text style={{ color: colors.muted }}>{profile.emergency_contacts[0].phone}</Text>
-                      <Text style={{ color: colors.muted }}>{profile.emergency_contacts[0].relationship}</Text>
-                    </>
-                  ) : (
-                    <Text style={{ color: colors.muted }}>No urgent contact listed.</Text>
-                  )}
-                </View>
-                {/* Other Info Section */}
-                <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8, color: colors.text }}>Other Info</Text>
-                <View style={{ marginBottom: spacing.lg }}>
-                  {profile && (
-                    <>
-                      {profile.blood_type && <Text style={{ color: colors.muted }}>Blood Type: {profile.blood_type}</Text>}
-                      {profile.medical_conditions && profile.medical_conditions.length > 0 && (
-                        <Text style={{ color: colors.muted }}>Conditions: {profile.medical_conditions.join(', ')}</Text>
-                      )}
-                      {profile.medications && profile.medications.length > 0 && (
-                        <Text style={{ color: colors.muted }}>Medications: {profile.medications.join(', ')}</Text>
-                      )}
-                    </>
-                  )}
-                </View>
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-  </ScrollView>
       </LinearGradient>
-    </SafeAreaView>
+
+      <Card style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Today's progress</Text>
+          <Text style={styles.sectionMeta}>{pillsDone.done}/{pillsDone.total}</Text>
+        </View>
+        <ProgressBar progress={progress} style={{ marginTop: 12 }} />
+        <Text style={styles.sectionHint}>Stay consistent and keep logging your doses.</Text>
+      </Card>
+
+      <Pressable
+        onPress={() => setUrgentCareModal(true)}
+        style={styles.urgentButton}
+        android_ripple={{ color: colors.primary600 }}
+        accessibilityRole="button"
+        accessibilityLabel="Open urgent care"
+        accessibilityHint="View nearby urgent care facilities and emergency contacts"
+        hitSlop={8}
+      >
+        <LinearGradient colors={colors.accentGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.urgentGradient}>
+          <Text style={styles.urgentLabel}>Urgent Care</Text>
+          <Text style={styles.urgentSub}>Access emergency contacts & open facilities nearby</Text>
+        </LinearGradient>
+      </Pressable>
+
+      <Card style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Active reminders</Text>
+        </View>
+        <View style={styles.sectionBody}>{renderReminders()}</View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>My medications</Text>
+        </View>
+        <MyMedicationsList />
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Our services</Text>
+        <View style={styles.servicesGrid}>
+          <View style={styles.serviceItem}>
+            <View style={styles.serviceIconWrap}><MaterialCommunityIcons name="barcode-scan" size={22} color={colors.primary} /></View>
+            <Text style={styles.serviceLabel}>Meds verification</Text>
+          </View>
+          <View style={styles.serviceItem}>
+            <View style={styles.serviceIconWrap}><Ionicons name="medkit" size={20} color={colors.primary} /></View>
+            <Text style={styles.serviceLabel}>Medical ID</Text>
+          </View>
+          <View style={styles.serviceItem}>
+            <View style={styles.serviceIconWrap}><Ionicons name="business" size={20} color={colors.primary} /></View>
+            <Text style={styles.serviceLabel}>Facilities</Text>
+          </View>
+        </View>
+      </Card>
+
+      <NotificationsSheet visible={notificationsVisible} onClose={() => setNotificationsVisible(false)} />
+
+      <Modal visible={urgentCareModal} animationType="slide" transparent onRequestClose={() => setUrgentCareModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.facilityModalSheet}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+              <View style={styles.modalHeaderRow}>
+                <Text style={styles.modalTitle}>Urgent Care</Text>
+                <Pressable onPress={() => setUrgentCareModal(false)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close urgent care sheet">
+                  <Text style={styles.modalCloseText}>Close</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.sectionTitle}>Emergency contacts</Text>
+              <View style={{ marginBottom: spacing.lg }}>
+                {profile?.emergency_contacts?.length ? (
+                  profile.emergency_contacts.map(contact => (
+                    <View key={contact.phone ?? contact.name} style={styles.contactBlock}>
+                      <Text style={styles.contactName}>{contact.name}</Text>
+                      <Text style={styles.sectionText}>{contact.phone}</Text>
+                      <Text style={styles.sectionText}>{contact.relationship}</Text>
+                      <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 6 }} accessibilityRole="button">
+                        <Text style={styles.callLink}>Call</Text>
+                      </Pressable>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.sectionText}>No emergency contacts listed.</Text>
+                )}
+              </View>
+              <Text style={styles.sectionTitle}>Open & nearby facilities</Text>
+              <View style={{ marginBottom: spacing.lg }}>
+                {sortByDistance(facilities.filter(f => f.isOpen && (f.type === 'clinic' || f.type === 'hospital' || f.type === 'pharmacy'))).map((fac: Facility) => (
+                  <View key={fac.id} style={styles.facilityItem}>
+                    <Text style={styles.facilityName}>{fac.name} <Text style={styles.facilityMeta}>({fac.type})</Text></Text>
+                    <Text style={styles.sectionText}>{fac.location}</Text>
+                    {'phoneNumber' in fac && fac.phoneNumber && <Text style={styles.sectionText}>Phone: {fac.phoneNumber}</Text>}
+                    <Text style={styles.sectionText}>Distance: {fac.distance || 'N/A'}</Text>
+                    {'phoneNumber' in fac && fac.phoneNumber && (
+                      <Pressable onPress={() => Linking.openURL(`tel:${fac.phoneNumber}`)} style={{ marginTop: 6 }} accessibilityRole="button">
+                        <Text style={styles.callLink}>Call</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={profileModal} animationType="slide" transparent onRequestClose={() => setProfileModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.profileSheet}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+              <View style={styles.modalHeaderRow}>
+                <Text style={styles.modalTitle}>Profile</Text>
+                <Pressable onPress={() => setProfileModal(false)} hitSlop={10}>
+                  <Text style={styles.modalCloseText}>Close</Text>
+                </Pressable>
+              </View>
+              <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
+                <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.profileAvatar} resizeMode="cover" />
+                {profile ? (
+                  <>
+                    <Text style={styles.profileName}>{profile.name}</Text>
+                    <Text style={styles.sectionText}>{profile.email}</Text>
+                    <Text style={styles.sectionText}>{profile.phone}</Text>
+                    <Text style={styles.sectionText}>{profile.date_of_birth}</Text>
+                  </>
+                ) : (
+                  <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />
+                )}
+              </View>
+              <Text style={styles.sectionTitle}>Allergies</Text>
+              <View style={{ marginBottom: spacing.lg }}>
+                {profile?.allergies?.length ? (
+                  profile.allergies.map((allergy) => (
+                    <Text key={allergy} style={styles.sectionText}>• {allergy}</Text>
+                  ))
+                ) : (
+                  <Text style={styles.sectionText}>No allergies listed.</Text>
+                )}
+              </View>
+              <Text style={styles.sectionTitle}>Urgent contact</Text>
+              <View style={{ marginBottom: spacing.lg }}>
+                {profile?.emergency_contacts?.length ? (
+                  <>
+                    <Text style={styles.contactName}>{profile.emergency_contacts[0].name}</Text>
+                    <Text style={styles.sectionText}>{profile.emergency_contacts[0].phone}</Text>
+                    <Text style={styles.sectionText}>{profile.emergency_contacts[0].relationship}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.sectionText}>No urgent contact listed.</Text>
+                )}
+              </View>
+              <Text style={styles.sectionTitle}>Other info</Text>
+              <View style={{ marginBottom: spacing.lg }}>
+                {profile && (
+                  <>
+                    {profile.blood_type && <Text style={styles.sectionText}>Blood Type: {profile.blood_type}</Text>}
+                    {profile.medical_conditions && profile.medical_conditions.length > 0 && (
+                      <Text style={styles.sectionText}>Conditions: {profile.medical_conditions.join(', ')}</Text>
+                    )}
+                    {profile.medications && profile.medications.length > 0 && (
+                      <Text style={styles.sectionText}>Medications: {profile.medications.join(', ')}</Text>
+                    )}
+                  </>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
-  dashboardHeader: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    paddingBottom: 0,
-    position: 'relative',
-    minHeight: 260,
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
-    overflow: 'hidden',
-    backgroundColor: 'transparent',
+  content: {
+    gap: spacing.xl,
+    paddingBottom: spacing.xxl,
   },
+  heroCard: {
+    borderRadius: radius.xl,
+    padding: spacing.xl,
+    gap: spacing.md,
+    ...shadow.card,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  avatarBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  avatar: { width: 44, height: 44, borderRadius: 22 },
+  heroTitle: { color: '#FFFFFF' },
+  heroSubtitle: { color: 'rgba(255,255,255,0.85)' },
   searchWrap: {
-    marginTop: 10,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingVertical: 8,
-    ...shadow.soft,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: radius.lg,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
   },
   searchInput: {
     flex: 1,
     color: colors.text,
-    paddingRight: 12,
     fontSize: 15,
   },
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 14,
+    gap: 10,
+    marginTop: spacing.md,
   },
-  progressCard: {
-    marginTop: 16,
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: colors.line,
-    ...shadow.soft,
+  sectionCard: {
+    gap: spacing.md,
   },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  doctorImage: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 140,
-    height: 160,
-    resizeMode: 'contain',
-    opacity: 0.95,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  servicesCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    marginHorizontal: spacing.xl,
-    marginTop: -30,
-    padding: 20,
+  sectionTitle: { fontWeight: '700', fontSize: 17, color: colors.text },
+  sectionMeta: { color: colors.muted, fontWeight: '600' },
+  sectionHint: { color: colors.muted, fontSize: 13 },
+  sectionBody: { gap: spacing.md },
+  urgentButton: {
+    borderRadius: radius.pill,
+    overflow: 'hidden',
     ...shadow.card,
+  },
+  urgentGradient: {
+    paddingVertical: 18,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+  },
+  urgentLabel: { color: '#fff', fontWeight: '700', fontSize: 17 },
+  urgentSub: { color: 'rgba(255,255,255,0.85)', marginTop: 4, fontSize: 13, textAlign: 'center' },
+  servicesGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
   serviceItem: {
-    alignItems: 'center',
     flex: 1,
-  },
-  serviceIcon: {
-    fontSize: 32,
-    marginBottom: 4,
+    alignItems: 'center',
+    gap: 6,
   },
   serviceIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.chipBg,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(37,99,235,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
   },
-  serviceLabel: {
-    fontSize: 13,
-    color: colors.muted,
-    fontWeight: '600',
-  },
-  appointmentCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    marginHorizontal: spacing.xl,
-    marginTop: 24,
-    padding: 20,
-    ...shadow.card,
-  },
-  appointmentItem: {
-    backgroundColor: colors.line,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginTop: 8,
-  },
-  appointmentAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    resizeMode: 'cover',
-  },
-  bell: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.card,
-  },
-  avatarBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-    marginLeft: 8,
-  backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.card,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    resizeMode: 'cover',
-  },
-  facilityModalSheet: {
-    borderTopLeftRadius: 34,
-    borderTopRightRadius: 34,
-    paddingTop: 32,
-    paddingHorizontal: 28,
-    minHeight: '60%',
-    maxHeight: '90%',
-    backgroundColor: colors.surface,
-    overflow: 'hidden',
-  },
-  profileAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: colors.card,
-    marginBottom: 8,
-    resizeMode: 'cover',
-  },
+  serviceLabel: { fontSize: 13, color: colors.text, fontWeight: '600', textAlign: 'center' },
+  notifications: {},
   modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
-  modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
-  modalTitle: { fontWeight: '700', fontSize: 22, color: colors.text },
-  modalCloseText: { color: colors.muted, fontWeight: '600', fontSize: 16 },
-  sectionTitle: { fontWeight: '700', fontSize: 16, marginBottom: 8, color: colors.text },
-  contactBlock: { marginBottom: 8 },
-  contactName: { color: colors.text, fontWeight: '600' },
-  sectionText: { color: colors.muted },
-  callLink: { color: colors.primary, fontWeight: '600' },
-  facilityItem: { marginBottom: 12 },
-  facilityName: { color: colors.text, fontWeight: '600' },
-  facilityMeta: { color: colors.muted, fontWeight: '400' },
-  cta: {
-    marginHorizontal: spacing.xl,
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 999,
-    alignItems: 'center',
-    marginBottom: spacing.xl,
+  facilityModalSheet: {
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    padding: spacing.xl,
+    paddingBottom: 40,
+    backgroundColor: colors.glass,
     ...shadow.card,
   },
-  ctaText: { color: colors.card, fontWeight: '700' },
-  welcome: { marginTop: 18 },
-  subheading: { marginBottom: 18 },
-  grid: {
-    paddingHorizontal: spacing.xl,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xl,
+  profileSheet: {
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    padding: spacing.xl,
+    paddingBottom: 40,
+    backgroundColor: colors.glass,
+    ...shadow.card,
   },
-  tile: {
-    width: '46%',
-    alignSelf: 'stretch',
+  modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  modalTitle: { fontWeight: 'bold', fontSize: 22, color: colors.text },
+  modalCloseText: { color: colors.muted, fontWeight: '600', fontSize: 16 },
+  sectionText: { color: colors.muted, fontSize: 14, marginTop: 2 },
+  contactBlock: { marginBottom: spacing.md },
+  contactName: { color: colors.text, fontWeight: '600' },
+  callLink: { color: colors.primary, fontWeight: '600' },
+  facilityItem: {
+    marginBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
   },
+  facilityName: { color: colors.text, fontWeight: '600' },
+  facilityMeta: { color: colors.muted },
+  profileAvatar: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 3,
+    borderColor: colors.surface,
+    marginBottom: 8,
+  },
+  profileName: { fontWeight: '700', fontSize: 22, color: colors.text, marginTop: 8 },
+  reminderCard: {
+    backgroundColor: 'rgba(37,99,235,0.08)',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: 6,
+  },
+  reminderTitle: { color: colors.text, fontWeight: '600', fontSize: 15 },
+  reminderMeta: { color: colors.muted, fontSize: 13 },
+  reminderDescription: { color: colors.muted, fontSize: 13 },
+  reminderBadge: {
+    backgroundColor: 'rgba(255,255,255,0.86)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  reminderBadgeText: { color: colors.primary, fontWeight: '600', fontSize: 12 },
 });

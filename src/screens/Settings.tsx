@@ -2,15 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, Switch, StyleSheet } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { colors, spacing } from '../theme'
+import ScreenContainer from '../components/ScreenContainer'
+import Card from '../components/Card'
 
 const TELEMETRY_KEY = 'settings_telemetry_enabled_v1'
 const HAPTICS_KEY = 'settings_haptics_enabled_v1'
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: spacing.lg, backgroundColor: colors.bg },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
-  label: { color: colors.text, fontSize: 16 }
-})
 
 export default function Settings() {
   const [telemetry, setTelemetry] = useState(true)
@@ -41,9 +37,47 @@ export default function Settings() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.row}><Text style={styles.label}>Send anonymous telemetry</Text><Switch value={telemetry} onValueChange={setTelemetryToggle} /></View>
-      <View style={styles.row}><Text style={styles.label}>Enable haptics on scan success</Text><Switch value={haptics} onValueChange={setHapticsToggle} /></View>
-    </View>
+    <ScreenContainer contentContainerStyle={styles.content}>
+      <Card style={styles.card}>
+        <View style={styles.row}>
+          <View style={styles.textBlock}>
+            <Text style={styles.label}>Send anonymous telemetry</Text>
+            <Text style={styles.description}>Share usage insights to help us improve.</Text>
+          </View>
+          <Switch value={telemetry} onValueChange={setTelemetryToggle} />
+        </View>
+      </Card>
+      <Card style={styles.card}>
+        <View style={styles.row}>
+          <View style={styles.textBlock}>
+            <Text style={styles.label}>Enable haptics</Text>
+            <Text style={styles.description}>Vibrate when scans complete successfully.</Text>
+          </View>
+          <Switch value={haptics} onValueChange={setHapticsToggle} />
+        </View>
+      </Card>
+    </ScreenContainer>
   )
 }
+
+const styles = StyleSheet.create({
+  content: {
+    gap: spacing.xl,
+    paddingBottom: spacing.xxl,
+  },
+  card: {
+    gap: spacing.sm,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  textBlock: {
+    flex: 1,
+    gap: 6,
+  },
+  label: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  description: { color: colors.muted, fontSize: 13 },
+})
