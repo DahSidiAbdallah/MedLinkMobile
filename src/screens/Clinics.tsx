@@ -139,41 +139,16 @@ export default function FacilitiesScreen({ navigation }: any) {
               right={fac.specialty ? <Pill tone="primary">{fac.specialty}</Pill> : undefined}
               onPress={() => openFacilityModal(fac)}
             />
-                  <Text style={{ color: colors.muted }}>{selectedFacility.specialty}</Text>
-                </View>
-                {/* Status */}
-                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: spacing.lg }}>
-                  <Pill tone="primary">{selectedFacility.type.charAt(0).toUpperCase() + selectedFacility.type.slice(1)}</Pill>
-                  {!!selectedFacility.isOpen && <Pill tone="neutral">Open Now</Pill>}
-                  {!!selectedFacility.hasDelivery && <Pill tone="neutral">Has Delivery</Pill>}
-                </View>
-                {/* Show actual facility fields from the database */}
-                <View style={{ marginBottom: spacing.lg }}>
-                  {selectedFacility.address && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Address: {selectedFacility.address}</Text>}
-                  {selectedFacility.phoneNumber && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Phone: {selectedFacility.phoneNumber}</Text>}
-                  {selectedFacility.hours && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Hours: {selectedFacility.hours}</Text>}
-                  {selectedFacility.rating && <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Rating: {selectedFacility.rating.toFixed(1)}</Text>}
-                  {selectedFacility.services && selectedFacility.services.length > 0 && (
-                    <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Services: {selectedFacility.services.join(', ')}</Text>
-                  )}
-                  {selectedFacility.languages && selectedFacility.languages.length > 0 && (
-                    <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Languages: {selectedFacility.languages.join(', ')}</Text>
-                  )}
-                  {selectedFacility.acceptedInsurance && selectedFacility.acceptedInsurance.length > 0 && (
-                    <Text style={{ color: colors.text, fontSize: 15, marginBottom: 4 }}>Insurance: {selectedFacility.acceptedInsurance.join(', ')}</Text>
-                  )}
-                </View>
-              </>
-            )}
-          </Animated.View>
-        </View>
-      </Modal>
             {/* Details section */}
             <View style={{ marginTop: 8 }}>
               {/* Images */}
               {!!fac.image && (
                 <View style={{ marginBottom: 8, borderRadius: radius.md, overflow: 'hidden', alignSelf: 'flex-start' }}>
-                  <SkeletonImage source={{ uri: fac.image }} style={{ width: listImageWidth, height: Math.round(listImageWidth * 0.66), borderRadius: radius.md }} resizeMode="cover" />
+                  <SkeletonImage
+                    source={{ uri: fac.image }}
+                    style={{ width: listImageWidth, height: Math.round(listImageWidth * 0.66), borderRadius: radius.md }}
+                    resizeMode="cover"
+                  />
                 </View>
               )}
               {/* Info */}

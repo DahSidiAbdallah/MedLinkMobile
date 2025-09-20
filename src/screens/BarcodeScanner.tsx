@@ -1,7 +1,25 @@
 import { saveMedication } from '../utils/myMedications';
 
 import React, { useState, useEffect, useRef } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Guard AsyncStorage import to avoid module-eval crashes on some runtimes
+let AsyncStorage: any = null;
+function getAsyncStorage() {
+  if (AsyncStorage) return AsyncStorage;
+  try {
+    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+    AsyncStorage = require('@react-native-async-storage/async-storage').default;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('AsyncStorage not available in BarcodeScanner, using in-memory fallback:', e);
+    const store: Record<string, string> = {};
+    AsyncStorage = {
+      getItem: async (k: string) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
+      setItem: async (k: string, v: string) => { store[k] = v; },
+      removeItem: async (k: string) => { delete store[k]; },
+    };
+  }
+  return AsyncStorage;
+}
 import { fetchUserProfile, Profile } from '../core/userProfile';
 import { FlatList, View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -367,7 +385,7 @@ const BarcodeScanner: React.FC = () => {
     // Load scan history from AsyncStorage
     async function loadHistory() {
       try {
-        const raw = await AsyncStorage.getItem(HISTORY_KEY);
+        const raw = await getAsyncStorage().getItem(HISTORY_KEY);
         if (raw) {
           setHistory(JSON.parse(raw));
         }
@@ -481,7 +499,7 @@ const BarcodeScanner: React.FC = () => {
       };
       setHistory(prev => {
         const updated = [newItem, ...prev];
-        AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {});
+  getAsyncStorage().setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {});
         return updated;
       });
     }

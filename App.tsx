@@ -7,6 +7,16 @@ import React, { useState, useEffect } from 'react';
 // certain modules or native bindings may not be ready yet.
 
 import * as Font from 'expo-font';
+// Statically import i18n to avoid dynamic import issues on some Hermes/native setups
+// This file performs i18n initialization (language detector, resource registration).
+try {
+  // eslint-disable-next-line import/no-unassigned-import
+  require('./src/i18n');
+} catch (e) {
+  // If i18n fails to load, log and continue — UI will render with defaults.
+  // eslint-disable-next-line no-console
+  console.warn('i18n static import failed, continuing without translations:', e);
+}
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -123,10 +133,11 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
               return <View key={`${route.key}-spacer`} style={{ width: fabSize }} />;
             }
             const isActive = state.routeNames[state.index] === route.name;
-            const label =
+            const rawLabel =
               descriptors[route.key]?.options?.tabBarLabel ??
               descriptors[route.key]?.options?.title ??
               route.name;
+            const label = typeof rawLabel === 'string' ? rawLabel : route.name;
             return (
               <View key={route.key} style={{ flex: 1, alignItems: 'center' }}>
                 <TouchableOpacity
@@ -212,42 +223,12 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [i18nReady, setI18nReady] = useState(false);
+  // We statically imported i18n above; assume ready. Components that need translations
+  // should guard via react-i18next hooks (useSuspense:false is configured).
+  const [i18nReady] = useState(true);
 
-  // Initialize i18n lazily so its async storage access doesn't run
-  // during module evaluation. This avoids startup crashes in some
-  // environments where native modules are not yet available. We
-  // gate rendering on the init completing so hooks like useTranslation
-  // always see an initialized instance and do not throw.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        await import('./src/i18n');
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn('i18n failed to initialize', e);
-      } finally {
-        if (!cancelled) {
-          setI18nReady(true);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (!i18nReady) {
-    return (
-      <SafeAreaProvider>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaProvider>
-    );
-  }
-
+  // IMPORTANT: Effects below must run on every render cycle regardless of i18n readiness
+  // to keep the Hooks order stable across renders.
   useEffect(() => {
     // Initialize telemetry service on app startup. This avoids module-import side effects
     const svc = createTelemetryService({ endpoint: 'https://example.com/telemetry' })
@@ -266,6 +247,16 @@ export default function App() {
     return () => unsub?.();
   }, []);
 
+  if (!i18nReady) {
+    return (
+      <SafeAreaProvider>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaProvider>
+    );
+  }
+
   // App content wrapped in LoadingProvider so any screen can register loads
   return (
     <SafeAreaProvider>
@@ -277,8 +268,11 @@ export default function App() {
     </SafeAreaProvider>
   );
 
+}
+// AppContent handles authenticated app rendering; the duplicate block was removed to avoid
+// rendering the app twice which could cause overlays and status-bar issues.
 
-// Move FontAndSplashLoader out of App to avoid nested component definition
+// Move FontAndSplashLoader and AppContent out of App to avoid nested component definition
 function FontAndSplashLoader() {
   const { startLoading, finishLoading } = useLoading();
   useEffect(() => {
@@ -325,20 +319,18 @@ function AppContent({ showSplash, setShowSplash }: Readonly<{ showSplash: boolea
   return (
     <RemindersProvider>
       <NotificationsProvider>
-  <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
-              <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+                <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+                <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+                <Stack.Screen name="Settings" component={Settings} />
             </Stack.Navigator>
           </NavigationContainer>
         </View>
       </NotificationsProvider>
     </RemindersProvider>
   );
-}
-  // AppContent handles authenticated app rendering; the duplicate block was removed to avoid
-  // rendering the app twice which could cause overlays and status-bar issues.
 }
 
 // removed earlier MainTabs variant that accepted onLogout prop; using the simpler MainTabs below
@@ -348,8 +340,7 @@ function MainTabs() {
   <Tab.Navigator initialRouteName="Dashboard" tabBar={TabBarRenderer} screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Dashboard" component={Dashboard} />
       <Tab.Screen name="Reminders" component={Reminders} />
-      <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
-  <Tab.Screen name="Settings" component={Settings} />
+    <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
       <Tab.Screen name="Clinics" component={Clinics} />
       <Tab.Screen name="UserProfile" component={UserProfile} />
     </Tab.Navigator>
