@@ -3,10 +3,14 @@ import { saveMedication } from '../utils/myMedications';
 import React, { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchUserProfile, Profile } from '../core/userProfile';
-import { FlatList, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { FlatList, View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ensureFocus } from '../utils/cameraHelper';
-import { colors, spacing, shadow } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import ScreenContainer from '../components/ScreenContainer';
+import Card from '../components/Card';
+import Chip from '../components/Chip';
+import { colors, spacing, shadow, radius } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
 import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs } from '../core/barcode';
@@ -16,109 +20,180 @@ import { summarizeText, safeJoinArrayField } from '../utils/textHelpers';
 import LabelInfoView from '../components/LabelInfoView';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  content: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xxl,
+    gap: spacing.lg,
+  },
+  hero: {
+    paddingTop: spacing.xxl * 1.2,
+    paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    borderBottomLeftRadius: radius.xl + 6,
+    borderBottomRightRadius: radius.xl + 6,
+    gap: spacing.md,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  heroSubtitle: {
+    color: 'rgba(255,255,255,0.82)',
+    lineHeight: 20,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  statChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  statText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  scanCard: {
+    gap: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  scanInstructions: {
+    color: colors.muted,
+    textAlign: 'center',
+  },
+  cameraShell: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+  },
+  overlayFrame: {
+    position: 'absolute',
+    top: '32%',
+    left: '12%',
+    width: '76%',
+    height: '32%',
+    borderRadius: radius.md,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.bg,
-    padding: spacing.xl,
   },
-  text: {
-    fontSize: 18,
-    color: colors.text,
-    marginBottom: spacing.lg,
-    textAlign: 'center',
-  },
-  scannerBox: {
-    width: 280,
-    height: 280,
-    borderRadius: 18,
-    overflow: 'hidden',
-    borderWidth: 3,
-  borderColor: colors.primary,
-  backgroundColor: '#000',
-    alignSelf: 'center',
-  },
-  resultBox: {
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 18,
-    padding: spacing.xl,
-  ...shadow.card,
-    minWidth: 260,
-    maxWidth: 340,
-    alignSelf: 'center',
-  },
-  resultTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 12,
-  },
-  resultLabel: {
-    fontSize: 15,
-  color: colors.muted,
-    marginTop: 8,
-    marginBottom: 2,
+  overlayText: {
+    color: '#fff',
     fontWeight: '600',
-    alignSelf: 'flex-start',
   },
-  resultValue: {
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: 4,
-    alignSelf: 'flex-start',
-    // wordBreak: 'break-all', // Not supported in React Native
-  },
-  rescanBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    marginTop: 18,
-  },
-  error: {
-    color: colors.danger || 'red',
-    fontSize: 16,
-    marginTop: 16,
+  guidance: {
+    color: colors.warn,
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontWeight: '600',
+  },
+  resultCard: {
+    gap: spacing.md,
   },
   userMessage: {
+    color: colors.text,
     fontSize: 16,
-    color: colors.primary,
-    marginTop: 10,
-    marginBottom: 4,
+    lineHeight: 22,
+  },
+  riskCard: {
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  riskTitle: {
+    color: colors.danger,
+    fontWeight: '700',
+  },
+  riskText: {
+    color: colors.danger,
+    lineHeight: 20,
+  },
+  positiveText: {
+    color: colors.accent,
+    fontWeight: '600',
+  },
+  negativeText: {
+    color: colors.danger,
+    fontWeight: '600',
+  },
+  analysisCard: {
+    backgroundColor: colors.glass,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  metaText: {
+    color: colors.muted,
+    fontSize: 13,
+  },
+  errorText: {
+    color: colors.danger,
     textAlign: 'center',
     fontWeight: '600',
   },
-  filterBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-  backgroundColor: colors.card,
-    marginHorizontal: 4,
+  resultButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  secondaryButton: {
+    flex: 1,
     borderWidth: 1,
-    borderColor: colors.muted,
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  filterBtnActive: {
+  secondaryText: {
+    color: colors.muted,
+    fontWeight: '600',
+  },
+  primaryButton: {
+    flex: 1,
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  filterBtnText: {
+  primaryText: {
+    color: colors.card,
+    fontWeight: '700',
+  },
+  historyCard: {
+    gap: spacing.md,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text,
-    fontWeight: 'bold',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
   historyItem: {
-    backgroundColor: colors.bg,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 2,
+    backgroundColor: colors.glass,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.xs,
+    ...shadow.soft,
   },
   historyType: {
     fontSize: 13,
@@ -126,19 +201,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   historyData: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.text,
-    marginBottom: 2,
   },
   historyMsg: {
     fontSize: 14,
     color: colors.primary,
-    marginBottom: 2,
   },
   historyTime: {
     fontSize: 12,
     color: colors.muted,
     textAlign: 'right',
+  },
+  loader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -437,11 +515,38 @@ const BarcodeScanner: React.FC = () => {
     };
   }, [scanned, scanData]);
 
+  const heroHeader = (
+    <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+      <Text style={styles.heroTitle}>Medication scanner</Text>
+      <Text style={styles.heroSubtitle}>Verify authenticity and surface risks from your medical ID.</Text>
+      <View style={styles.heroStats}>
+        <View style={styles.statChip}>
+          <Text style={styles.statText}>{history.length} total scans</Text>
+        </View>
+        {(profile?.allergies?.length ?? 0) > 0 ? (
+          <View style={styles.statChip}>
+            <Text style={styles.statText}>{profile?.allergies?.length} allergies monitored</Text>
+          </View>
+        ) : null}
+        {(profile?.medications?.length ?? 0) > 0 ? (
+          <View style={styles.statChip}>
+            <Text style={styles.statText}>{profile?.medications?.length} meds tracked</Text>
+          </View>
+        ) : null}
+      </View>
+    </LinearGradient>
+  );
+
   if (!permission?.granted) {
-    return <View style={styles.container}><ActivityIndicator color={colors.primary} /></View>;
+    return (
+      <ScreenContainer header={heroHeader}>
+        <View style={styles.loader}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      </ScreenContainer>
+    );
   }
 
-  // Filter history
   const filteredHistory = history.filter(item => {
     if (filter === 'all') return true;
     if (filter === 'successful') return item.verification && (item.verification.verified || item.verification.recall || item.verification.expired);
@@ -450,198 +555,201 @@ const BarcodeScanner: React.FC = () => {
     return true;
   });
 
-  return (
-    <View style={styles.container}>
-      {!scanned && !scanData && (
-        <>
-          <Text style={styles.text}>Scan any barcode or data matrix on a medication package</Text>
-          <View style={[styles.scannerBox, { justifyContent: 'center', alignItems: 'center' }]}> 
-            <CameraView
-              ref={cameraRef}
-              style={StyleSheet.absoluteFillObject}
-              // expo-camera uses 'autofocus' prop name in some typings; provide a best-effort hint
-              autofocus={'on' as any}
-              onBarcodeScanned={scanned ? undefined : (event: { data: string; type: string }) => {
-                // If barcode is detected but not yet scanned, show detected animation
-                if (!barcodeDetected) setBarcodeDetected(true);
-                handleBarCodeScanned(event);
-              }}
-            />
-            {/* Advanced scan guidance overlay */}
-              <View style={{
-              position: 'absolute',
+  const filterOptions: { label: string; value: typeof filter }[] = [
+    { label: 'All', value: 'all' },
+    { label: 'Successful', value: 'successful' },
+    { label: 'Unsuccessful', value: 'unsuccessful' },
+    { label: 'Risk matched', value: 'risk' },
+  ];
+
+  const renderIdle = () => (
+    <Card style={styles.scanCard}>
+      <Text style={styles.sectionTitle}>Align the barcode inside the frame</Text>
+      <Text style={styles.scanInstructions}>We automatically detect medication barcodes and GS1 data matrix codes.</Text>
+      <View style={styles.cameraShell}>
+        <CameraView
+          ref={cameraRef}
+          style={StyleSheet.absoluteFillObject}
+          autofocus={'on' as any}
+          onBarcodeScanned={scanned ? undefined : (event: { data: string; type: string }) => {
+            if (!barcodeDetected) setBarcodeDetected(true);
+            handleBarCodeScanned(event);
+          }}
+        />
+        <View
+          style={[
+            styles.overlayFrame,
+            {
+              borderColor: showScanEffect ? colors.accent : barcodeDetected ? colors.accent : 'rgba(255,255,255,0.7)',
+              backgroundColor: showScanEffect ? accentRgba(0.12) : barcodeDetected ? accentRgba(0.05) : 'transparent',
+              borderStyle: 'dashed',
               borderWidth: pulse ? 3 : 1,
-              borderColor: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : colors.card),
-              borderRadius: 14,
-              width: 220,
-              height: 80,
-              top: 100,
-              left: 30,
-              backgroundColor: showScanEffect ? accentRgba(0.08) : (barcodeDetected ? accentRgba(0.04) : 'transparent'),
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10,
-              shadowColor: barcodeDetected ? colors.accent : undefined,
-              shadowOpacity: barcodeDetected ? 0.3 : 0,
-              shadowRadius: barcodeDetected ? 8 : 0,
-              shadowOffset: { width: 0, height: 0 },
-            }}>
-              <Text style={{ color: showScanEffect ? colors.accent : (barcodeDetected ? colors.accent : colors.card), fontWeight: 'bold', fontSize: 16 }}>
-                {showScanEffect ? 'Scan Complete!' : barcodeDetected ? 'Barcode Detected!' : 'Align barcode here'}
-              </Text>
-            </View>
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.overlayText,
+              { color: showScanEffect ? colors.accent : barcodeDetected ? colors.accent : '#fff' },
+            ]}
+          >
+            {showScanEffect ? 'Scan complete!' : barcodeDetected ? 'Barcode detected' : 'Hold steady'}
+          </Text>
+        </View>
+      </View>
+      {guidance ? <Text style={styles.guidance}>{guidance}</Text> : null}
+    </Card>
+  );
+
+  const renderHistory = history.length > 0 ? (
+    <Card style={styles.historyCard}>
+      <View style={styles.historyHeader}>
+        <Text style={styles.historyTitle}>Recent scans</Text>
+        <Text style={styles.metaText}>{filteredHistory.length} shown</Text>
+      </View>
+      <View style={styles.filterRow}>
+        {filterOptions.map(opt => (
+          <Chip
+            key={opt.value}
+            label={opt.label}
+            selected={filter === opt.value}
+            onPress={() => setFilter(opt.value)}
+          />
+        ))}
+      </View>
+      <FlatList
+        data={filteredHistory}
+        keyExtractor={(item, idx) => `${item.timestamp}_${item.data}_${idx}`}
+        scrollEnabled={false}
+        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+        renderItem={({ item }) => (
+          <View style={styles.historyItem}>
+            <Text style={styles.historyType}>{item.type}</Text>
+            <Text style={styles.historyData}>{item.data}</Text>
+            <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error)}</Text>
+            {item.risk ? <Text style={styles.riskText}>⚠️ {item.risk}</Text> : null}
+            <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
           </View>
-          {guidance && (
-            <Text style={{ color: colors.warn, marginTop: 10, fontWeight: 'bold', textAlign: 'center' }}>{guidance}</Text>
-          )}
-          {history.length > 0 && (
-            <View style={{ marginTop: 32, width: '100%' }}>
-              <Text style={styles.resultTitle}>Scan History</Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
-                <TouchableOpacity onPress={() => setFilter('all')} style={[styles.filterBtn, filter === 'all' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>All</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => setFilter('successful')} style={[styles.filterBtn, filter === 'successful' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Successful</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => setFilter('unsuccessful')} style={[styles.filterBtn, filter === 'unsuccessful' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Unsuccessful</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => setFilter('risk')} style={[styles.filterBtn, filter === 'risk' && styles.filterBtnActive]}><Text style={styles.filterBtnText}>Risk Matched</Text></TouchableOpacity>
-              </View>
-              <FlatList
-                data={filteredHistory}
-                keyExtractor={(item, idx) => `${item.timestamp}_${item.data}_${idx}`}
-                renderItem={({ item }) => (
-                  <View style={styles.historyItem}>
-                    <Text style={styles.historyType}>{item.type}</Text>
-                    <Text style={styles.historyData}>{item.data}</Text>
-                    <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error)}</Text>
-                    {item.risk && item.risk.length > 0 && (
-                      <Text style={{ color: colors.warn, fontSize: 13, marginTop: 2 }}>⚠️ {item.risk}</Text>
-                    )}
-                    <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
+        )}
+      />
+    </Card>
+  ) : null;
+
+  const renderResult = () => (
+    <Card style={styles.resultCard}>
+      <Text style={styles.sectionTitle}>Scan analysis</Text>
+      <Text style={styles.metaText}>Type: {scanData?.type ?? 'Unknown'}</Text>
+      <Text style={styles.metaText}>Raw data: {scanData?.data ?? '—'}</Text>
+      <Text style={styles.userMessage}>{getUserMessage(verification, error)}</Text>
+      {riskWarning ? (
+        <View style={styles.riskCard}>
+          <Text style={styles.riskTitle}>Medication risk</Text>
+          <Text style={styles.riskText}>{riskWarning}</Text>
+        </View>
+      ) : null}
+      {loading ? (
+        <ActivityIndicator color={colors.primary} />
+      ) : (
+        <>
+          {verification ? (
+            <View style={{ gap: spacing.md }}>
+              <View style={styles.analysisCard}>
+                {verification.verified ? <Text style={styles.positiveText}>Authenticity verified</Text> : null}
+                {verification.expired ? <Text style={styles.negativeText}>Expired — do not use</Text> : null}
+                {verification.recall ? (
+                  <View>
+                    <Text style={styles.negativeText}>Recall alert</Text>
+                    <Text style={styles.metaText}>{verification.recall.reason_for_recall}</Text>
+                    <Text style={styles.metaText}>Status: {verification.recall.status}</Text>
                   </View>
-                )}
-                style={{ maxHeight: 220 }}
-              />
+                ) : null}
+                {verification.message ? <Text style={styles.metaText}>{verification.message}</Text> : null}
+              </View>
+              {(verification.labelInfo || verification.label) ? (
+                <LabelInfoView labelInfo={verification.labelInfo} label={verification.label} />
+              ) : null}
+              {(verification.labelInfo || verification.webscraperInfo) ? (
+                <View style={styles.analysisCard}>
+                  {verification.labelInfo ? (
+                    <>
+                      <Text style={styles.sectionTitle}>openFDA insights</Text>
+                      <Text style={styles.metaText}>Indications: {verification.labelInfo.indications || 'N/A'}</Text>
+                      <Text style={styles.metaText}>Dosage: {verification.labelInfo.dosage || 'N/A'}</Text>
+                      <Text style={styles.metaText}>Adverse reactions: {verification.labelInfo.sideEffects || 'N/A'}</Text>
+                    </>
+                  ) : null}
+                  {verification.webscraperInfo ? (
+                    <>
+                      <Text style={styles.sectionTitle}>Supplemental data</Text>
+                      {verification.webscraperInfo.indications ? (
+                        <Text style={styles.metaText}>Indications: {verification.webscraperInfo.indications}</Text>
+                      ) : null}
+                      {verification.webscraperInfo.dosage ? (
+                        <Text style={styles.metaText}>Dosage: {verification.webscraperInfo.dosage}</Text>
+                      ) : null}
+                      {verification.webscraperInfo.sideEffects ? (
+                        <Text style={styles.metaText}>Side effects: {verification.webscraperInfo.sideEffects}</Text>
+                      ) : null}
+                      {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects ? (
+                        <Text style={styles.metaText}>{JSON.stringify(verification.webscraperInfo, null, 2)}</Text>
+                      ) : null}
+                    </>
+                  ) : null}
+                </View>
+              ) : null}
+              {!verification.verified && !verification.recall && !verification.expired ? (
+                <Text style={styles.metaText}>No authenticity data available. Please exercise caution.</Text>
+              ) : null}
             </View>
-          )}
+          ) : null}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </>
       )}
-      {scanned && scanData && (
-        <ScrollView contentContainerStyle={styles.resultBox}>
-          <Text style={styles.resultTitle}>Scan Result</Text>
-          <Text style={styles.resultLabel}>Barcode Type:</Text>
-          <Text style={styles.resultValue}>{scanData.type}</Text>
-          <Text style={styles.resultLabel}>Raw Data:</Text>
-          <Text style={styles.resultValue}>{scanData.data}</Text>
-          {loading && <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />}
-          <Text style={styles.userMessage}>{getUserMessage(verification, error)}</Text>
-          {riskWarning && (
-            <View style={{ marginTop: 16, alignSelf: 'stretch', backgroundColor: colors.surface, borderColor: colors.warn, borderWidth: 1, borderRadius: 8, padding: 12 }}>
-              <Text style={{ color: colors.warn, fontWeight: 'bold' }}>⚠️ Medication Risk</Text>
-              <Text style={{ color: colors.warn, marginTop: 4 }}>{riskWarning}</Text>
-            </View>
-          )}
-          {verification && (
-            <View style={{ marginTop: 16, alignSelf: 'stretch' }}>
-              {verification.verified && <Text style={{ color: colors.accent }}>Authenticity verified!</Text>}
-              {verification.expired && <Text style={{ color: colors.danger }}>Expired: do not use.</Text>}
-              {verification.recall && (
-                <View>
-                    <Text style={{ color: colors.danger }}>Recall Alert:</Text>
-                  <Text>{verification.recall.reason_for_recall}</Text>
-                  <Text>Status: {verification.recall.status}</Text>
-                </View>
-              )}
-              {(verification.labelInfo || verification.label) && (
-                <LabelInfoView labelInfo={verification.labelInfo} label={verification.label} />
-              )}
-              {/* Show openFDA info if available, else webscraper info, or both if both exist */}
-              {(verification.labelInfo || verification.webscraperInfo) && (
-                <View style={{ marginTop: 12, backgroundColor: colors.line, borderRadius: 8, padding: 10 }}>
-                  {/* openFDA info */}
-                  {verification.labelInfo && (
-                    <>
-                      <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage (openFDA)</Text>
-                      <Text style={{ color: colors.text }}>{verification.labelInfo.indications || 'N/A'}</Text>
-                      <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Dosage & Administration (openFDA)</Text>
-                      <Text style={{ color: colors.text }}>{verification.labelInfo.dosage || 'N/A'}</Text>
-                      <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Adverse Reactions (openFDA)</Text>
-                      <Text style={{ color: colors.text }}>{verification.labelInfo.sideEffects || 'N/A'}</Text>
-                    </>
-                  )}
-                  {/* webscraper info (show if openFDA missing or to supplement) */}
-                  {verification.webscraperInfo && (
-                    <View style={{ marginTop: verification.labelInfo ? 16 : 0 }}>
-                      <Text style={{ fontWeight: 'bold', color: colors.accent }}>Drug Info (Webscraper)</Text>
-                      {verification.webscraperInfo.indications && (
-                        <>
-                          <Text style={{ fontWeight: 'bold', color: colors.primary }}>Indications & Usage</Text>
-                          <Text style={{ color: colors.text }}>{verification.webscraperInfo.indications}</Text>
-                        </>
-                      )}
-                      {verification.webscraperInfo.dosage && (
-                        <>
-                          <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Dosage & Administration</Text>
-                          <Text style={{ color: colors.text }}>{verification.webscraperInfo.dosage}</Text>
-                        </>
-                      )}
-                      {verification.webscraperInfo.sideEffects && (
-                        <>
-                          <Text style={{ fontWeight: 'bold', color: colors.primary, marginTop: 6 }}>Adverse Reactions</Text>
-                          <Text style={{ color: colors.text }}>{verification.webscraperInfo.sideEffects}</Text>
-                        </>
-                      )}
-                      {/* Fallback: show all fields if no standard keys */}
-                      {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects && (
-                        <Text style={{ color: colors.muted }}>No standard drug info fields found from webscraper. Raw data:</Text>
-                      )}
-                      {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects && (
-                        <Text style={{ color: colors.text, fontSize: 13 }}>{JSON.stringify(verification.webscraperInfo, null, 2)}</Text>
-                      )}
-                    </View>
-                  )}
-                  {/* If neither source yields info, show fallback */}
-                  {!verification.labelInfo && !verification.webscraperInfo && (
-                    <Text style={{ color: colors.muted }}>No drug information found from openFDA or webscraper.</Text>
-                  )}
-                </View>
-              )}
-              {!verification.verified && !verification.recall && !verification.expired && (
-                <Text>No authenticity data available. Exercise caution.</Text>
-              )}
-              <Text style={{ marginTop: 8, color: colors.muted }}>{verification.message}</Text>
-            </View>
-          )}
-          {error && !loading && (
-            <Text style={styles.error}>{error}</Text>
-          )}
-            <TouchableOpacity
-            style={[styles.rescanBtn, { backgroundColor: colors.primary, marginBottom: 10 }]}
-            onPress={() => {
-              setScanned(false); setScanData(null); setVerification(null); setError(null); setLoading(false);
+      <View style={styles.resultButtons}>
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => {
+            setScanned(false);
+            setScanData(null);
+            setVerification(null);
+            setError(null);
+            setLoading(false);
+            setRiskWarning(null);
+          }}
+        >
+          <Text style={styles.secondaryText}>Scan again</Text>
+        </Pressable>
+        {verification ? (
+          <Pressable
+            style={styles.primaryButton}
+            onPress={async () => {
+              await saveMedication({
+                code: scanData.data,
+                type: scanData.type,
+                labelInfo: verification.labelInfo,
+                recall: verification.recall,
+                timestamp: Date.now(),
+              });
+              setError('Saved to My Medications!');
+              setTimeout(() => setError(null), 1500);
             }}
           >
-            <Text style={{ color: colors.card, fontWeight: 'bold' }}>Scan Another</Text>
-          </TouchableOpacity>
-          {verification && (
-            <TouchableOpacity
-              style={[styles.rescanBtn, { backgroundColor: colors.accent }]}
-              onPress={async () => {
-                await saveMedication({
-                  code: scanData.data,
-                  type: scanData.type,
-                  labelInfo: verification.labelInfo,
-                  recall: verification.recall,
-                  timestamp: Date.now(),
-                });
-                // Optionally show a confirmation
-                setError('Saved to My Medications!');
-                setTimeout(() => setError(null), 1500);
-              }}
-            >
-              <Text style={{ color: colors.card, fontWeight: 'bold' }}>Save to My Medications</Text>
-            </TouchableOpacity>
-          )}
-        </ScrollView>
-      )}
-    </View>
+            <Text style={styles.primaryText}>Save medication</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </Card>
+  );
+
+  return (
+    <ScreenContainer
+      scrollable
+      contentContainerStyle={styles.content}
+      header={heroHeader}
+    >
+      {!scanned && !scanData ? renderIdle() : renderResult()}
+      {renderHistory}
+    </ScreenContainer>
   );
 };
 
