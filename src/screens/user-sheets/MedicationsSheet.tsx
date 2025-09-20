@@ -1,13 +1,62 @@
 import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, Animated, Pressable } from 'react-native';
+import { Modal, View, Text, Animated, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, radius } from '../../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, radius, spacing } from '../../theme';
 import MyMedicationsList from '../../components/MyMedicationsList';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    overflow: 'hidden',
+    maxHeight: '88%',
+  },
+  gradient: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xxl,
+    gap: spacing.lg,
+  },
+  handle: {
+    width: 48,
+    height: 5,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    alignSelf: 'center',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.lg,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  close: {
+    color: colors.muted,
+    fontWeight: '600',
+  },
+  listWrap: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+  },
+});
 
 export default function MedicationsSheet({ visible, onClose }: Readonly<Props>) {
   const { t } = useTranslation();
@@ -24,15 +73,22 @@ export default function MedicationsSheet({ visible, onClose }: Readonly<Props>) 
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
-        <Animated.View style={{ backgroundColor: colors.card, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingTop: 32, paddingHorizontal: 20, minHeight: '50%', maxHeight: '90%', overflow: 'hidden', transform: [{ translateY }] }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 22, color: colors.text }}>{t('profile.myMedications', 'My Medications')}</Text>
-            <Pressable onPress={() => { Animated.timing(anim, { toValue: 0, duration: 180, useNativeDriver: true }).start(onClose); }} hitSlop={10}>
-              <Text style={{ color: colors.muted, fontWeight: '600', fontSize: 16 }}>{t('common.close', 'Close')}</Text>
-            </Pressable>
-          </View>
-          <MyMedicationsList />
+      <View style={styles.overlay}>
+        <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
+          <LinearGradient colors={colors.subtleGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+            <View style={styles.handle} />
+            <View style={styles.headerRow}>
+              <Text style={styles.title}>{t('profile.myMedications', 'My Medications')}</Text>
+              <Pressable onPress={() => {
+                Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(onClose);
+              }} hitSlop={10}>
+                <Text style={styles.close}>{t('common.close', 'Close')}</Text>
+              </Pressable>
+            </View>
+            <View style={styles.listWrap}>
+              <MyMedicationsList />
+            </View>
+          </LinearGradient>
         </Animated.View>
       </View>
     </Modal>

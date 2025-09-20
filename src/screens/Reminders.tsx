@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, shadow } from '../theme';
+import { colors, spacing, shadow, radius } from '../theme';
 import { SegmentedControl } from '../components/SegmentedControl';
 import Card from '../components/Card';
 import { ListRow } from '../components/ListRow';
@@ -10,6 +10,7 @@ import { useReminders } from '../hooks/useReminders';
 import Chip from '../components/Chip';
 import CalendarStrip from '../components/CalendarStrip';
 import { getTodayStats, setCompleted, getDayCompletion } from '../core/completion';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function Reminders() {
   const [segment, setSegment] = useState('Active');
@@ -102,6 +103,8 @@ export default function Reminders() {
     }
   };
 
+  const completedCount = Object.values(doneMap).filter(Boolean).length;
+
   let content;
   if (loading) {
     content = <ActivityIndicator style={{ marginTop: spacing.xl }} color={colors.primary} />;
@@ -109,82 +112,81 @@ export default function Reminders() {
     content = <Text style={{ color: colors.danger, textAlign: 'center', marginTop: spacing.xl }}>{error}</Text>;
   } else {
     content = (
-      <ScrollView
-        contentContainerStyle={{
-          padding: spacing.xl,
-          paddingBottom: 96, // extra space for navbar and FAB
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Calendar strip and quick filters */}
-        <View style={{ marginBottom: spacing.md }}>
-          <CalendarStrip value={selectedDate} onChange={setSelectedDate} />
-        </View>
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: spacing.md }}>
-          <Chip label="All" selected={segment === 'Active'} onPress={() => setSegment('Active')} />
-          <Chip label="Past" selected={segment === 'Past'} onPress={() => setSegment('Past')} />
-        </View>
+      <View style={styles.listContainer}>
         {filtered.length === 0 ? (
-          <Text style={{ textAlign: 'center', color: colors.muted }}>No reminders</Text>
+          <Text style={styles.emptyText}>No reminders</Text>
         ) : null}
         {filtered.map(r => (
-          <Card key={r.id} style={{ paddingVertical: spacing.lg }}>
+          <Card key={r.id} style={styles.reminderCard}>
             <ListRow
               title={r.title}
               subtitle={r.frequency ? `${r.datetime} • ${r.frequency}` : r.datetime}
               right={
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Switch
                     value={r.active}
                     onValueChange={() => toggleActive(r)}
                     disabled={!!toggling[r.id]}
                   />
-                  {toggling[r.id] && <ActivityIndicator size={16} color={colors.primary} style={{ marginLeft: 6 }} />}
+                  {toggling[r.id] && <ActivityIndicator size={16} color={colors.primary} />}
                 </View>
               }
             />
             {r.description ? (
-              <Text style={{ color: colors.muted, marginLeft: 56, marginTop: 4 }}>{r.description}</Text>
+              <Text style={styles.description}>{r.description}</Text>
             ) : null}
-            {/* Done today pill button */}
-            <View style={{ flexDirection: 'row', marginLeft: 56, marginTop: 10 }}>
+            <View style={styles.actionsRow}>
               <Pressable
                 onPress={() => toggleDoneToday(r.id)}
-                style={{
-                  backgroundColor: doneMap[r.id] ? colors.primary : colors.card,
-                  borderWidth: 1,
-                  borderColor: doneMap[r.id] ? colors.primary : colors.line,
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
-                  borderRadius: 999,
-                }}
+                style={[styles.doneButton, doneMap[r.id] && styles.doneButtonActive]}
               >
-                <Text style={{ color: doneMap[r.id] ? colors.card : colors.text, fontWeight: '600' }}>
+                <Text style={[styles.doneButtonText, doneMap[r.id] && styles.doneButtonTextActive]}>
                   {doneMap[r.id] ? 'Done today' : 'Mark done today'}
                 </Text>
               </Pressable>
             </View>
             {!!toggleMsg[r.id] && (
-              <Text style={{ color: toggleMsg[r.id].includes('Failed') ? colors.danger : colors.primary, marginLeft: 56, marginTop: 2, fontSize: 13 }}>{toggleMsg[r.id]}</Text>
+              <Text style={[styles.statusText, toggleMsg[r.id].includes('Failed') && styles.statusTextError]}>{toggleMsg[r.id]}</Text>
             )}
           </Card>
         ))}
-      </ScrollView>
+      </View>
     );
   }
 
   return (
-  <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: 80 }}>
-      <View style={{ padding: spacing.xl }}>
+    <ScreenContainer scrollable contentContainerStyle={styles.content}>
+      <Card style={styles.headerCard}>
         <SegmentedControl options={['Active', 'Past']} value={segment} onChange={setSegment} />
-      </View>
+        <View style={styles.calendarWrap}>
+          <CalendarStrip value={selectedDate} onChange={setSelectedDate} />
+        </View>
+        <View style={styles.filterRow}>
+          <Chip label="Active" selected={segment === 'Active'} onPress={() => setSegment('Active')} />
+          <Chip label="Past" selected={segment === 'Past'} onPress={() => setSegment('Past')} />
+        </View>
+        <View style={styles.summaryRow}>
+          <View>
+            <Text style={styles.summaryLabel}>Reminders today</Text>
+            <Text style={styles.summaryValue}>{filtered.length}</Text>
+          </View>
+          <View>
+            <Text style={styles.summaryLabel}>Completed</Text>
+            <Text style={styles.summaryValue}>{completedCount}</Text>
+          </View>
+        </View>
+      </Card>
+
       {content}
-      <Pressable style={styles.fab} android_ripple={{ color: colors.primary600 }} onPress={() => setModalVisible(true)}>
-        <Ionicons name="add" size={28} color="#fff" />
+
+      <Pressable style={styles.addButton} android_ripple={{ color: colors.primary600 }} onPress={() => setModalVisible(true)}>
+        <Ionicons name="add" size={22} color="#fff" />
+        <Text style={styles.addButtonText}>Add reminder</Text>
       </Pressable>
+
       <Modal
         visible={modalVisible}
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         onRequestClose={() => setModalVisible(false)}
       >
@@ -260,50 +262,107 @@ export default function Reminders() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: spacing.xl,
-    bottom: spacing.xl,
+  content: {
+    gap: spacing.xl,
+    paddingBottom: spacing.xxl,
+  },
+  headerCard: {
+    gap: spacing.md,
+  },
+  calendarWrap: {
+    marginTop: spacing.sm,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  summaryLabel: { color: colors.muted, fontSize: 13 },
+  summaryValue: { color: colors.text, fontWeight: '700', fontSize: 20, marginTop: 4 },
+  listContainer: {
+    gap: spacing.md,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: colors.muted,
+    marginTop: spacing.lg,
+  },
+  reminderCard: {
+    gap: spacing.sm,
+  },
+  description: {
+    color: colors.muted,
+    marginLeft: spacing.lg,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: spacing.sm,
+  },
+  doneButton: {
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: colors.glass,
+  },
+  doneButtonActive: {
     backgroundColor: colors.primary,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    borderColor: colors.primary,
+  },
+  doneButtonText: { color: colors.text, fontWeight: '600' },
+  doneButtonTextActive: { color: '#fff' },
+  statusText: { marginTop: 6, color: colors.primary, fontSize: 13 },
+  statusTextError: { color: colors.danger },
+  addButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'center',
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.pill,
     ...shadow.card,
-    zIndex: 10,
   },
+  addButtonText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   modalOverlay: {
     flex: 1,
-  backgroundColor: colors.overlay,
+    backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: colors.bg,
+    backgroundColor: colors.glass,
     padding: spacing.xl,
-    borderRadius: 16,
+    borderRadius: radius.xl,
     width: '90%',
-    maxWidth: 400,
+    maxWidth: 420,
     ...shadow.card,
   },
   input: {
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 8,
-    padding: Platform.OS === 'web' ? 12 : spacing.md,
+    borderRadius: radius.md,
+    padding: spacing.md,
     marginBottom: spacing.sm,
-    backgroundColor: colors.card,
+    backgroundColor: colors.surface,
     fontSize: 16,
   },
   modalBtn: {
     paddingVertical: spacing.md,
-    borderRadius: 8,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
