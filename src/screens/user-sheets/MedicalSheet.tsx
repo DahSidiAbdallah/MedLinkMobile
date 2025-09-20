@@ -1,13 +1,72 @@
 import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, Animated, Pressable } from 'react-native';
+import { Modal, View, Text, Animated, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing } from '../../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, spacing, radius } from '../../theme';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   profile: any;
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    overflow: 'hidden',
+  },
+  gradient: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xxl,
+  },
+  handle: {
+    width: 48,
+    height: 5,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    alignSelf: 'center',
+    marginBottom: spacing.lg,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  sectionLabel: {
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  item: {
+    color: colors.muted,
+    marginLeft: spacing.sm,
+    marginBottom: 4,
+  },
+  closeButton: {
+    marginTop: spacing.xl,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  closeText: {
+    color: colors.card,
+    fontWeight: '700',
+  },
+});
 
 export default function MedicalSheet({ visible, onClose, profile }: Readonly<Props>) {
   const { t } = useTranslation();
@@ -24,19 +83,42 @@ export default function MedicalSheet({ visible, onClose, profile }: Readonly<Pro
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}>
-        <Animated.View style={{ backgroundColor: colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 24, width: '100%', maxHeight: '80%', transform: [{ translateY }] }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }}>{t('profile.medicalId', 'Medical ID')}</Text>
-          <Text style={{ color: colors.text, fontWeight: '600', marginBottom: 6 }}>{t('auth.bloodType', 'Blood Type')}: <Text style={{ color: colors.muted }}>{profile?.blood_type || t('common.notSet', 'Not set')}</Text></Text>
-          <Text style={{ color: colors.text, fontWeight: '600', marginTop: 10, marginBottom: 6 }}>{t('auth.allergies', 'Allergies')}:</Text>
-          {profile?.allergies && profile.allergies.length > 0 ? profile.allergies.map((a: string) => <Text key={a} style={{ color: colors.muted, marginLeft: 8 }}>• {a}</Text>) : <Text style={{ color: colors.muted, marginLeft: 8 }}>{t('common.none', 'None')}</Text>}
-          <Text style={{ color: colors.text, fontWeight: '600', marginTop: 10, marginBottom: 6 }}>{t('auth.medicalConditions', 'Medical Conditions')}:</Text>
-          {profile?.medical_conditions && profile.medical_conditions.length > 0 ? profile.medical_conditions.map((c: string) => <Text key={c} style={{ color: colors.muted, marginLeft: 8 }}>• {c}</Text>) : <Text style={{ color: colors.muted, marginLeft: 8 }}>{t('common.none', 'None')}</Text>}
-          <Text style={{ color: colors.text, fontWeight: '600', marginTop: 10, marginBottom: 6 }}>{t('auth.medications', 'Medications')}:</Text>
-          {profile?.medications && profile.medications.length > 0 ? profile.medications.map((m: string) => <Text key={m} style={{ color: colors.muted, marginLeft: 8 }}>• {m}</Text>) : <Text style={{ color: colors.muted, marginLeft: 8 }}>{t('common.none', 'None')}</Text>}
-          <Pressable style={{ paddingVertical: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary, marginTop: spacing.lg }} onPress={() => { Animated.timing(anim, { toValue: 0, duration: 180, useNativeDriver: true }).start(onClose); }}>
-            <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{t('common.close', 'Close')}</Text>
-          </Pressable>
+      <View style={styles.overlay}>
+        <Animated.View style={[styles.sheet, { transform: [{ translateY }] }] }>
+          <LinearGradient colors={colors.subtleGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+            <View style={styles.handle} />
+            <Text style={styles.title}>{t('profile.medicalId', 'Medical ID')}</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.sectionLabel}>{t('auth.bloodType', 'Blood Type')}</Text>
+              <Text style={styles.item}>{profile?.blood_type || t('common.notSet', 'Not set')}</Text>
+
+              <Text style={styles.sectionLabel}>{t('auth.allergies', 'Allergies')}</Text>
+              {profile?.allergies && profile.allergies.length > 0
+                ? profile.allergies.map((a: string) => (
+                    <Text key={a} style={styles.item}>• {a}</Text>
+                  ))
+                : <Text style={styles.item}>{t('common.none', 'None')}</Text>}
+
+              <Text style={styles.sectionLabel}>{t('auth.medicalConditions', 'Medical Conditions')}</Text>
+              {profile?.medical_conditions && profile.medical_conditions.length > 0
+                ? profile.medical_conditions.map((c: string) => (
+                    <Text key={c} style={styles.item}>• {c}</Text>
+                  ))
+                : <Text style={styles.item}>{t('common.none', 'None')}</Text>}
+
+              <Text style={styles.sectionLabel}>{t('auth.medications', 'Medications')}</Text>
+              {profile?.medications && profile.medications.length > 0
+                ? profile.medications.map((m: string) => (
+                    <Text key={m} style={styles.item}>• {m}</Text>
+                  ))
+                : <Text style={styles.item}>{t('common.none', 'None')}</Text>}
+            </ScrollView>
+            <Pressable style={styles.closeButton} onPress={() => {
+              Animated.timing(anim, { toValue: 0, duration: 180, useNativeDriver: true }).start(onClose);
+            }}>
+              <Text style={styles.closeText}>{t('common.close', 'Close')}</Text>
+            </Pressable>
+          </LinearGradient>
         </Animated.View>
       </View>
     </Modal>
