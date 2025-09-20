@@ -1,4 +1,22 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
+// Guard AsyncStorage import — on some native/Hermes setups the native binding
+// may be unavailable during module evaluation which would throw and prevent
+// AppRegistry from being registered. Use a safe lazy require with an in-memory
+// fallback to avoid startup crashes.
+let AsyncStorage: any = null;
+try {
+  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+  AsyncStorage = require('@react-native-async-storage/async-storage').default;
+} catch (e) {
+  // fallback in-memory AsyncStorage-compatible interface
+  // eslint-disable-next-line no-console
+  console.warn('AsyncStorage not available at module load, using in-memory fallback for telemetry:', e);
+  const store: Record<string, string> = {};
+  AsyncStorage = {
+    getItem: async (k: string) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
+    setItem: async (k: string, v: string) => { store[k] = v; },
+    removeItem: async (k: string) => { delete store[k]; },
+  };
+}
 
 const STORAGE_KEY = 'telemetry_queue_v1'
 

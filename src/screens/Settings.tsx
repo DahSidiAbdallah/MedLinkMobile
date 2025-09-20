@@ -1,6 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, Switch, StyleSheet } from 'react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+// Guard AsyncStorage: require lazily to avoid module-eval crashes on some runtimes
+let AsyncStorage: any = null;
+function getAsyncStorage() {
+  if (AsyncStorage) return AsyncStorage;
+  try {
+    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+    AsyncStorage = require('@react-native-async-storage/async-storage').default;
+  } catch (e) {
+    // fallback minimal in-memory implementation
+    // eslint-disable-next-line no-console
+    console.warn('AsyncStorage not available, using in-memory fallback in Settings:', e);
+    const store: Record<string, string> = {};
+    AsyncStorage = {
+      getItem: async (k: string) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
+      setItem: async (k: string, v: string) => { store[k] = v; },
+      removeItem: async (k: string) => { delete store[k]; },
+    };
+  }
+  return AsyncStorage;
+}
 import { colors, spacing } from '../theme'
 import ScreenContainer from '../components/ScreenContainer'
 import Card from '../components/Card'
@@ -16,8 +35,9 @@ export default function Settings() {
     let mounted = true
     async function load() {
       try {
-        const t = await AsyncStorage.getItem(TELEMETRY_KEY)
-        const h = await AsyncStorage.getItem(HAPTICS_KEY)
+        const storage = getAsyncStorage();
+        const t = await storage.getItem(TELEMETRY_KEY)
+        const h = await storage.getItem(HAPTICS_KEY)
         if (!mounted) return
         setTelemetry(t !== '0')
         setHaptics(h !== '0')
@@ -29,11 +49,11 @@ export default function Settings() {
 
   const setTelemetryToggle = async (v: boolean) => {
     setTelemetry(v)
-    try { await AsyncStorage.setItem(TELEMETRY_KEY, v ? '1' : '0') } catch {}
+    try { await getAsyncStorage().setItem(TELEMETRY_KEY, v ? '1' : '0') } catch {}
   }
   const setHapticsToggle = async (v: boolean) => {
     setHaptics(v)
-    try { await AsyncStorage.setItem(HAPTICS_KEY, v ? '1' : '0') } catch {}
+    try { await getAsyncStorage().setItem(HAPTICS_KEY, v ? '1' : '0') } catch {}
   }
 
   return (
