@@ -16,7 +16,9 @@ export function useFacilities() {
         const data: Facility[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Facility[];
         setFacilities(data);
       } catch (e: any) {
-        setError(e.message || 'Failed to fetch facilities');
+        // eslint-disable-next-line no-console
+        console.error('Error fetching facilities:', e);
+        setError(e.message || 'Failed to load facilities. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }

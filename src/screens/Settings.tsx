@@ -30,6 +30,7 @@ const HAPTICS_KEY = 'settings_haptics_enabled_v1'
 export default function Settings() {
   const [telemetry, setTelemetry] = useState(true)
   const [haptics, setHaptics] = useState(true)
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -49,15 +50,34 @@ export default function Settings() {
 
   const setTelemetryToggle = async (v: boolean) => {
     setTelemetry(v)
-    try { await getAsyncStorage().setItem(TELEMETRY_KEY, v ? '1' : '0') } catch {}
+    try {
+      await getAsyncStorage().setItem(TELEMETRY_KEY, v ? '1' : '0')
+      setSaveMessage('Telemetry setting saved')
+      setTimeout(() => setSaveMessage(null), 2000)
+    } catch (e) {
+      setSaveMessage('Failed to save setting')
+      setTimeout(() => setSaveMessage(null), 2000)
+    }
   }
   const setHapticsToggle = async (v: boolean) => {
     setHaptics(v)
-    try { await getAsyncStorage().setItem(HAPTICS_KEY, v ? '1' : '0') } catch {}
+    try {
+      await getAsyncStorage().setItem(HAPTICS_KEY, v ? '1' : '0')
+      setSaveMessage('Haptics setting saved')
+      setTimeout(() => setSaveMessage(null), 2000)
+    } catch (e) {
+      setSaveMessage('Failed to save setting')
+      setTimeout(() => setSaveMessage(null), 2000)
+    }
   }
 
   return (
     <ScreenContainer contentContainerStyle={styles.content}>
+      {saveMessage && (
+        <View style={styles.saveMessageBanner}>
+          <Text style={styles.saveMessageText}>{saveMessage}</Text>
+        </View>
+      )}
       <Card style={styles.card}>
         <View style={styles.row}>
           <View style={styles.textBlock}>
@@ -84,6 +104,18 @@ const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
     paddingBottom: spacing.xxl,
+  },
+  saveMessageBanner: {
+    backgroundColor: colors.accent,
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  saveMessageText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
   card: {
     gap: spacing.sm,

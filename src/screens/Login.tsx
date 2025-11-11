@@ -159,8 +159,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
         setLoginErrors({ password: 'Incorrect password.' });
       } else if (e.code === 'auth/invalid-email') {
         setLoginErrors({ email: 'Invalid email address.' });
+      } else if (e.code === 'auth/invalid-credential') {
+        setLoginErrors({ password: 'Invalid credentials. Please check your email and password.' });
+      } else if (e.code === 'auth/too-many-requests') {
+        setLoginErrors({ email: 'Too many failed attempts. Please try again later.' });
       } else {
-        setLoginErrors({ email: e.message });
+        setLoginErrors({ email: e.message || 'Login failed. Please try again.' });
       }
     } finally {
       setLoading(false);
@@ -173,12 +177,16 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const user = cred.user;
+      const finalBloodType = bloodType === 'custom' ? customBloodType.trim() : bloodType;
       const profile = {
         id: user.uid,
         name,
         email,
         phone,
         date_of_birth: dateOfBirth,
+        blood_type: finalBloodType || undefined,
+        allergies: allergies.length > 0 ? allergies : undefined,
+        medical_conditions: medicalConditions.length > 0 ? medicalConditions : undefined,
       };
       await setDoc(doc(db, 'profiles', user.uid), profile);
       Alert.alert('Account created', 'You can now log in.');
@@ -189,8 +197,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
         Alert.alert('Registration Error', 'This email is already in use. Please use a different email or log in.');
       } else if (e.code === 'auth/invalid-email') {
         Alert.alert('Registration Error', 'Invalid email address.');
+      } else if (e.code === 'auth/weak-password') {
+        Alert.alert('Registration Error', 'Password is too weak. Please use a stronger password.');
+      } else if (e.code === 'auth/network-request-failed') {
+        Alert.alert('Network Error', 'Please check your internet connection and try again.');
       } else {
-        Alert.alert('Registration Error', e.message);
+        Alert.alert('Registration Error', e.message || 'Failed to create account. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -321,13 +333,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
         error: registerAccountErrors.confirmPassword,
       })}
       <Pressable
-        style={[styles.primaryButton, loading && styles.disabled]}
+        style={[styles.primaryButton]}
         onPress={() => {
           if (validateAccountStep()) setRegisterStep(1);
         }}
-        disabled={loading}
       >
-        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Next</Text>}
+        <Text style={styles.primaryButtonText}>Next</Text>
       </Pressable>
     </>
   );

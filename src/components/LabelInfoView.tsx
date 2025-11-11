@@ -72,11 +72,17 @@ const LabelInfoView: React.FC<Props> = ({ labelInfo, label, truncateLimit = 300 
         onRequestClose={closeModal}
         transparent={false}
         accessibilityViewIsModal
+        accessibilityLabel={`Detailed information for ${modalTitle}`}
       >
         <View style={{ flex: 1, padding: 20, backgroundColor: 'white' }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>{modalTitle}</Text>
-          <Text style={{ color: colors.text, flex: 1 }}>{modalContent}</Text>
-          <Pressable accessibilityRole="button" onPress={closeModal} style={{ marginTop: 20 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 12 }} accessibilityRole="header">{modalTitle}</Text>
+          <Text style={{ color: colors.text, flex: 1 }} accessibilityRole="text">{modalContent}</Text>
+          <Pressable 
+            accessibilityRole="button" 
+            accessibilityLabel="Close details modal"
+            onPress={closeModal} 
+            style={{ marginTop: 20 }}
+          >
             <Text style={{ color: colors.primary, fontWeight: '600' }}>Close</Text>
           </Pressable>
         </View>
