@@ -1,4 +1,5 @@
 import { saveMedication } from '../utils/myMedications';
+import { checkDrugSafety, type SafetyCheck } from '../utils/drugInteractionChecker';
 
 import React, { useState, useEffect, useRef } from 'react';
 // Guard AsyncStorage import to avoid module-eval crashes on some runtimes
@@ -439,36 +440,99 @@ const BarcodeScanner: React.FC = () => {
         try { await hapticSuccess() } catch {}
       }
       telemetry.lookupSuccess = !!result;
-      // Cross-check with user profile for risks
+      
+      // Enhanced cross-check with user profile for comprehensive safety analysis
       if (profile && result && result.label) {
-        const medName = (result.label.brand_name || result.label.generic_name || '').toLowerCase();
-        // Check allergies
-        if (profile.allergies && profile.allergies.length > 0) {
-          for (const allergy of profile.allergies) {
-            if (medName.includes(allergy.toLowerCase())) {
-              risk += `Allergy risk: ${allergy}.\n`;
+        try {
+          const safetyResult = await checkDrugSafety(result.label, profile);
+          telemetry.safetyChecks = {
+            totalChecks: safetyResult.checks.length,
+            severity: safetyResult.overallSeverity,
+            safe: safetyResult.safe,
+          };
+          
+          if (safetyResult.checks.length > 0) {
+            // Group checks by severity for better UX
+            const criticalChecks = safetyResult.checks.filter(c => c.severity === 'critical');
+            const highChecks = safetyResult.checks.filter(c => c.severity === 'high');
+            const moderateChecks = safetyResult.checks.filter(c => c.severity === 'moderate');
+            const lowChecks = safetyResult.checks.filter(c => c.severity === 'low');
+            
+            let riskMessage = '';
+            
+            // Critical risks first
+            if (criticalChecks.length > 0) {
+              riskMessage += '🚨 CRITICAL RISKS:\n';
+              criticalChecks.forEach(check => {
+                riskMessage += `• ${check.message}\n  ${check.detail}\n\n`;
+              });
+            }
+            
+            // High risks
+            if (highChecks.length > 0) {
+              riskMessage += '⚠️ HIGH PRIORITY WARNINGS:\n';
+              highChecks.forEach(check => {
+                riskMessage += `• ${check.message}\n  ${check.detail}\n\n`;
+              });
+            }
+            
+            // Moderate risks
+            if (moderateChecks.length > 0) {
+              riskMessage += '⚡ MODERATE CONCERNS:\n';
+              moderateChecks.forEach(check => {
+                riskMessage += `• ${check.message}\n  ${check.detail}\n\n`;
+              });
+            }
+            
+            // Low risks
+            if (lowChecks.length > 0) {
+              riskMessage += 'ℹ️ ADVISORY:\n';
+              lowChecks.forEach(check => {
+                riskMessage += `• ${check.message}\n`;
+              });
+            }
+            
+            risk = riskMessage.trim();
+            setRiskWarning(risk);
+            setLastRisk(risk);
+          }
+        } catch (e: any) {
+          // Fallback to basic checking if comprehensive check fails
+          console.warn('Comprehensive safety check failed, using basic checks:', e);
+          
+          const medName = (result.label.brand_name || result.label.generic_name || '').toLowerCase();
+          
+          // Basic allergy check as fallback
+          if (profile.allergies && profile.allergies.length > 0) {
+            for (const allergy of profile.allergies) {
+              if (medName.includes(allergy.toLowerCase())) {
+                risk += `⚠️ Allergy risk: ${allergy}.\n`;
+              }
             }
           }
-        }
-        // Check medical conditions (simple keyword match)
-        if (profile.medical_conditions && profile.medical_conditions.length > 0) {
-          for (const cond of profile.medical_conditions) {
-            if (result.label.contraindications && result.label.contraindications.toLowerCase().includes(cond.toLowerCase())) {
-              risk += `Condition risk: ${cond}.\n`;
+          
+          // Basic condition check as fallback
+          if (profile.medical_conditions && profile.medical_conditions.length > 0) {
+            for (const cond of profile.medical_conditions) {
+              if (result.label.contraindications && result.label.contraindications.toLowerCase().includes(cond.toLowerCase())) {
+                risk += `⚠️ Condition risk: ${cond}.\n`;
+              }
             }
           }
-        }
-        // Check current medications (simple keyword match)
-        if (profile.medications && profile.medications.length > 0) {
-          for (const med of profile.medications) {
-            if (result.label.drug_interactions && result.label.drug_interactions.toLowerCase().includes(med.toLowerCase())) {
-              risk += `Interaction risk: ${med}.\n`;
+          
+          // Basic interaction check as fallback
+          if (profile.medications && profile.medications.length > 0) {
+            for (const med of profile.medications) {
+              if (result.label.drug_interactions && result.label.drug_interactions.toLowerCase().includes(med.toLowerCase())) {
+                risk += `⚠️ Interaction risk: ${med}.\n`;
+              }
             }
           }
-        }
-        if (risk) {
-          setRiskWarning(risk.trim());
-          setLastRisk(risk.trim());
+          
+          if (risk) {
+            setRiskWarning(risk.trim());
+            setLastRisk(risk.trim());
+          }
         }
       }
     } catch (e: any) {
