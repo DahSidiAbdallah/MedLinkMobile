@@ -471,10 +471,10 @@ const BarcodeScanner: React.FC = () => {
           setLastRisk(risk.trim());
         }
       }
-    } catch (e) {
-      err = 'Verification failed.';
+    } catch (e: any) {
+      err = e?.message || 'Verification failed. Please try scanning again.';
       setError(err);
-  telemetry.errorCodes = ['verification_failed']
+      telemetry.errorCodes = ['verification_failed']
     } finally {
       telemetry.decodeTimeMs = Date.now() - telemetryStart;
       const event = makeScanTelemetryEvent({
@@ -499,7 +499,10 @@ const BarcodeScanner: React.FC = () => {
       };
       setHistory(prev => {
         const updated = [newItem, ...prev];
-  getAsyncStorage().setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {});
+        getAsyncStorage().setItem(HISTORY_KEY, JSON.stringify(updated)).catch((e: any) => {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to save scan history:', e);
+        });
         return updated;
       });
     }
@@ -741,15 +744,24 @@ const BarcodeScanner: React.FC = () => {
           <Pressable
             style={styles.primaryButton}
             onPress={async () => {
-              await saveMedication({
-                code: scanData.data,
-                type: scanData.type,
-                labelInfo: verification.labelInfo,
-                recall: verification.recall,
-                timestamp: Date.now(),
-              });
-              setError('Saved to My Medications!');
-              setTimeout(() => setError(null), 1500);
+              try {
+                await saveMedication({
+                  code: scanData.data,
+                  type: scanData.type,
+                  labelInfo: verification.labelInfo,
+                  recall: verification.recall,
+                  timestamp: Date.now(),
+                });
+                // Show success feedback in a proper way
+                setVerification({ ...verification, message: '✓ Saved to My Medications!' });
+                setTimeout(() => {
+                  setScanned(false);
+                  setScanData(null);
+                  setVerification(null);
+                }, 1500);
+              } catch (e) {
+                setError('Failed to save medication. Please try again.');
+              }
             }}
           >
             <Text style={styles.primaryText}>Save medication</Text>

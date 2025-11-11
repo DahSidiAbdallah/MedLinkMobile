@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage, StyleSheet, ActivityIndicator } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
 import type { Facility } from '../types';
 import { colors, spacing, radius, shadow } from '../theme';
@@ -171,8 +171,17 @@ export default function FacilitiesScreen({ navigation }: any) {
         ))}
       </View>
 
-      {loading && <Text style={styles.stateText}>Loading...</Text>}
-      {error && <Text style={[styles.stateText, { color: colors.danger }]}>{error}</Text>}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.stateText}>Loading facilities...</Text>
+        </View>
+      )}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={[styles.stateText, { color: colors.danger }]}>{error}</Text>
+        </View>
+      )}
       {filtered.length === 0 && !loading && !error && (
         <Text style={styles.stateText}>No facilities found.</Text>
       )}
@@ -274,6 +283,14 @@ const styles = StyleSheet.create({
   },
   facilityCard: {
     gap: spacing.sm,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    padding: spacing.xl,
   },
   stateText: {
     textAlign: 'center',

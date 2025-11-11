@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMedications } from '../utils/myMedications';
 import { colors } from '../theme';
@@ -36,9 +36,17 @@ const styles = StyleSheet.create({
 
 export default function MyMedicationsList() {
   const [medications, setMedications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getMedications().then(setMedications);
+    setLoading(true);
+    getMedications()
+      .then(setMedications)
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load medications:', err);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const deleteMedication = (idx: number) => {
@@ -51,6 +59,15 @@ export default function MyMedicationsList() {
       } }
     ]);
   };
+
+  if (loading) {
+    return (
+      <View style={{ alignItems: 'center', marginTop: 12 }}>
+        <ActivityIndicator color={colors.primary} />
+        <Text style={{ color: colors.muted, marginTop: 8 }}>Loading medications...</Text>
+      </View>
+    );
+  }
 
   if (!medications.length) {
     return <Text style={{ color: colors.muted, textAlign: 'center', marginTop: 12 }}>No medications saved.</Text>;

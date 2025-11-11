@@ -359,7 +359,13 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
       key: 'privacy',
       label: t('common.privacy', 'Privacy'),
       icon: 'shield-checkmark-outline',
-      onPress: () => {},
+      onPress: () => {
+        Alert.alert(
+          t('common.privacy', 'Privacy'),
+          t('privacy.message', 'Your data is stored securely and encrypted. We never share your personal health information with third parties without your explicit consent.'),
+          [{ text: t('common.ok', 'OK'), style: 'default' }]
+        );
+      },
       tone: 'neutral',
     },
     {
