@@ -207,15 +207,17 @@ export default function Dashboard({ navigation }: any) {
               </View>
               <Text style={styles.sectionTitle}>Emergency contacts</Text>
               <View style={{ marginBottom: spacing.lg }}>
-                {profile?.emergency_contacts?.length ? (
-                  profile.emergency_contacts.map(contact => (
-                    <View key={contact.phone ?? contact.name} style={styles.contactBlock}>
-                      <Text style={styles.contactName}>{contact.name}</Text>
-                      <Text style={styles.sectionText}>{contact.phone}</Text>
-                      <Text style={styles.sectionText}>{contact.relationship}</Text>
-                      <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 6 }} accessibilityRole="button">
-                        <Text style={styles.callLink}>Call</Text>
-                      </Pressable>
+                {profile?.emergency_contacts && profile.emergency_contacts.length > 0 ? (
+                  profile.emergency_contacts.map((contact, idx) => (
+                    <View key={`${contact.phone ?? contact.name}_${idx}`} style={styles.contactBlock}>
+                      <Text style={styles.contactName}>{contact.name || 'Unknown Contact'}</Text>
+                      <Text style={styles.sectionText}>{contact.phone || 'No phone'}</Text>
+                      <Text style={styles.sectionText}>{contact.relationship || 'No relationship specified'}</Text>
+                      {contact.phone ? (
+                        <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 6 }} accessibilityRole="button">
+                          <Text style={styles.callLink}>Call</Text>
+                        </Pressable>
+                      ) : null}
                     </View>
                   ))
                 ) : (

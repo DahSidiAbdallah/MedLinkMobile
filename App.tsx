@@ -42,6 +42,7 @@ import { NotificationsProvider } from './src/notifications/NotificationsContext'
 import { LoadingProvider, useLoading } from './src/hooks/LoadingContext';
 import GlobalLoader from './src/components/GlobalLoader';
 import { createTelemetryService, setTelemetryService } from './src/core/telemetryService';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 
 const Tab = createBottomTabNavigator();
@@ -259,13 +260,15 @@ export default function App() {
 
   // App content wrapped in LoadingProvider so any screen can register loads
   return (
-    <SafeAreaProvider>
-      <LoadingProvider>
-        <FontAndSplashLoader />
-        {showSplash ? <SplashScreen onFinish={() => setShowSplash(false)} /> : <AppContent showSplash={showSplash} setShowSplash={setShowSplash} />}
-        <GlobalLoader />
-      </LoadingProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <LoadingProvider>
+          <FontAndSplashLoader />
+          {showSplash ? <SplashScreen onFinish={() => setShowSplash(false)} /> : <AppContent showSplash={showSplash} setShowSplash={setShowSplash} />}
+          <GlobalLoader />
+        </LoadingProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 
 }

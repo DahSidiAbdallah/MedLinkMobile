@@ -245,11 +245,15 @@ export default function Reminders() {
             {formErrors.general && <Text style={styles.error}>{formErrors.general}</Text>}
             <View style={{ flexDirection: 'row', marginTop: spacing.md, gap: 8 }}>
               <Pressable
-                style={[styles.modalBtn, { backgroundColor: colors.primary, flex: 1 }]}
+                style={[styles.modalBtn, { backgroundColor: colors.primary, flex: 1 }, creating && { opacity: 0.6 }]}
                 onPress={handleCreateReminder}
                 disabled={creating}
               >
-                <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{creating ? 'Saving...' : 'Save'}</Text>
+                {creating ? (
+                  <ActivityIndicator color={colors.card} size="small" />
+                ) : (
+                  <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>Save</Text>
+                )}
               </Pressable>
               <Pressable
                 style={[styles.modalBtn, { backgroundColor: colors.card, flex: 1 }]}
