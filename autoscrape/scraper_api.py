@@ -115,4 +115,5 @@ def scrape():
     return jsonify({'error': 'No usable drug info found for code', 'code': code, 'code_type': code_type, 'tried_urls': urls}), 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    # Disable debug mode to avoid Python 3.13 threading issues
+    app.run(host='0.0.0.0', port=5001, debug=False)
