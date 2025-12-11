@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, Switch, StyleSheet } from 'react-native'
+import { useTranslation } from 'react-i18next'
 // Guard AsyncStorage: require lazily to avoid module-eval crashes on some runtimes
 let AsyncStorage: any = null;
 function getAsyncStorage() {
@@ -9,8 +10,6 @@ function getAsyncStorage() {
     AsyncStorage = require('@react-native-async-storage/async-storage').default;
   } catch (e) {
     // fallback minimal in-memory implementation
-    // eslint-disable-next-line no-console
-    console.warn('AsyncStorage not available, using in-memory fallback in Settings:', e);
     const store: Record<string, string> = {};
     AsyncStorage = {
       getItem: async (k: string) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
@@ -28,6 +27,7 @@ const TELEMETRY_KEY = 'settings_telemetry_enabled_v1'
 const HAPTICS_KEY = 'settings_haptics_enabled_v1'
 
 export default function Settings() {
+  const { t } = useTranslation()
   const [telemetry, setTelemetry] = useState(true)
   const [haptics, setHaptics] = useState(true)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
@@ -81,7 +81,7 @@ export default function Settings() {
       <Card style={styles.card}>
         <View style={styles.row}>
           <View style={styles.textBlock}>
-            <Text style={styles.label}>Send anonymous telemetry</Text>
+            <Text style={styles.label}>{t('settings.sendAnonymousTelemetry', 'Send anonymous telemetry')}</Text>
             <Text style={styles.description}>Share usage insights to help us improve.</Text>
           </View>
           <Switch value={telemetry} onValueChange={setTelemetryToggle} />
@@ -90,7 +90,7 @@ export default function Settings() {
       <Card style={styles.card}>
         <View style={styles.row}>
           <View style={styles.textBlock}>
-            <Text style={styles.label}>Enable haptics</Text>
+            <Text style={styles.label}>{t('settings.enableHaptics', 'Enable haptics')}</Text>
             <Text style={styles.description}>Vibrate when scans complete successfully.</Text>
           </View>
           <Switch value={haptics} onValueChange={setHapticsToggle} />

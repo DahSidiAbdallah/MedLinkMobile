@@ -8,6 +8,7 @@ import { ListRow } from '../components/ListRow';
 import { Pill } from '../components/Pill';
 import Chip from '../components/Chip';
 import { useDrugInfo } from '../hooks/useDrugInfo';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing, radius, type } from '../theme';
 
 export default function DrugInfo({ navigation }: any) {
@@ -15,6 +16,7 @@ export default function DrugInfo({ navigation }: any) {
   const [query, setQuery] = useState('');
   const [drugInfo, setDrugInfo] = useState<any>(null);
   const [activeFilter, setActiveFilter] = useState('By Name');
+  const { t } = useTranslation();
 
   const handleSearch = async (value?: string) => {
     const text = value ?? query;
@@ -29,7 +31,7 @@ export default function DrugInfo({ navigation }: any) {
 
   const hero = (
     <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-      <Text style={styles.heroTitle}>Medication encyclopedia</Text>
+      <Text style={styles.heroTitle}>{t('drugs.medicationEncyclopedia', 'Medication encyclopedia')}</Text>
       <Text style={styles.heroSubtitle}>Search trusted sources for drug insights, dosage guidance, and risk highlights.</Text>
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color={colors.muted} />
@@ -46,7 +48,7 @@ export default function DrugInfo({ navigation }: any) {
           style={styles.searchAction}
           onPress={() => handleSearch()}
         >
-          <Text style={styles.searchActionText}>Go</Text>
+          <Text style={styles.searchActionText}>{t('common.go', 'Go')}</Text>
         </Pressable>
       </View>
       <View style={styles.filterRow}>
@@ -65,7 +67,7 @@ export default function DrugInfo({ navigation }: any) {
     >
       {suggestions.length > 0 ? (
         <Card style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Suggested matches</Text>
+          <Text style={styles.sectionTitle}>{t('drugs.suggestedMatches', 'Suggested matches')}</Text>
           {suggestions.map(drug => (
             <ListRow
               key={drug}
@@ -85,7 +87,7 @@ export default function DrugInfo({ navigation }: any) {
         <Card style={styles.sectionCard}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>{drugInfo.name}</Text>
-            {drugInfo.warnings && drugInfo.warnings.length > 0 ? <Pill tone="warn">Warning</Pill> : null}
+            {drugInfo.warnings && drugInfo.warnings.length > 0 ? <Pill tone="warn">{t('drugs.warnings', 'Warning')}</Pill> : null}
           </View>
           {drugInfo.description ? <Text style={styles.bodyText}>{drugInfo.description}</Text> : null}
           {drugInfo.dosage ? <Text style={styles.bodyText}>Dosage: {drugInfo.dosage}</Text> : null}
@@ -95,7 +97,7 @@ export default function DrugInfo({ navigation }: any) {
       ) : (
         <Card style={styles.emptyState}>
           <Ionicons name="medical-outline" size={26} color={colors.primary} />
-          <Text style={styles.emptyTitle}>No drug selected</Text>
+          <Text style={styles.emptyTitle}>{t('drugs.noDrugSelected', 'No drug selected')}</Text>
           <Text style={styles.emptyText}>Search to view FDA-backed monographs, interactions, and dosage guides.</Text>
         </Card>
       )}

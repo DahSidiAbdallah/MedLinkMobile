@@ -1,13 +1,14 @@
 import React from 'react';
-import { View, Text, Pressable, Image, StyleSheet, AccessibilityRole } from 'react-native';
+import { View, Text, Pressable, StyleSheet, AccessibilityRole } from 'react-native';
 import { colors, spacing, radius, type } from '../theme';
+import CachedImage from './CachedImage';
 
-export function ListRow(props: Readonly<{ title: string; subtitle?: string; imageUri?: string; right?: React.ReactNode; onPress?: () => void }>) {
+export const ListRow = React.memo(function ListRow(props: Readonly<{ title: string; subtitle?: string; imageUri?: string; right?: React.ReactNode; onPress?: () => void }>) {
   const { title, subtitle, imageUri, right, onPress } = props;
   const a11yLabel = subtitle ? title + ', ' + subtitle : title;
   return (
     <Pressable onPress={onPress} style={s.row} accessibilityRole={'button' as AccessibilityRole} accessibilityLabel={a11yLabel}>
-      {imageUri ? <Image source={{uri:imageUri}} style={s.avatar}/> : <View style={[s.avatar,{backgroundColor: colors.primary + '22'}]}/>}
+      {imageUri ? <CachedImage uri={imageUri} style={s.avatar}/> : <View style={[s.avatar,{backgroundColor: colors.primary + '22'}]}/>}
       <View style={{flex:1}}>
         <Text numberOfLines={1} ellipsizeMode="tail" style={s.title}>{title}</Text>
         {subtitle ? <Text numberOfLines={2} ellipsizeMode="tail" style={s.sub}>{subtitle}</Text> : null}
@@ -15,7 +16,7 @@ export function ListRow(props: Readonly<{ title: string; subtitle?: string; imag
       {right}
     </Pressable>
   );
-}
+});
 
 const s = StyleSheet.create({
   row: {

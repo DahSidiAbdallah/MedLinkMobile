@@ -52,9 +52,9 @@ const Stack = createNativeStackNavigator();
 const getTabIcon = (route: { name: string }, focused: boolean, color: string, size: number) => {
   switch (route.name) {
     case 'Dashboard':
-      return <Ionicons name="home" size={size} color={color} />;
+      return <Ionicons name="home-outline" size={size} color={color} />;
     case 'Reminders':
-      return <Ionicons name="notifications" size={size} color={color} />;
+      return <Ionicons name="notifications-outline" size={size} color={color} />;
     case 'Barcode':
       return (
         <MaterialCommunityIcons
@@ -64,9 +64,9 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
         />
       );
     case 'Clinics':
-      return <Ionicons name="business" size={size} color={color} />;
+      return <Ionicons name="location-outline" size={size} color={color} />;
     case 'UserProfile':
-      return <Ionicons name="person" size={size} color={color} />;
+      return <Ionicons name="person-outline" size={size} color={color} />;
     default:
       return null;
   }
@@ -94,74 +94,79 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         left: 0,
         right: 0,
         bottom: 0,
-        height: totalHeight,
+        backgroundColor: colors.card,
+        borderTopWidth: 1,
+        borderTopColor: colors.line,
         paddingBottom: insets.bottom,
-        backgroundColor: 'transparent',
+        paddingTop: 8,
+        ...Platform.select({
+          ios: {
+            shadowColor: 'rgba(9,30,66,0.08)',
+            shadowOffset: { width: 0, height: -1 },
+            shadowOpacity: 1,
+            shadowRadius: 8,
+          },
+          android: {
+            elevation: 2,
+          },
+          web: {
+            boxShadow: '0 -1px 8px rgba(9,30,66,0.08)',
+          },
+        }),
       }}
       accessibilityElementsHidden={false}
       importantForAccessibility="no-hide-descendants"
     >
       <View
         style={{
-          height: baseHeight,
-          marginHorizontal: 16,
-          borderRadius: 28,
-          backgroundColor: colors.card,
-          borderWidth: Platform.OS === 'web' ? 0 : 1,
-          borderColor: colors.line,
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 18,
-          shadowColor: 'rgba(15,23,42,0.2)',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.14,
-          shadowRadius: 14,
-          elevation: 12,
-          position: 'relative',
-          overflow: 'visible',
-          ...(Platform.OS === 'web'
-            ? ({
-                backdropFilter: 'blur(14px)',
-                backgroundColor: 'rgba(255,255,255,0.92)',
-                boxShadow: '0 16px 36px rgba(37, 99, 235, 0.14)',
-              } as any)
-            : null),
+          justifyContent: 'space-around',
+          height: baseHeight,
+          paddingHorizontal: 8,
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          {state.routes.map((route) => {
-            if (route.name === 'Barcode') {
-              return <View key={`${route.key}-spacer`} style={{ width: fabSize }} />;
-            }
+        {state.routes.map((route) => {
             const isActive = state.routeNames[state.index] === route.name;
             const rawLabel =
               descriptors[route.key]?.options?.tabBarLabel ??
               descriptors[route.key]?.options?.title ??
               route.name;
             const label = typeof rawLabel === 'string' ? rawLabel : route.name;
-            return (
-              <View key={route.key} style={{ flex: 1, alignItems: 'center' }}>
+            
+            if (route.name === 'Barcode') {
+              return (
                 <TouchableOpacity
+                  key={route.key}
                   onPress={() => navigation.navigate(route.name)}
-                  activeOpacity={0.85}
+                  activeOpacity={0.7}
                   style={{
-                    width: '100%',
-                    maxWidth: 110,
+                    flex: 1,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    paddingVertical: compact ? 6 : 8,
-                    paddingHorizontal: 10,
-                    borderRadius: 18,
-                    backgroundColor: isActive ? 'rgba(37,99,235,0.12)' : 'transparent',
-                    ...(Platform.OS === 'web' && !isActive
-                      ? ({ transition: 'all 160ms ease' } as any)
-                      : null),
+                    paddingVertical: 6,
+                    minHeight: 50,
                   }}
                 >
-                  {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, iconSize)}
+                  <View
+                    style={{
+                      backgroundColor: isActive ? colors.primary : colors.mutedLight,
+                      borderRadius: 20,
+                      width: 40,
+                      height: 40,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <MaterialCommunityIcons 
+                      name="barcode-scan" 
+                      size={22} 
+                      color={isActive ? '#fff' : colors.text} 
+                    />
+                  </View>
                   <Text
                     style={{
-                      marginTop: 4,
+                      marginTop: 2,
                       fontSize: labelFont,
                       color: isActive ? colors.primary : colors.muted,
                       fontWeight: isActive ? ('600' as const) : ('500' as const),
@@ -169,54 +174,41 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                     numberOfLines={1}
                     adjustsFontSizeToFit
                   >
-                    {label}
+                    Scan
                   </Text>
                 </TouchableOpacity>
-              </View>
+              );
+            }
+            
+            return (
+              <TouchableOpacity
+                key={route.key}
+                onPress={() => navigation.navigate(route.name)}
+                activeOpacity={0.7}
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 6,
+                  minHeight: 50,
+                }}
+              >
+                {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, iconSize)}
+                <Text
+                  style={{
+                    marginTop: 2,
+                    fontSize: labelFont,
+                    color: isActive ? colors.primary : colors.muted,
+                    fontWeight: isActive ? ('600' as const) : ('500' as const),
+                  }}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
             );
           })}
-        </View>
-
-        {barcodeRoute ? (
-          <View
-            pointerEvents="box-none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: ultraCompact ? -12 : -Math.max(22, fabSize / 2),
-              alignItems: 'center',
-              zIndex: 20,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => navigation.navigate(barcodeRoute.name)}
-              accessibilityRole="button"
-              accessibilityLabel="Open barcode scanner"
-              activeOpacity={0.9}
-              style={{
-                backgroundColor: colors.primary,
-                borderRadius: fabSize / 2,
-                width: fabSize,
-                height: fabSize,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 10 },
-                shadowOpacity: 0.28,
-                shadowRadius: 18,
-                elevation: 16,
-                borderWidth: 4,
-                borderColor: colors.card,
-                ...(Platform.OS === 'web'
-                  ? ({ boxShadow: '0 18px 34px rgba(37,99,235,0.35)' } as any)
-                  : null),
-              }}
-            >
-              <MaterialCommunityIcons name="barcode-scan" size={compact ? 30 : 34} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        ) : null}
       </View>
     </View>
   );
@@ -301,11 +293,35 @@ function AppContent({ showSplash, setShowSplash }: Readonly<{ showSplash: boolea
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setAuthChecked(true);
-    });
-    return unsubscribe;
+    let unsub: any = null;
+    let restored = false;
+    
+    const checkAuth = async () => {
+      try {
+        // First check if we have stored auth
+        const storedAuth = await import('./src/lib/authPersistence').then(m => m.getStoredAuth());
+        
+        unsub = onAuthStateChanged(auth, async (u) => {
+          if (u && !restored) {
+            // User is authenticated, persist the state
+            await import('./src/lib/authPersistence').then(m => m.persistAuth(u));
+            restored = true;
+          } else if (!u) {
+            // User is not authenticated, clear stored auth
+            await import('./src/lib/authPersistence').then(m => m.persistAuth(null));
+          }
+          setUser(u);
+          setAuthChecked(true);
+        });
+      } catch (e) {
+        console.warn('Auth initialization error:', e);
+        setAuthChecked(true);
+      }
+    };
+    
+    checkAuth();
+    
+    return () => unsub?.();
   }, []);
 
   if (!authChecked) {

@@ -15,6 +15,7 @@ import { SegmentedControl } from '../components/SegmentedControl';
 import Chip from '../components/Chip';
 import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
 import ScreenContainer from '../components/ScreenContainer';
+import CachedImage from '../components/CachedImage';
 
 const FILTERS = ['All', 'Clinic', 'Hospital', 'Pharmacy'];
 
@@ -113,18 +114,26 @@ export default function FacilitiesScreen({ navigation }: any) {
 
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
+      <View style={styles.headerSection}>
+        <Text style={styles.screenTitle}>Facilities</Text>
+        <Text style={styles.screenSubtitle}>Find clinics, hospitals & pharmacies</Text>
+      </View>
+
       <Card style={styles.filterCard}>
-        <TextInput
-          placeholder="Search facilities..."
-          value={search}
-          onChangeText={setSearch}
-          style={styles.searchInput}
-          placeholderTextColor={colors.muted}
-        />
+        <View style={styles.searchWrapper}>
+          <Ionicons name="search" size={18} color={colors.muted} />
+          <TextInput
+            placeholder="Search facilities..."
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+            placeholderTextColor={colors.muted}
+          />
+        </View>
         <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
         <View style={styles.chipRow}>
           <Chip label={openNow ? 'Open Now ✓' : 'Open Now'} selected={openNow} onPress={() => setOpenNow(v => !v)} />
-          <Chip label={hasDelivery ? 'Has Delivery ✓' : 'Has Delivery'} selected={hasDelivery} onPress={() => setHasDelivery(v => !v)} />
+          <Chip label={hasDelivery ? 'Delivery ✓' : 'Delivery'} selected={hasDelivery} onPress={() => setHasDelivery(v => !v)} />
         </View>
       </Card>
 
@@ -138,30 +147,42 @@ export default function FacilitiesScreen({ navigation }: any) {
             <ListRow
               title={fac.name}
               subtitle={fac.address || fac.location}
+              imageUri={fac.image}
               right={fac.specialty ? <Pill tone="primary">{fac.specialty}</Pill> : undefined}
               onPress={() => openFacilityModal(fac)}
             />
             {/* Details section */}
             <View style={{ marginTop: 8 }}>
-              {/* Images */}
-              {!!fac.image && (
-                <View style={{ marginBottom: 8, borderRadius: radius.md, overflow: 'hidden', alignSelf: 'flex-start' }}>
-                  <SkeletonImage
-                    source={{ uri: fac.image }}
-                    style={{ width: listImageWidth, height: Math.round(listImageWidth * 0.66), borderRadius: radius.md }}
-                    resizeMode="cover"
-                  />
+              {/* Info badges */}
+              <View style={styles.facilityBadges}>
+                <View style={[styles.facilityBadge, { backgroundColor: 'rgba(37,99,235,0.1)' }]}>
+                  <Text style={[styles.facilityBadgeText, { color: colors.primary }]}>
+                    {fac.type.charAt(0).toUpperCase() + fac.type.slice(1)}
+                  </Text>
                 </View>
-              )}
-              {/* Info */}
-              <Text style={{ color: colors.muted, fontSize: 13 }}>
-                {fac.type.charAt(0).toUpperCase() + fac.type.slice(1)}
-                {fac.rating ? ` · ⭐ ${fac.rating}` : ''}
-                {fac.phoneNumber ? ` · 📞 ${fac.phoneNumber}` : ''}
-                {fac.hours ? ` · 🕒 ${fac.hours}` : ''}
-                {fac.isOpen ? ' · Open Now' : ' · Closed'}
-                {fac.hasDelivery ? ' · 🚴‍♂️ Has Delivery' : ''}
-              </Text>
+                {fac.rating && (
+                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
+                    <Ionicons name="star" size={12} color="#F59E0B" />
+                    <Text style={[styles.facilityBadgeText, { color: '#F59E0B' }]}>{fac.rating}</Text>
+                  </View>
+                )}
+                {fac.isOpen ? (
+                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
+                    <View style={styles.openDot} />
+                    <Text style={[styles.facilityBadgeText, { color: colors.success }]}>Open</Text>
+                  </View>
+                ) : (
+                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                    <Text style={[styles.facilityBadgeText, { color: colors.danger }]}>Closed</Text>
+                  </View>
+                )}
+                {fac.hasDelivery && (
+                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(139,92,246,0.1)' }]}>
+                    <Ionicons name="bicycle" size={12} color="#8B5CF6" />
+                    <Text style={[styles.facilityBadgeText, { color: '#8B5CF6' }]}>Delivery</Text>
+                  </View>
+                )}
+              </View>
               {/* Hours */}
               {fac.hours && (
                 <Text style={{ color: colors.text, fontSize: 13, marginTop: 2 }}>
@@ -265,17 +286,37 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
     paddingBottom: spacing.xxl,
   },
+  headerSection: {
+    marginBottom: spacing.sm,
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  screenSubtitle: {
+    fontSize: 15,
+    color: colors.muted,
+  },
   filterCard: {
     gap: spacing.md,
   },
-  searchInput: {
+  searchWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.line,
+  },
+  searchInput: {
+    flex: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 12,
     fontSize: 16,
+    color: colors.text,
   },
   chipRow: {
     flexDirection: 'row',
@@ -293,6 +334,30 @@ const styles = StyleSheet.create({
   },
   facilityCard: {
     gap: spacing.sm,
+  },
+  facilityBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  facilityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+  },
+  facilityBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  openDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
   },
   loadingContainer: {
     alignItems: 'center',

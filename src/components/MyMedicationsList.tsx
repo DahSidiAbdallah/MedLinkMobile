@@ -42,9 +42,8 @@ export default function MyMedicationsList() {
     setLoading(true);
     getMedications()
       .then(setMedications)
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to load medications:', err);
+      .catch((err) => {
+        // Failed to load medications
       })
       .finally(() => setLoading(false));
   }, []);
