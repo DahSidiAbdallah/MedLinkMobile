@@ -30,6 +30,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
 import Chip from '../components/Chip';
+import { SkeletonHistoryItem } from '../components/Skeleton';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, shadow, radius } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
