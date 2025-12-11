@@ -17,14 +17,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderTopLeftRadius: radius.xl + 4,
+    borderTopRightRadius: radius.xl + 4,
     overflow: 'hidden',
+    maxHeight: '85%',
   },
   gradient: {
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
+    paddingTop: spacing.lg,
+    paddingBottom: 48,
     gap: spacing.md,
   },
   handle: {

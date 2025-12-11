@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SkeletonReminderCard } from '../components/Skeleton';
 import { colors, spacing, shadow, radius } from '../theme';
 import { SegmentedControl } from '../components/SegmentedControl';
 import Card from '../components/Card';
@@ -107,14 +108,29 @@ export default function Reminders() {
 
   let content;
   if (loading) {
-    content = <ActivityIndicator style={{ marginTop: spacing.xl }} color={colors.primary} />;
+    content = (
+      <View style={styles.listContainer}>
+        <SkeletonReminderCard />
+        <SkeletonReminderCard />
+        <SkeletonReminderCard />
+      </View>
+    );
   } else if (error) {
-    content = <Text style={{ color: colors.danger, textAlign: 'center', marginTop: spacing.xl }}>{error}</Text>;
+    content = (
+      <View style={styles.errorContainer}>
+        <Ionicons name="alert-circle-outline" size={40} color={colors.danger} />
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
   } else {
     content = (
       <View style={styles.listContainer}>
         {filtered.length === 0 ? (
-          <Text style={styles.emptyText}>No reminders</Text>
+          <View style={styles.emptyContainer}>
+            <Ionicons name="calendar-outline" size={48} color={colors.mutedLight} />
+            <Text style={styles.emptyTitle}>No reminders</Text>
+            <Text style={styles.emptyHint}>{segment === 'Active' ? 'Add a reminder to get started' : 'No past reminders to show'}</Text>
+          </View>
         ) : null}
         {filtered.map(r => (
           <Card key={r.id} style={styles.reminderCard}>
@@ -348,9 +364,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: colors.glass,
+    backgroundColor: colors.card,
     padding: spacing.xl,
-    borderRadius: radius.xl,
+    borderRadius: radius.xl + 4,
     width: '90%',
     maxWidth: 420,
     ...shadow.card,
@@ -374,5 +390,32 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 13,
     marginBottom: 4,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
+    gap: spacing.sm,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
+    gap: spacing.sm,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: spacing.sm,
+  },
+  emptyHint: {
+    fontSize: 14,
+    color: colors.muted,
+    textAlign: 'center',
   },
 });
