@@ -5,7 +5,7 @@ export type FetchOptions = {
   headers?: Record<string, string>;
 };
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise((res) => setTimeout(res, ms));
 }
 

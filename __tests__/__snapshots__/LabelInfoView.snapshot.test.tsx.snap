@@ -1,0 +1,411 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LabelInfoView snapshot renders truncated and expanded blocks 1`] = `
+<View>
+  <View
+    style={
+      {
+        "marginTop": 6,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#2563EB",
+          "fontWeight": "bold",
+        }
+      }
+    >
+      Indications & Usage
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#0F172A",
+        }
+      }
+    >
+      Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+      …
+    </Text>
+    <View
+      accessibilityLabel="Read more about Indications & Usage"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "marginTop": 6,
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#2563EB",
+            "fontWeight": "600",
+          }
+        }
+      >
+        Read more
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "marginTop": 6,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#2563EB",
+          "fontWeight": "bold",
+        }
+      }
+    >
+      Dosage & Administration
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#0F172A",
+        }
+      }
+    >
+      Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+      …
+    </Text>
+    <View
+      accessibilityLabel="Read more about Dosage & Administration"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "marginTop": 6,
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#2563EB",
+            "fontWeight": "600",
+          }
+        }
+      >
+        Read more
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "marginTop": 6,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#2563EB",
+          "fontWeight": "bold",
+        }
+      }
+    >
+      Adverse Reactions
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#0F172A",
+        }
+      }
+    >
+      Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+Line
+      …
+    </Text>
+    <View
+      accessibilityLabel="Read more about Adverse Reactions"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "marginTop": 6,
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#2563EB",
+            "fontWeight": "600",
+          }
+        }
+      >
+        Read more
+      </Text>
+    </View>
+  </View>
+</View>
+`;

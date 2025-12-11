@@ -1,4 +1,8 @@
 import 'react-native-gesture-handler';
+import 'react-native-reanimated';
+
+console.log('[entry] index.ts loaded');
+
 import { registerRootComponent } from 'expo';
 
 // Guard the App import so module-eval failures don't prevent AppRegistry from
