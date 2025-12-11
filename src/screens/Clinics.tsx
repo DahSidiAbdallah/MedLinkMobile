@@ -1,7 +1,9 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage, StyleSheet, RefreshControl } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
+import { SkeletonFacilityCard, Skeleton } from '../components/Skeleton';
+import { Ionicons } from '@expo/vector-icons';
 import type { Facility } from '../types';
 import { colors, spacing, radius, shadow } from '../theme';
 import Card from '../components/Card';
@@ -173,17 +175,23 @@ export default function FacilitiesScreen({ navigation }: any) {
 
       {loading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.stateText}>Loading facilities...</Text>
+          <SkeletonFacilityCard />
+          <SkeletonFacilityCard />
+          <SkeletonFacilityCard />
         </View>
       )}
       {error && (
         <View style={styles.errorContainer}>
-          <Text style={[styles.stateText, { color: colors.danger }]}>{error}</Text>
+          <Ionicons name="alert-circle-outline" size={40} color={colors.danger} />
+          <Text style={[styles.stateText, { color: colors.danger, marginTop: spacing.sm }]}>{error}</Text>
         </View>
       )}
       {filtered.length === 0 && !loading && !error && (
-        <Text style={styles.stateText}>No facilities found.</Text>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="business-outline" size={48} color={colors.mutedLight} />
+          <Text style={styles.emptyTitle}>No facilities found</Text>
+          <Text style={styles.emptyHint}>Try adjusting your filters or search</Text>
+        </View>
       )}
 
       <Modal
@@ -277,6 +285,8 @@ const styles = StyleSheet.create({
   mapCard: {
     padding: 0,
     overflow: 'hidden',
+    minHeight: 220,
+    borderRadius: radius.lg,
   },
   list: {
     gap: spacing.lg,
@@ -303,11 +313,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: colors.glass,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xl + 4,
+    borderTopRightRadius: radius.xl + 4,
     padding: spacing.xl,
-    paddingBottom: 40,
+    paddingBottom: 48,
+    maxHeight: '85%',
     ...shadow.card,
   },
   modalHeader: {
@@ -322,4 +333,20 @@ const styles = StyleSheet.create({
   modalName: { fontSize: 20, fontWeight: '700', color: colors.text },
   modalSubtitle: { color: colors.muted, marginTop: 4 },
   modalDetail: { color: colors.text, fontSize: 15 },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
+    gap: spacing.sm,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: spacing.sm,
+  },
+  emptyHint: {
+    fontSize: 14,
+    color: colors.muted,
+    textAlign: 'center',
+  },
 });

@@ -182,9 +182,10 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
             pointerEvents="box-none"
             style={{
               position: 'absolute',
-              left: '50%',
+              left: 0,
+              right: 0,
               top: ultraCompact ? -12 : -Math.max(22, fabSize / 2),
-              marginLeft: -(fabSize / 2),
+              alignItems: 'center',
               zIndex: 20,
             }}
           >

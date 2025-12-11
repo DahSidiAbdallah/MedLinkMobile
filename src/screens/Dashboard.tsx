@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, ActivityIndicator, ScrollView, Linking, Platform, Image as RNImage, TextInput } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Linking, Platform, Image as RNImage, TextInput, Animated, ActivityIndicator } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
+import { SkeletonReminderCard, Skeleton } from '../components/Skeleton';
 import { useLoading } from '../hooks/LoadingContext';
 import { fetchUserProfile, type Profile } from '../core/userProfile';
 import { facilities } from '../data';
 import type { Facility } from '../types';
-// Helper to sort by distance (if user location available, replace with real calculation)
 function sortByDistance(facilities: Facility[]): Facility[] {
   return facilities.slice().sort((a: Facility, b: Facility) => {
     const da = parseFloat((a.distance || '').replace(/[^\d.]/g, ''));
@@ -17,7 +17,6 @@ import { useReminders } from '../hooks/useReminders';
 import NotificationBell from '../notifications/NotificationBell';
 import NotificationsSheet from '../notifications/NotificationsSheet';
 const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
-// Expo’s gradient works on web, iOS, and Android
 import { LinearGradient } from 'expo-linear-gradient';
 import ScreenContainer from '../components/ScreenContainer';
 import MyMedicationsList from '../components/MyMedicationsList';
@@ -38,14 +37,32 @@ export default function Dashboard({ navigation }: any) {
   const _prefetched = useRef(new Set<string>());
   const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
 
-  // Render reminders via a small helper to avoid nested ternaries
   const renderReminders = () => {
-    if (remindersLoading) return <ActivityIndicator color={colors.primary} />;
+    if (remindersLoading) {
+      return (
+        <View style={{ gap: spacing.md }}>
+          <SkeletonReminderCard />
+          <SkeletonReminderCard />
+        </View>
+      );
+    }
     if (remindersError) return <Text style={{ color: colors.danger }}>{remindersError}</Text>;
     const activeReminders = reminders?.filter(r => r.active) ?? [];
-    if (activeReminders.length === 0) return <Text style={{ color: colors.muted }}>No reminders found.</Text>;
+    if (activeReminders.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons name="notifications-off-outline" size={32} color={colors.mutedLight} />
+          <Text style={styles.emptyStateText}>No active reminders</Text>
+          <Text style={styles.emptyStateHint}>Add reminders to track your medications</Text>
+        </View>
+      );
+    }
     return activeReminders.map(rem => (
-      <View key={rem.id} style={styles.reminderCard}>
+      <Pressable 
+        key={rem.id} 
+        style={({ pressed }) => [styles.reminderCard, pressed && styles.reminderCardPressed]}
+        onPress={() => navigation.navigate('Reminders')}
+      >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={styles.reminderTitle}>{rem.title}</Text>
           <View style={styles.reminderBadge}>
@@ -54,7 +71,7 @@ export default function Dashboard({ navigation }: any) {
         </View>
         <Text style={styles.reminderMeta}>{rem.datetime}</Text>
         {rem.description ? <Text style={styles.reminderDescription}>{rem.description}</Text> : null}
-      </View>
+      </Pressable>
     ));
   };
 
@@ -408,19 +425,21 @@ const styles = StyleSheet.create({
   notifications: {},
   modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   facilityModalSheet: {
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderTopLeftRadius: radius.xl + 4,
+    borderTopRightRadius: radius.xl + 4,
     padding: spacing.xl,
-    paddingBottom: 40,
-    backgroundColor: colors.glass,
+    paddingBottom: 48,
+    backgroundColor: colors.card,
+    maxHeight: '85%',
     ...shadow.card,
   },
   profileSheet: {
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    borderTopLeftRadius: radius.xl + 4,
+    borderTopRightRadius: radius.xl + 4,
     padding: spacing.xl,
-    paddingBottom: 40,
-    backgroundColor: colors.glass,
+    paddingBottom: 48,
+    backgroundColor: colors.card,
+    maxHeight: '85%',
     ...shadow.card,
   },
   modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
@@ -463,4 +482,23 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   reminderBadgeText: { color: colors.primary, fontWeight: '600', fontSize: 12 },
+  reminderCardPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    gap: spacing.sm,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  emptyStateHint: {
+    fontSize: 13,
+    color: colors.muted,
+    textAlign: 'center',
+  },
 });
