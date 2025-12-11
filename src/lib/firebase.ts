@@ -1,19 +1,19 @@
-
 import { initializeApp } from 'firebase/app';
-import { getAuth, initializeAuth } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Only import these in native environments
+// Try to import React Native persistence
+let initializeAuth: any = null;
 let getReactNativePersistence: any = null;
-let ReactNativeAsyncStorage: any = null;
-const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
-if (!isWeb) {
-  try {
-    getReactNativePersistence = require('firebase/auth/react-native').getReactNativePersistence;
-    ReactNativeAsyncStorage = require('@react-native-async-storage/async-storage').default;
-  } catch (e) {
-    // Module not found: will use getAuth for Expo Go/web environments
-  }
+try {
+  // @ts-ignore - Dynamic import for React Native persistence
+  const authRN = require('@firebase/auth/react-native');
+  initializeAuth = authRN.initializeAuth;
+  getReactNativePersistence = authRN.getReactNativePersistence;
+} catch (e) {
+  // Fallback to web auth
+  console.log('React Native auth persistence not available, using web auth:', e);
 }
 
 const firebaseConfig = {
@@ -25,15 +25,15 @@ const firebaseConfig = {
   appId: "1:760537272144:web:cd01a3d21e9bdd98156655"
 };
 
-
-
-
 const app = initializeApp(firebaseConfig);
-const auth = (!isWeb && getReactNativePersistence && ReactNativeAsyncStorage)
+
+// Initialize auth with React Native persistence if available
+const auth = (initializeAuth && getReactNativePersistence)
   ? initializeAuth(app, {
-      persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+      persistence: getReactNativePersistence(AsyncStorage)
     })
   : getAuth(app);
+
 const db = getFirestore(app);
 
 // Optional: connect to Firestore emulator when running locally and the flag is set.

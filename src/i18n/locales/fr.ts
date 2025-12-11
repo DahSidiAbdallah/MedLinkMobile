@@ -123,13 +123,18 @@ export default {
   noAccount: "Vous n'avez pas de compte ?",
       signInHere: 'Connectez-vous ici',
       signUpHere: 'Inscrivez-vous ici',
-      signInButton: 'Se connecter',
-      signUpButton: "S'inscrire",
       forgotPassword: 'Mot de passe oublié ?',
       forgotPasswordNotImplemented: 'La réinitialisation du mot de passe n\'est pas encore implémentée',
       userAlreadyExists: 'Un utilisateur avec cet e-mail existe déjà',
       emailRateLimit: 'Trop de demandes, veuillez réessayer plus tard',
-      signUpSuccessMessage: 'Compte créé avec succès ! Veuillez vérifier votre e-mail pour vérifier votre compte.'
+      healthBasics: 'Bases de la santé',
+      byContinuing: 'En continuant, vous acceptez nos',
+      terms: 'Conditions',
+      privacyPolicy: 'Politique de confidentialité',
+      resetPassword: 'Réinitialiser le mot de passe',
+      sendLink: 'Envoyer le lien',
+      signInButton: 'Connexion',
+      signUpButton: 'Créer un compte',
     },
     calendar: {
       today: 'Aujourd\'hui',
@@ -175,7 +180,8 @@ export default {
       accountTab: 'Compte',
       accountManagement: 'Gestion du compte',
       confirmDeleteTitle: 'Confirmer la suppression du compte',
-      confirmDeleteMessage: 'Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.'
+      sendAnonymousTelemetry: 'Envoyer des télémétries anonymes',
+      enableHaptics: 'Activer les haptiques',
     },
     profile: {
       title: 'Profil',
@@ -373,7 +379,9 @@ export default {
       verificationScore: 'Score de vérification',
       match: 'Correspondance',
       clear: 'Effacer',
-      loadingVerification: 'Chargement des données de vérification...'
+      medicationEncyclopedia: 'Encyclopédie des médicaments',
+      suggestedMatches: 'Correspondances suggérées',
+      noDrugSelected: 'Aucun médicament sélectionné',
     },
     validation: {
       required: 'Requis',

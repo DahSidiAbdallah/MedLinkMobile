@@ -1,44 +1,67 @@
 export const colors = {
-  primary: '#2563EB',
-  primary700: '#1E3A8A',
-  primary600: '#1D4ED8',
-  primary500: '#3B82F6',
-  primary400: '#60A5FA',
-  primary100: '#DBEAFE',
-  accent: '#2DD4BF',
-  secondary: '#7C3AED',
-  secondary100: '#EDE9FE',
-  warn: '#F59E0B',
-  warn100: '#FEF3C7',
-  danger: '#EF4444',
-  danger100: '#FEE2E2',
-  success: '#16A34A',
-  success100: '#DCFCE7',
-  bg: '#F8FAFC',
+  // Primary - Clean blue
+  primary: '#0066FF',
+  primary700: '#0052CC',
+  primary600: '#005CE6',
+  primary500: '#0066FF',
+  primary400: '#3385FF',
+  primary100: '#E6F0FF',
+  
+  // Accent colors - Flat and modern
+  accent: '#00C48C',
+  secondary: '#6B4EFF',
+  secondary100: '#F0EDFF',
+  
+  // Status colors - Flat
+  warn: '#FFB020',
+  warn100: '#FFF4E0',
+  danger: '#FF4757',
+  danger100: '#FFE8EA',
+  success: '#00C48C',
+  success100: '#E0FFF6',
+  
+  // Backgrounds - Clean whites and grays
+  bg: '#FAFBFC',
   card: '#FFFFFF',
-  surface: '#F1F5F9',
+  surface: '#F4F5F7',
+  
+  // Text - High contrast (WCAG AA compliant)
   text: '#0F172A',
   textSecondary: '#334155',
-  muted: '#64748B',
-  mutedLight: '#94A3B8',
-  line: '#E2E8F0',
-  lineDark: '#CBD5E1',
-  overlay: 'rgba(15,23,42,0.4)',
-  overlayLight: 'rgba(15,23,42,0.12)',
-  glass: 'rgba(255,255,255,0.85)',
-  glassLight: 'rgba(255,255,255,0.6)',
-  chipBg: '#EFF6FF',
-  chipText: '#1E40AF',
-  progressTrack: '#E2E8F0',
-  progressFill: '#2563EB',
-  skeleton: '#E2E8F0',
-  skeletonHighlight: '#F1F5F9',
-  primaryGradient: ['#2563EB', '#7C3AED'] as const,
-  accentGradient: ['#10B981', '#06B6D4'] as const,
-  cardGradient: ['rgba(37,99,235,0.08)', 'rgba(124,58,237,0.05)'] as const,
-  subtleGradient: ['#FFFFFF', '#F8FAFC'] as const,
-  warmGradient: ['#F59E0B', '#EF4444'] as const,
-  coolGradient: ['#06B6D4', '#8B5CF6'] as const,
+  muted: '#475569',
+  mutedLight: '#64748B',
+  
+  // Lines and borders
+  line: '#EBECF0',
+  lineDark: '#DFE1E6',
+  
+  // Overlays
+  overlay: 'rgba(9,30,66,0.54)',
+  overlayLight: 'rgba(9,30,66,0.08)',
+  glass: 'rgba(255,255,255,0.95)',
+  glassLight: 'rgba(255,255,255,0.8)',
+  
+  // Chips - Better contrast
+  chipBg: '#F1F5F9',
+  chipText: '#334155',
+  chipBgActive: '#E6F0FF',
+  chipTextActive: '#0066FF',
+  
+  // Progress
+  progressTrack: '#EBECF0',
+  progressFill: '#0066FF',
+  
+  // Skeleton
+  skeleton: '#F4F5F7',
+  skeletonHighlight: '#FAFBFC',
+  
+  // Gradients - Subtle, not flashy
+  primaryGradient: ['#0066FF', '#0052CC'] as const,
+  accentGradient: ['#00C48C', '#00A878'] as const,
+  cardGradient: ['#FFFFFF', '#FAFBFC'] as const,
+  subtleGradient: ['#FFFFFF', '#FAFBFC'] as const,
+  warmGradient: ['#FFB020', '#FF8B00'] as const,
+  coolGradient: ['#00C48C', '#0066FF'] as const,
 };
 
 export const radius = { xs: 8, md: 12, lg: 16, xl: 22, pill: 999 };
@@ -49,33 +72,41 @@ export const radius = { xs: 8, md: 12, lg: 16, xl: 22, pill: 999 };
 export const spacing = { xs: 6, sm: 8, md: 12, lg: 16, xl: 22, xxl: 30 };
 
 export const shadow = {
+  // Flat, subtle shadows for modern look
   card: {
-    elevation: 8,
-    shadowColor: 'rgba(15,23,42,0.15)',
+    elevation: 2,
+    shadowColor: 'rgba(9,30,66,0.08)',
     shadowOpacity: 1,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
   },
   soft: {
-    elevation: 4,
-    shadowColor: 'rgba(15,23,42,0.1)',
+    elevation: 1,
+    shadowColor: 'rgba(9,30,66,0.06)',
     shadowOpacity: 1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  glow: {
+    elevation: 4,
+    shadowColor: '#0066FF',
+    shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
-  glow: {
-    elevation: 12,
-    shadowColor: '#2563EB',
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-  },
   subtle: {
-    elevation: 2,
-    shadowColor: 'rgba(15,23,42,0.08)',
+    elevation: 1,
+    shadowColor: 'rgba(9,30,66,0.04)',
     shadowOpacity: 1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  none: {
+    elevation: 0,
+    shadowColor: 'transparent',
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
   },
 };
 

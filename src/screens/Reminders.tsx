@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { SkeletonReminderCard } from '../components/Skeleton';
 import { colors, spacing, shadow, radius } from '../theme';
 import { SegmentedControl } from '../components/SegmentedControl';
@@ -14,6 +15,7 @@ import { getTodayStats, setCompleted, getDayCompletion } from '../core/completio
 import ScreenContainer from '../components/ScreenContainer';
 
 export default function Reminders() {
+  const { t } = useTranslation();
   const [segment, setSegment] = useState('Active');
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({ title: '', datetime: '', frequency: '', description: '' });
@@ -42,9 +44,6 @@ export default function Reminders() {
       setToggleMsg(prev => ({ ...prev, [reminder.id]: reminder.active ? 'Reminder turned off.' : 'Reminder activated.' }));
       refresh();
     } catch (e) {
-      // Log error for diagnostics
-      // eslint-disable-next-line no-console
-      console.error('Failed to toggle reminder', e);
       setToggleMsg(prev => ({ ...prev, [reminder.id]: 'Failed to update reminder.' }));
     } finally {
       setToggling(prev => ({ ...prev, [reminder.id]: false }));
@@ -128,26 +127,45 @@ export default function Reminders() {
         {filtered.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="calendar-outline" size={48} color={colors.mutedLight} />
-            <Text style={styles.emptyTitle}>No reminders</Text>
+            <Text style={styles.emptyTitle}>{t('reminders.noReminders', 'No reminders')}</Text>
             <Text style={styles.emptyHint}>{segment === 'Active' ? 'Add a reminder to get started' : 'No past reminders to show'}</Text>
           </View>
         ) : null}
         {filtered.map(r => (
           <Card key={r.id} style={styles.reminderCard}>
-            <ListRow
-              title={r.title}
-              subtitle={r.frequency ? `${r.datetime} • ${r.frequency}` : r.datetime}
-              right={
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Switch
-                    value={r.active}
-                    onValueChange={() => toggleActive(r)}
-                    disabled={!!toggling[r.id]}
-                  />
-                  {toggling[r.id] && <ActivityIndicator size={16} color={colors.primary} />}
+            <View style={styles.reminderHeader}>
+              <View style={[styles.reminderIcon, r.type === 'checkup' ? styles.reminderIconCheckup : styles.reminderIconMed]}>
+                <Ionicons 
+                  name={r.type === 'checkup' ? 'calendar' : 'medical'} 
+                  size={18} 
+                  color={r.type === 'checkup' ? '#8B5CF6' : colors.primary} 
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.reminderTitle}>{r.title}</Text>
+                <View style={styles.reminderMeta}>
+                  <Ionicons name="time-outline" size={12} color={colors.muted} />
+                  <Text style={styles.reminderMetaText}>{r.datetime}</Text>
+                  {r.frequency && (
+                    <>
+                      <View style={styles.metaDot} />
+                      <Ionicons name="repeat" size={12} color={colors.muted} />
+                      <Text style={styles.reminderMetaText}>{r.frequency}</Text>
+                    </>
+                  )}
                 </View>
-              }
-            />
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Switch
+                  value={r.active}
+                  onValueChange={() => toggleActive(r)}
+                  disabled={!!toggling[r.id]}
+                  trackColor={{ false: colors.line, true: colors.primary400 }}
+                  thumbColor={r.active ? colors.primary : colors.surface}
+                />
+                {toggling[r.id] && <ActivityIndicator size={16} color={colors.primary} />}
+              </View>
+            </View>
             {r.description ? (
               <Text style={styles.description}>{r.description}</Text>
             ) : null}
@@ -156,8 +174,13 @@ export default function Reminders() {
                 onPress={() => toggleDoneToday(r.id)}
                 style={[styles.doneButton, doneMap[r.id] && styles.doneButtonActive]}
               >
+                <Ionicons 
+                  name={doneMap[r.id] ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+                  size={18} 
+                  color={doneMap[r.id] ? '#fff' : colors.primary} 
+                />
                 <Text style={[styles.doneButtonText, doneMap[r.id] && styles.doneButtonTextActive]}>
-                  {doneMap[r.id] ? 'Done today' : 'Mark done today'}
+                  {doneMap[r.id] ? 'Completed' : 'Mark as done'}
                 </Text>
               </Pressable>
             </View>
@@ -172,24 +195,32 @@ export default function Reminders() {
 
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
-      <Card style={styles.headerCard}>
+      <View style={styles.headerSection}>
+        <Text style={styles.screenTitle}>{t('reminders.title', 'Reminders')}</Text>
+        <Text style={styles.screenSubtitle}>{t('reminders.manageMedicationSchedule', 'Manage your medication schedule')}</Text>
+      </View>
+
+      <Card style={styles.statsCard}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{filtered.length}</Text>
+          <Text style={styles.statLabel}>{t('calendar.today', 'Today')}</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{completedCount}</Text>
+          <Text style={styles.statLabel}>{t('dashboard.completedToday', 'Completed today')}</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{filtered.length - completedCount}</Text>
+          <Text style={styles.statLabel}>{t('dashboard.pendingReminders', 'Pending reminders')}</Text>
+        </View>
+      </Card>
+
+      <Card style={styles.filterCard}>
         <SegmentedControl options={['Active', 'Past']} value={segment} onChange={setSegment} />
         <View style={styles.calendarWrap}>
           <CalendarStrip value={selectedDate} onChange={setSelectedDate} />
-        </View>
-        <View style={styles.filterRow}>
-          <Chip label="Active" selected={segment === 'Active'} onPress={() => setSegment('Active')} />
-          <Chip label="Past" selected={segment === 'Past'} onPress={() => setSegment('Past')} />
-        </View>
-        <View style={styles.summaryRow}>
-          <View>
-            <Text style={styles.summaryLabel}>Reminders today</Text>
-            <Text style={styles.summaryValue}>{filtered.length}</Text>
-          </View>
-          <View>
-            <Text style={styles.summaryLabel}>Completed</Text>
-            <Text style={styles.summaryValue}>{completedCount}</Text>
-          </View>
         </View>
       </Card>
 
@@ -197,7 +228,7 @@ export default function Reminders() {
 
       <Pressable style={styles.addButton} android_ripple={{ color: colors.primary600 }} onPress={() => setModalVisible(true)}>
         <Ionicons name="add" size={22} color="#fff" />
-        <Text style={styles.addButtonText}>Add reminder</Text>
+        <Text style={styles.addButtonText}>{t('reminders.create', 'Create Reminder')}</Text>
       </Pressable>
 
       <Modal
@@ -208,7 +239,7 @@ export default function Reminders() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={[{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }]}>Add Reminder</Text>
+            <Text style={[{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }]}>{t('reminders.create', 'Create Reminder')}</Text>
             <TextInput
               style={[styles.input, formErrors.title && { borderColor: colors.danger }]}
               placeholder="Title"
@@ -268,7 +299,7 @@ export default function Reminders() {
                 {creating ? (
                   <ActivityIndicator color={colors.card} size="small" />
                 ) : (
-                  <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>Save</Text>
+                  <Text style={{ color: colors.card, fontWeight: 'bold', textAlign: 'center' }}>{t('common.save', 'Save')}</Text>
                 )}
               </Pressable>
               <Pressable
@@ -276,7 +307,7 @@ export default function Reminders() {
                 onPress={() => setModalVisible(false)}
                 disabled={creating}
               >
-                <Text style={{ color: colors.primary, fontWeight: 'bold', textAlign: 'center' }}>Cancel</Text>
+                <Text style={{ color: colors.primary, fontWeight: 'bold', textAlign: 'center' }}>{t('common.cancel', 'Cancel')}</Text>
               </Pressable>
             </View>
           </View>
@@ -291,19 +322,46 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
     paddingBottom: spacing.xxl,
   },
-  headerCard: {
+  headerSection: {
+    marginBottom: spacing.sm,
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  screenSubtitle: {
+    fontSize: 15,
+    color: colors.muted,
+  },
+  statsCard: {
+    flexDirection: 'row',
+    paddingVertical: spacing.lg,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.line,
+    marginHorizontal: spacing.md,
+  },
+  filterCard: {
     gap: spacing.md,
   },
   calendarWrap: {
-    marginTop: spacing.sm,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginTop: spacing.md,
   },
   summaryLabel: { color: colors.muted, fontSize: 13 },
@@ -319,9 +377,50 @@ const styles = StyleSheet.create({
   reminderCard: {
     gap: spacing.sm,
   },
+  reminderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  reminderIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reminderIconMed: {
+    backgroundColor: 'rgba(37,99,235,0.12)',
+  },
+  reminderIconCheckup: {
+    backgroundColor: 'rgba(139,92,246,0.12)',
+  },
+  reminderTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  reminderMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  reminderMetaText: {
+    fontSize: 13,
+    color: colors.muted,
+  },
+  metaDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.muted,
+    marginHorizontal: 4,
+  },
   description: {
     color: colors.muted,
-    marginLeft: spacing.lg,
+    marginLeft: 52,
+    fontSize: 14,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -329,12 +428,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   doneButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: colors.glass,
+    backgroundColor: 'rgba(37,99,235,0.08)',
   },
   doneButtonActive: {
     backgroundColor: colors.primary,

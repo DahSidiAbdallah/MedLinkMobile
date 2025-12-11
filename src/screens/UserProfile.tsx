@@ -14,7 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { signOut } from 'firebase/auth';
+import { signOutCompletely } from '../lib/authPersistence';
 import SkeletonImage from '../components/SkeletonImage';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
@@ -54,6 +54,78 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerSection: {
+    marginBottom: spacing.sm,
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  screenSubtitle: {
+    fontSize: 15,
+    color: colors.muted,
+  },
+  profileCard: {
+    gap: spacing.lg,
+    paddingVertical: spacing.lg,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  avatar: {
+    backgroundColor: colors.surface,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  profilePhone: {
+    fontSize: 14,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  healthStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  healthStat: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 2,
+  },
   hero: {
     borderBottomLeftRadius: radius.xl + 6,
     borderBottomRightRadius: radius.xl + 6,
@@ -65,37 +137,30 @@ const styles = StyleSheet.create({
   heroTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.lg,
+    gap: spacing.md,
   },
-  heroName: {
-    ...type.h1,
-    color: '#fff',
-  },
-  heroMeta: {
-    color: 'rgba(255,255,255,0.78)',
-    marginTop: 2,
-  },
+  heroName: { fontSize: 24, fontWeight: '700', color: '#fff' },
+  heroMeta: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
   heroStats: {
     flexDirection: 'row',
-    gap: spacing.lg,
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
   },
   statPill: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
   },
-  statText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
+  statText: { fontSize: 13, fontWeight: '600', color: '#fff' },
   quickActions: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: spacing.sm,
   },
   quickButton: {
@@ -279,7 +344,7 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
           onPress: () => {
             (async () => {
               try {
-                await signOut(auth);
+                await signOutCompletely();
                 if (onLogout) onLogout();
               } catch (error: any) {
                 Alert.alert(t('common.error', 'Error'), error.message || t('errors.logoutError', 'Failed to log out.'));
@@ -400,43 +465,56 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
       <ScreenContainer
         scrollable
         contentContainerStyle={styles.content}
-        header={(
-          <LinearGradient
-            colors={colors.primaryGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.hero}
-          >
-            <View style={styles.heroTop}>
-              <SkeletonImage
-                source={heroAvatar}
-                style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2, backgroundColor: colors.line }}
-                resizeMode="cover"
-              />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.heroName}>{profile.name}</Text>
-                <Text style={styles.heroMeta}>{profile.email}</Text>
-                {profile.phone ? <Text style={styles.heroMeta}>{profile.phone}</Text> : null}
-              </View>
-            </View>
-            <View style={styles.heroStats}>
-              <View style={styles.statPill}>
-                <Ionicons name="water-outline" size={16} color="#fff" />
-                <Text style={styles.statText}>{profile.blood_type || t('common.notSet', 'Not set')}</Text>
-              </View>
-              <View style={styles.statPill}>
-                <Ionicons name="flask-outline" size={16} color="#fff" />
-                <Text style={styles.statText}>{(profile.allergies || []).length} {t('auth.allergies', 'Allergies')}</Text>
-              </View>
-              <View style={styles.statPill}>
-                <Ionicons name="bandage-outline" size={16} color="#fff" />
-                <Text style={styles.statText}>{(profile.medical_conditions || []).length} {t('auth.medicalConditions', 'Conditions')}</Text>
-              </View>
-            </View>
-            <View style={styles.quickActions}>{quickActions.map(renderActionButton)}</View>
-          </LinearGradient>
-        )}
       >
+        <View style={styles.headerSection}>
+          <Text style={styles.screenTitle}>{t('profile.title', 'Profile')}</Text>
+          <Text style={styles.screenSubtitle}>{t('profile.manageHealthInfo', 'Manage your health information')}</Text>
+        </View>
+
+        <Card style={styles.profileCard}>
+          <View style={styles.profileHeader}>
+            <SkeletonImage
+              source={heroAvatar}
+              style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]}
+              resizeMode="cover"
+            />
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{profile.name}</Text>
+              <Text style={styles.profileEmail}>{profile.email}</Text>
+              {profile.phone ? <Text style={styles.profilePhone}>{profile.phone}</Text> : null}
+            </View>
+          </View>
+          
+          <View style={styles.healthStats}>
+            <View style={styles.healthStat}>
+              <View style={[styles.statIcon, { backgroundColor: colors.primary100 }]}>
+                <Ionicons name="water-outline" size={18} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={styles.statValue}>{profile.blood_type || 'Not set'}</Text>
+                <Text style={styles.statLabel}>{t('auth.bloodType', 'Blood Type')}</Text>
+              </View>
+            </View>
+            <View style={styles.healthStat}>
+              <View style={[styles.statIcon, { backgroundColor: colors.warn100 }]}>
+                <Ionicons name="flask-outline" size={18} color={colors.warn} />
+              </View>
+              <View>
+                <Text style={styles.statValue}>{(profile.allergies || []).length}</Text>
+                <Text style={styles.statLabel}>{t('auth.allergies', 'Allergies')}</Text>
+              </View>
+            </View>
+            <View style={styles.healthStat}>
+              <View style={[styles.statIcon, { backgroundColor: colors.success100 }]}>
+                <Ionicons name="bandage-outline" size={18} color={colors.success} />
+              </View>
+              <View>
+                <Text style={styles.statValue}>{(profile.medical_conditions || []).length}</Text>
+                <Text style={styles.statLabel}>{t('auth.medicalConditions', 'Medical Conditions')}</Text>
+              </View>
+            </View>
+          </View>
+        </Card>
         <Card style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>{t('profile.healthSummary', 'Health summary')}</Text>
           <Text style={styles.sectionHint}>{t('profile.healthSummaryHint', 'Review and keep your medical data up to date.')}</Text>

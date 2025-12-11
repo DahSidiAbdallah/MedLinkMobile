@@ -44,6 +44,8 @@ export interface Reminder {
   instructions: string;
   refillDate?: string;
   prescriptionImage?: string;
+  createdAt?: Date | any;
+  user_id?: string;
 }
 
 
