@@ -32,7 +32,7 @@ const sizeStyles = {
   md: { paddingVertical: 10, paddingHorizontal: 18, fontSize: 14, iconSize: 16 },
 };
 
-export default function Chip({ 
+export default React.memo(function Chip({ 
   label, 
   onPress, 
   selected, 
@@ -113,7 +113,7 @@ export default function Chip({
       </View>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   chip: {

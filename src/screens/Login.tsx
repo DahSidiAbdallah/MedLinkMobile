@@ -21,6 +21,7 @@ import Card from '../components/Card';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { auth, db } from '../lib/firebase';
 import { colors, spacing, type, radius } from '../theme';
+import { useTranslation } from 'react-i18next';
 
 type LoginProps = { navigation?: any; onLogin?: () => void };
 
@@ -50,6 +51,7 @@ const STEPS: { key: StepKey; label: string }[] = [
 ];
 
 export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -275,7 +277,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
         <Text style={styles.forgotText}>Forgot password?</Text>
       </Pressable>
       <Pressable style={[styles.primaryButton, loading && styles.disabled]} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Login</Text>}
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>{t('auth.signInButton', 'Login')}</Text>}
       </Pressable>
     </>
   );
@@ -338,7 +340,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           if (validateAccountStep()) setRegisterStep(1);
         }}
       >
-        <Text style={styles.primaryButtonText}>Next</Text>
+        <Text style={styles.primaryButtonText}>{t('common.next', 'Next')}</Text>
       </Pressable>
     </>
   );
@@ -392,7 +394,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
       })}
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Health basics</Text>
+        <Text style={styles.sectionTitle}>{t('auth.healthBasics', 'Health basics')}</Text>
         {healthErrors.bloodType ? <Text style={styles.errorText}>{healthErrors.bloodType}</Text> : null}
       </View>
       <BloodTypePicker value={bloodType} onChange={setBloodType} />
@@ -471,7 +473,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
       </View>
 
       <Pressable style={[styles.primaryButton, loading && styles.disabled]} onPress={handleRegister} disabled={loading}>
-        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Create account</Text>}
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>{t('auth.signUpButton', 'Create account')}</Text>}
       </Pressable>
     </>
   );
@@ -532,7 +534,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
                 </View>
                 {registerStep === 1 ? (
                   <Pressable style={styles.secondaryButton} onPress={() => setRegisterStep(0)}>
-                    <Text style={styles.secondaryText}>Back</Text>
+                    <Text style={styles.secondaryText}>{t('common.back', 'Back')}</Text>
                   </Pressable>
                 ) : null}
               </>
@@ -545,7 +547,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
 
       <View style={styles.footerHint}>
         <Text style={styles.footerText}>
-          By continuing you agree to our <Text style={styles.footerLink}>Terms</Text> and <Text style={styles.footerLink}>Privacy Policy</Text>.
+          {t('auth.byContinuing', 'By continuing you agree to our')} <Text style={styles.footerLink}>{t('auth.terms', 'Terms')}</Text> {t('common.and', 'and')} <Text style={styles.footerLink}>{t('auth.privacyPolicy', 'Privacy Policy')}</Text>.
         </Text>
       </View>
 
@@ -556,7 +558,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
               <View style={styles.modalIconWrap}>
                 <Ionicons name="lock-closed" size={28} color={colors.primary} />
               </View>
-              <Text style={styles.modalTitle}>Reset password</Text>
+              <Text style={styles.modalTitle}>{t('auth.resetPassword', 'Reset password')}</Text>
               <Text style={styles.modalSubtitle}>
                 Enter your email address and we'll send you a password reset link.
               </Text>
@@ -577,7 +579,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
                   setForgotEmail('');
                 }}
               >
-                <Text style={styles.secondaryText}>Cancel</Text>
+                <Text style={styles.secondaryText}>{t('common.cancel', 'Cancel')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.primaryButton, styles.modalPrimary]}
@@ -600,7 +602,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
                 }}
                 disabled={forgotLoading}
               >
-                {forgotLoading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>Send link</Text>}
+                {forgotLoading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>{t('auth.sendLink', 'Send link')}</Text>}
               </Pressable>
             </View>
           </Card>

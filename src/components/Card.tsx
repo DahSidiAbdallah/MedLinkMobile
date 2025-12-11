@@ -69,7 +69,7 @@ const getVariantStyles = (variant: CardVariant) => {
   }
 };
 
-export default function Card({ children, style, variant = 'default', onPress, disabled }: CardProps) {
+export default React.memo(function Card({ children, style, variant = 'default', onPress, disabled }: CardProps) {
   const { marginStyle, contentStyle } = splitStyle(style);
   const variantStyles = getVariantStyles(variant);
 
@@ -101,7 +101,7 @@ export default function Card({ children, style, variant = 'default', onPress, di
   }
 
   return cardContent;
-}
+});
 
 const styles = StyleSheet.create({
   gradient: {

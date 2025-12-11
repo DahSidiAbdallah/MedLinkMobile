@@ -7,8 +7,10 @@ import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { Pill } from '../components/Pill';
 import SkeletonImage from '../components/SkeletonImage';
 import { useLoading } from '../hooks/LoadingContext';
+import { useTranslation } from 'react-i18next';
 
 export default function FacilityDetail() {
+  const { t } = useTranslation();
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params as { id: string };
@@ -40,9 +42,9 @@ export default function FacilityDetail() {
       <View style={styles.sheet}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Summary</Text>
+          <Text style={styles.title}>{t('facilities.summary', 'Summary')}</Text>
           <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
-            <Text style={styles.cancel}>Cancel</Text>
+            <Text style={styles.cancel}>{t('common.cancel', 'Cancel')}</Text>
           </Pressable>
         </View>
         {/* Avatar, Name, Specialty */}
@@ -54,11 +56,11 @@ export default function FacilityDetail() {
         {/* Status */}
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: spacing.lg }}>
           <Pill tone="primary">{fac.type.charAt(0).toUpperCase() + fac.type.slice(1)}</Pill>
-          {fac.isOpen && <Pill tone="neutral">Open Now</Pill>}
-          {fac.hasDelivery && <Pill tone="neutral">Has Delivery</Pill>}
+          {fac.isOpen && <Pill tone="neutral">{t('facilities.openNow', 'Open Now')}</Pill>}
+          {fac.hasDelivery && <Pill tone="neutral">{t('facilities.hasDelivery', 'Has Delivery')}</Pill>}
         </View>
 
-        <Text style={styles.sectionTitle}>Information</Text>
+        <Text style={styles.sectionTitle}>{t('facilities.information', 'Information')}</Text>
         <View style={{ marginBottom: spacing.lg }}>
           {fac.address && <Text style={styles.detailText}>Address: {fac.address}</Text>}
           {fac.phoneNumber && <Text style={styles.detailText}>Phone: {fac.phoneNumber}</Text>}

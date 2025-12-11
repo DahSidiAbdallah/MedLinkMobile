@@ -36,7 +36,6 @@ export const RemindersProvider = ({ children }: { children: ReactNode }) => {
       setReminders(data || []);
       setError(null);
     } catch (err) {
-      console.error('Error fetching reminders:', err);
       setError('Failed to load reminders');
     } finally {
       setLoading(false);
@@ -50,7 +49,6 @@ export const RemindersProvider = ({ children }: { children: ReactNode }) => {
       notify();
       return data;
     } catch (err) {
-      console.error('Error creating reminder:', err);
       throw err;
     }
   };
@@ -66,7 +64,6 @@ export const RemindersProvider = ({ children }: { children: ReactNode }) => {
       notify();
       return { id, ...updates };
     } catch (err) {
-      console.error('Error updating reminder:', err);
       throw err;
     }
   };
@@ -77,7 +74,6 @@ export const RemindersProvider = ({ children }: { children: ReactNode }) => {
       setReminders(prev => prev.filter(reminder => reminder.id !== id));
       notify();
     } catch (err) {
-      console.error('Error deleting reminder:', err);
       throw err;
     }
   };

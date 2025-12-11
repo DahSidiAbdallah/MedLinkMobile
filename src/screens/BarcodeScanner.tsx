@@ -11,8 +11,7 @@ function getAsyncStorage() {
     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
     AsyncStorage = require('@react-native-async-storage/async-storage').default;
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('AsyncStorage not available in BarcodeScanner, using in-memory fallback:', e);
+    // AsyncStorage not available in BarcodeScanner, using in-memory fallback
     const store: Record<string, string> = {};
     AsyncStorage = {
       getItem: async (k: string) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
@@ -509,8 +508,7 @@ const BarcodeScanner: React.FC = () => {
       setHistory(prev => {
         const updated = [newItem, ...prev];
         getAsyncStorage().setItem(HISTORY_KEY, JSON.stringify(updated)).catch((e: any) => {
-          // eslint-disable-next-line no-console
-          console.warn('Failed to save scan history:', e);
+          // Failed to save scan history
         });
         return updated;
       });

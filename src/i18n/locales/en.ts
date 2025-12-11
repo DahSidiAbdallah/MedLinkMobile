@@ -86,15 +86,20 @@ export default {
       noAccount: "Don't have an account?",
       signInHere: 'Sign in here',
       signUpHere: 'Sign up here',
-      signInButton: 'Sign In',
-      signUpButton: 'Sign Up',
       forgotPassword: 'Forgot password?',
       forgotPasswordNotImplemented: 'Password reset is not implemented yet',
       genericError: 'An error occurred',
       invalidCredentials: 'Invalid email or password',
       userAlreadyExists: 'User already exists with this email',
       emailRateLimit: 'Too many requests, try again later',
-      signUpSuccessMessage: 'Account created successfully! Please check your email to verify your account.'
+      healthBasics: 'Health basics',
+      byContinuing: 'By continuing you agree to our',
+      terms: 'Terms',
+      privacyPolicy: 'Privacy Policy',
+      resetPassword: 'Reset password',
+      sendLink: 'Send link',
+      signInButton: 'Login',
+      signUpButton: 'Create account',
     },
     calendar: {
       selectDate: 'Select date',
@@ -141,7 +146,9 @@ export default {
       noEmergencyContacts: 'No emergency contacts added',
       noProfileData: 'No profile data available',
       insuranceInfo: 'Insurance Information',
-      insuranceProvider: 'Insurance Provider',
+      manageHealthInfo: 'Manage your health information',
+      healthSummary: 'Health summary',
+      healthSummaryHint: 'Review and keep your medical data up to date.',
 
       deleteError: 'Error deleting profile',
       primary: 'Primary',
@@ -235,7 +242,9 @@ export default {
       verificationScore: 'Verification Score',
       match: 'Match',
       clear: 'Clear',
-      loadingVerification: 'Loading verification data...'
+      medicationEncyclopedia: 'Medication encyclopedia',
+      suggestedMatches: 'Suggested matches',
+      noDrugSelected: 'No drug selected',
     },
     reminders: {
       title: 'Medication & Appointment Reminders',
@@ -290,7 +299,8 @@ export default {
       accountManagement: 'Account Management',
       deleteAccount: 'Delete Account',
       confirmDeleteTitle: 'Confirm Account Deletion',
-      confirmDeleteMessage: 'Are you sure you want to permanently delete your account? This action cannot be undone.'
+      sendAnonymousTelemetry: 'Send anonymous telemetry',
+      enableHaptics: 'Enable haptics',
     },
     validation: {
       required: 'Required',
@@ -310,18 +320,6 @@ export default {
       serverError: 'Server error. Please try again later.',
       fullNameRequired: 'Full name is required.',
       phoneInvalid: 'Mauritania numbers must be 8 digits, start with 2, 3, or 4.',
-      bloodTypeInvalid: 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.',
-      providerShort: 'Provider name is too short.',
-      policyShort: 'Policy number is too short.',
-      saveError: 'Failed to save profile.',
-      logoutError: 'Failed to log out.',
-      userIdMissing: 'User ID missing.',
-    },
-    filters: {
-      title: 'Filters',
-      clearAll: 'Clear All',
-      specialty: 'Specialty',
-      allSpecialties: 'All Specialties',
       rating: 'Rating',
       anyRating: 'Any Rating',
       insurance: 'Insurance',
@@ -373,13 +371,13 @@ export default {
       distance: '{{distance}} away',
       openNow: 'Open Now',
       closed: 'Closed',
-      hasDelivery: 'Delivery Available',
       viewDetails: 'View Details',
       getDirections: 'Get Directions',
       callNow: 'Call Now',
       hours: 'Hours',
       address: 'Address',
-      phone: 'Phone'
+      summary: 'Summary',
+      information: 'Information',
     },
     scanner: {
       title: 'Barcode Scanner',
@@ -437,11 +435,6 @@ export default {
     time: {
       today: 'Today',
       yesterday: 'Yesterday',
-      tomorrow: 'Tomorrow',
-      now: 'Now',
-      justNow: 'Just now',
-      minutesAgo: '{{count}} min ago',
-      hoursAgo: '{{count}} hr ago',
       daysAgo: '{{count}} days ago'
     }
   }

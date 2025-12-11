@@ -31,7 +31,7 @@ const basePadding: ViewStyle = {
 };
 
 // Extra bottom padding to account for floating tab bar (64px height + 16px margin + safe area)
-const TAB_BAR_OFFSET = 100;
+const TAB_BAR_OFFSET = 80;
 
 export default function ScreenContainer({
   children,

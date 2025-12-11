@@ -26,9 +26,11 @@ import ProgressBar from '../components/ProgressBar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTodayStats } from '../core/completion';
 import { colors, spacing, type, shadow, radius } from '../theme';
+import { useTranslation } from 'react-i18next';
 
 
 export default function Dashboard({ navigation }: any) {
+  const { t } = useTranslation();
   const [profileModal, setProfileModal] = useState(false);
   const [urgentCareModal, setUrgentCareModal] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
@@ -52,7 +54,7 @@ export default function Dashboard({ navigation }: any) {
       return (
         <View style={styles.emptyState}>
           <Ionicons name="notifications-off-outline" size={32} color={colors.mutedLight} />
-          <Text style={styles.emptyStateText}>No active reminders</Text>
+          <Text style={styles.emptyStateText}>{t('dashboard.noActiveReminders', 'No active reminders')}</Text>
           <Text style={styles.emptyStateHint}>Add reminders to track your medications</Text>
         </View>
       );
@@ -156,11 +158,22 @@ export default function Dashboard({ navigation }: any) {
 
       <Card style={styles.sectionCard}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Today's progress</Text>
-          <Text style={styles.sectionMeta}>{pillsDone.done}/{pillsDone.total}</Text>
+          <View style={styles.sectionIconWrap}>
+            <Ionicons name="trending-up" size={20} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sectionTitle}>Today's Progress</Text>
+            <Text style={styles.sectionSubtitle}>Stay consistent with your doses</Text>
+          </View>
         </View>
-        <ProgressBar progress={progress} style={{ marginTop: 12 }} />
-        <Text style={styles.sectionHint}>Stay consistent and keep logging your doses.</Text>
+        <ProgressBar 
+          progress={progress} 
+          height={10}
+          showLabel 
+          label={`${pillsDone.done} of ${pillsDone.total} completed`}
+          variant={progress >= 1 ? 'success' : progress >= 0.5 ? 'default' : 'warning'}
+          style={{ marginTop: spacing.md }} 
+        />
       </Card>
 
       <Pressable
@@ -180,14 +193,26 @@ export default function Dashboard({ navigation }: any) {
 
       <Card style={styles.sectionCard}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Active reminders</Text>
+          <View style={[styles.sectionIconWrap, { backgroundColor: 'rgba(16,185,129,0.12)' }]}>
+            <Ionicons name="notifications" size={20} color={colors.success} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sectionTitle}>Active Reminders</Text>
+            <Text style={styles.sectionSubtitle}>Your upcoming medication schedule</Text>
+          </View>
         </View>
         <View style={styles.sectionBody}>{renderReminders()}</View>
       </Card>
 
       <Card style={styles.sectionCard}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>My medications</Text>
+          <View style={[styles.sectionIconWrap, { backgroundColor: 'rgba(139,92,246,0.12)' }]}>
+            <Ionicons name="medical" size={20} color="#8B5CF6" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sectionTitle}>My Medications</Text>
+            <Text style={styles.sectionSubtitle}>Scanned and saved medications</Text>
+          </View>
         </View>
         <MyMedicationsList />
       </Card>
@@ -384,10 +409,19 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: spacing.md,
+  },
+  sectionIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(37,99,235,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionTitle: { fontWeight: '700', fontSize: 17, color: colors.text },
+  sectionSubtitle: { color: colors.muted, fontSize: 13, marginTop: 2 },
   sectionMeta: { color: colors.muted, fontWeight: '600' },
   sectionHint: { color: colors.muted, fontSize: 13 },
   sectionBody: { gap: spacing.md },
