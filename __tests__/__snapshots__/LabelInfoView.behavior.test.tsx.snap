@@ -1,0 +1,326 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LabelInfoView modal behavior pressing Read more opens modal (onPress triggers) 1`] = `
+<View>
+  <View
+    style={
+      {
+        "marginTop": 6,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#2563EB",
+          "fontWeight": "bold",
+        }
+      }
+    >
+      Indications & Usage
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#0F172A",
+        }
+      }
+    >
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      …
+    </Text>
+    <View
+      accessibilityLabel="Read more about Indications & Usage"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "marginTop": 6,
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#2563EB",
+            "fontWeight": "600",
+          }
+        }
+      >
+        Read more
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "marginTop": 6,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#2563EB",
+          "fontWeight": "bold",
+        }
+      }
+    >
+      Dosage & Administration
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#0F172A",
+        }
+      }
+    >
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      …
+    </Text>
+    <View
+      accessibilityLabel="Read more about Dosage & Administration"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "marginTop": 6,
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#2563EB",
+            "fontWeight": "600",
+          }
+        }
+      >
+        Read more
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "marginTop": 6,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#2563EB",
+          "fontWeight": "bold",
+        }
+      }
+    >
+      Adverse Reactions
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#0F172A",
+        }
+      }
+    >
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      …
+    </Text>
+    <View
+      accessibilityLabel="Read more about Adverse Reactions"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "marginTop": 6,
+          "opacity": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#2563EB",
+            "fontWeight": "600",
+          }
+        }
+      >
+        Read more
+      </Text>
+    </View>
+  </View>
+  <Modal
+    accessibilityLabel="Detailed information for Indications & Usage"
+    accessibilityViewIsModal={true}
+    animationType="slide"
+    hardwareAccelerated={false}
+    onRequestClose={[Function]}
+    transparent={false}
+    visible={true}
+  >
+    <View
+      style={
+        {
+          "backgroundColor": "white",
+          "flex": 1,
+          "padding": 20,
+        }
+      }
+    >
+      <Text
+        accessibilityRole="header"
+        style={
+          {
+            "fontSize": 18,
+            "fontWeight": "bold",
+            "marginBottom": 12,
+          }
+        }
+      >
+        Indications & Usage
+      </Text>
+      <Text
+        accessibilityRole="text"
+        style={
+          {
+            "color": "#0F172A",
+            "flex": 1,
+          }
+        }
+      >
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      </Text>
+      <View
+        accessibilityLabel="Close details modal"
+        accessibilityRole="button"
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "marginTop": 20,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#2563EB",
+              "fontWeight": "600",
+            }
+          }
+        >
+          Close
+        </Text>
+      </View>
+    </View>
+  </Modal>
+</View>
+`;
