@@ -28,9 +28,11 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTodayStats } from '../core/completion';
 import { colors, spacing, typography, shadow, radius, animation } from '../theme';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '../hooks/useRTL';
 
 export default function Dashboard({ navigation }: any) {
   const { t } = useTranslation();
+  const { isRTL, textAlign } = useRTL();
   const { showSuccess, showError, showInfo } = useToast();
   const [profileModal, setProfileModal] = useState(false);
   const [urgentCareModal, setUrgentCareModal] = useState(false);
@@ -81,9 +83,9 @@ export default function Dashboard({ navigation }: any) {
       return (
         <View style={styles.errorState}>
           <Ionicons name="alert-circle-outline" size={32} color={colors.danger} />
-          <Text style={styles.errorText}>Failed to load reminders</Text>
+          <Text style={styles.errorText}>{t('common.error', 'Failed to load reminders')}</Text>
           <Pressable onPress={refresh} style={styles.retryButton}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryText}>{t('actions.retry', 'Retry')}</Text>
           </Pressable>
         </View>
       );
@@ -94,12 +96,12 @@ export default function Dashboard({ navigation }: any) {
         <View style={styles.emptyState}>
           <Ionicons name="notifications-off-outline" size={32} color={colors.mutedLight} />
           <Text style={styles.emptyStateText}>{t('dashboard.noActiveReminders', 'No active reminders')}</Text>
-          <Text style={styles.emptyStateHint}>Add reminders to track your medications</Text>
+          <Text style={styles.emptyStateHint}>{t('dashboard.addRemindersHint', 'Add reminders to track your medications')}</Text>
           <Pressable 
             onPress={() => navigation.navigate('Reminders')}
             style={styles.addReminderButton}
           >
-            <Text style={styles.addReminderText}>Add Reminder</Text>
+            <Text style={styles.addReminderText}>{t('reminders.create', 'Add Reminder')}</Text>
           </Pressable>
         </View>
       );
@@ -228,33 +230,33 @@ export default function Dashboard({ navigation }: any) {
             </Pressable>
             <NotificationBell onPress={() => setNotificationsVisible(true)} />
           </View>
-          <Text style={[typography.h1, styles.heroTitle]}>
-            Welcome{profile?.name ? `, ${profile.name}` : ''}
+          <Text style={[typography.h1, styles.heroTitle, { textAlign }]}>
+            {t('dashboard.welcome', 'Welcome')}{profile?.name ? `, ${profile.name}` : ''}
           </Text>
-          <Text style={[typography.body, styles.heroSubtitle]}>
-            How are you feeling today?
+          <Text style={[typography.body, styles.heroSubtitle, { textAlign }]}>
+            {t('dashboard.welcomeUser', 'How are you feeling today?')}
           </Text>
           <View style={styles.searchWrap}>
             <Ionicons name="search" size={18} color={colors.muted} style={{ marginRight: 10 }} />
             <TextInput
-              placeholder="Search doctors, facilities, medications..."
+              placeholder={t('common.searchDoctorsAndClinics', 'Search doctors, facilities, medications...')}
               placeholderTextColor={colors.muted}
-              style={styles.searchInput}
+              style={[styles.searchInput, { textAlign }]}
               returnKeyType="search"
-              onSubmitEditing={() => showInfo('Search', 'Search functionality coming soon!')}
+              onSubmitEditing={() => showInfo(t('common.search', 'Search'), t('common.searchFunctionality', 'Search functionality coming soon!'))}
             />
           </View>
           <View style={styles.chipsRow}>
             <Chip 
-              label="Cardiologist" 
+              label={t('doctors.cardiologist', 'Cardiologist')} 
               onPress={() => navigation.navigate('Clinics', { filter: 'cardiologist' })} 
             />
             <Chip 
-              label="Dentist" 
+              label={t('doctors.dentist', 'Dentist')} 
               onPress={() => navigation.navigate('Clinics', { filter: 'dentist' })} 
             />
             <Chip 
-              label="Therapist" 
+              label={t('doctors.therapist', 'Therapist')} 
               onPress={() => navigation.navigate('Clinics', { filter: 'therapist' })} 
             />
           </View>
@@ -273,8 +275,8 @@ export default function Dashboard({ navigation }: any) {
               <Ionicons name="trending-up" size={20} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sectionTitle}>Today's Progress</Text>
-              <Text style={styles.sectionSubtitle}>Stay consistent with your doses</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('dashboard.todayProgress', "Today's Progress")}</Text>
+              <Text style={[styles.sectionSubtitle, { textAlign }]}>{t('dashboard.stayConsistent', 'Stay consistent with your doses')}</Text>
             </View>
           </View>
           <ProgressBar 
@@ -288,7 +290,7 @@ export default function Dashboard({ navigation }: any) {
           {progress >= 1 && (
             <View style={styles.congratsContainer}>
               <Ionicons name="checkmark-circle" size={24} color={colors.success} />
-              <Text style={styles.congratsText}>Great job! All doses completed today!</Text>
+              <Text style={[styles.congratsText, { textAlign }]}>{t('dashboard.greatJob', 'Great job! All doses completed today!')}</Text>
             </View>
           )}
         </Card>
@@ -316,8 +318,8 @@ export default function Dashboard({ navigation }: any) {
             style={styles.urgentGradient}
           >
             <Ionicons name="medical" size={24} color="#fff" style={{ marginBottom: 4 }} />
-            <Text style={styles.urgentLabel}>Urgent Care</Text>
-            <Text style={styles.urgentSub}>Access emergency contacts & nearby facilities</Text>
+            <Text style={styles.urgentLabel}>{t('dashboard.urgentCare', 'Urgent Care')}</Text>
+            <Text style={styles.urgentSub}>{t('dashboard.accessEmergency', 'Access emergency contacts & nearby facilities')}</Text>
           </LinearGradient>
         </Pressable>
       </Animated.View>
@@ -334,14 +336,14 @@ export default function Dashboard({ navigation }: any) {
               <Ionicons name="notifications" size={20} color={colors.success} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sectionTitle}>Active Reminders</Text>
-              <Text style={styles.sectionSubtitle}>Your upcoming medication schedule</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('dashboard.activeReminders', 'Active Reminders')}</Text>
+              <Text style={[styles.sectionSubtitle, { textAlign }]}>{t('dashboard.upcomingSchedule', 'Your upcoming medication schedule')}</Text>
             </View>
             <Pressable 
               onPress={() => navigation.navigate('Reminders')}
               style={styles.sectionAction}
             >
-              <Text style={styles.sectionActionText}>View All</Text>
+              <Text style={styles.sectionActionText}>{t('dashboard.viewAll', 'View All')}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.primary} />
             </Pressable>
           </View>
@@ -361,14 +363,14 @@ export default function Dashboard({ navigation }: any) {
               <Ionicons name="medical" size={20} color={colors.secondary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sectionTitle}>My Medications</Text>
-              <Text style={styles.sectionSubtitle}>Scanned and saved medications</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('dashboard.myMedications', 'My Medications')}</Text>
+              <Text style={[styles.sectionSubtitle, { textAlign }]}>{t('dashboard.scannedMedications', 'Scanned and saved medications')}</Text>
             </View>
             <Pressable 
               onPress={() => navigation.navigate('Barcode')}
               style={styles.sectionAction}
             >
-              <Text style={styles.sectionActionText}>Scan</Text>
+              <Text style={styles.sectionActionText}>{t('scanner.scanMedication', 'Scan')}</Text>
               <Ionicons name="camera" size={16} color={colors.primary} />
             </Pressable>
           </View>
@@ -383,7 +385,7 @@ export default function Dashboard({ navigation }: any) {
         }}
       >
         <Card variant="elevated" style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { textAlign }]}>{t('dashboard.quickServices', 'Quick Actions')}</Text>
           <View style={styles.servicesGrid}>
             <Pressable 
               style={styles.serviceItem}
@@ -392,7 +394,7 @@ export default function Dashboard({ navigation }: any) {
               <View style={styles.serviceIconWrap}>
                 <MaterialCommunityIcons name="barcode-scan" size={22} color={colors.primary} />
               </View>
-              <Text style={styles.serviceLabel}>Scan Medication</Text>
+              <Text style={[styles.serviceLabel, { textAlign: 'center' }]}>{t('scanner.scanMedication', 'Scan Medication')}</Text>
             </Pressable>
             <Pressable 
               style={styles.serviceItem}
@@ -401,7 +403,7 @@ export default function Dashboard({ navigation }: any) {
               <View style={styles.serviceIconWrap}>
                 <Ionicons name="medkit" size={20} color={colors.primary} />
               </View>
-              <Text style={styles.serviceLabel}>Medical ID</Text>
+              <Text style={[styles.serviceLabel, { textAlign: 'center' }]}>{t('profile.medicalId', 'Medical ID')}</Text>
             </Pressable>
             <Pressable 
               style={styles.serviceItem}
@@ -410,7 +412,7 @@ export default function Dashboard({ navigation }: any) {
               <View style={styles.serviceIconWrap}>
                 <Ionicons name="business" size={20} color={colors.primary} />
               </View>
-              <Text style={styles.serviceLabel}>Find Facilities</Text>
+              <Text style={[styles.serviceLabel, { textAlign: 'center' }]}>{t('facilities.title', 'Find Facilities')}</Text>
             </Pressable>
           </View>
         </Card>
@@ -423,41 +425,41 @@ export default function Dashboard({ navigation }: any) {
           <View style={styles.facilityModalSheet}>
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
               <View style={styles.modalHeaderRow}>
-                <Text style={styles.modalTitle}>Urgent Care</Text>
+                <Text style={[styles.modalTitle, { textAlign }]}>{t('dashboard.urgentCare', 'Urgent Care')}</Text>
                 <Pressable onPress={() => setUrgentCareModal(false)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close urgent care sheet">
-                  <Text style={styles.modalCloseText}>Close</Text>
+                  <Text style={styles.modalCloseText}>{t('common.close', 'Close')}</Text>
                 </Pressable>
               </View>
-              <Text style={styles.sectionTitle}>Emergency contacts</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('profile.emergencyContacts', 'Emergency contacts')}</Text>
               <View style={{ marginBottom: spacing.lg }}>
                 {profile?.emergency_contacts && profile.emergency_contacts.length > 0 ? (
                   profile.emergency_contacts.map((contact, idx) => (
                     <View key={`${contact.phone ?? contact.name}_${idx}`} style={styles.contactBlock}>
-                      <Text style={styles.contactName}>{contact.name || 'Unknown Contact'}</Text>
-                      <Text style={styles.sectionText}>{contact.phone || 'No phone'}</Text>
-                      <Text style={styles.sectionText}>{contact.relationship || 'No relationship specified'}</Text>
+                      <Text style={[styles.contactName, { textAlign }]}>{contact.name || t('profile.noEmergencyContacts', 'Unknown Contact')}</Text>
+                      <Text style={[styles.sectionText, { textAlign }]}>{contact.phone || t('profile.noEmergencyContacts', 'No phone')}</Text>
+                      <Text style={[styles.sectionText, { textAlign }]}>{contact.relationship || t('profile.noEmergencyContacts', 'No relationship specified')}</Text>
                       {contact.phone ? (
                         <Pressable onPress={() => Linking.openURL(`tel:${contact.phone}`)} style={{ marginTop: 6 }} accessibilityRole="button">
-                          <Text style={styles.callLink}>Call</Text>
+                          <Text style={styles.callLink}>{t('common.call', 'Call')}</Text>
                         </Pressable>
                       ) : null}
                     </View>
                   ))
                 ) : (
-                  <Text style={styles.sectionText}>No emergency contacts listed.</Text>
+                  <Text style={[styles.sectionText, { textAlign }]}>{t('profile.noEmergencyContacts', 'No emergency contacts listed.')}</Text>
                 )}
               </View>
-              <Text style={styles.sectionTitle}>Open & nearby facilities</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('facilities.title', 'Open & nearby facilities')}</Text>
               <View style={{ marginBottom: spacing.lg }}>
                 {sortByDistance(facilities.filter(f => f.isOpen && (f.type === 'clinic' || f.type === 'hospital' || f.type === 'pharmacy'))).map((fac: Facility) => (
                   <View key={fac.id} style={styles.facilityItem}>
-                    <Text style={styles.facilityName}>{fac.name} <Text style={styles.facilityMeta}>({fac.type})</Text></Text>
-                    <Text style={styles.sectionText}>{fac.location}</Text>
-                    {'phoneNumber' in fac && fac.phoneNumber && <Text style={styles.sectionText}>Phone: {fac.phoneNumber}</Text>}
-                    <Text style={styles.sectionText}>Distance: {fac.distance || 'N/A'}</Text>
+                    <Text style={[styles.facilityName, { textAlign }]}>{fac.name} <Text style={styles.facilityMeta}>({fac.type})</Text></Text>
+                    <Text style={[styles.sectionText, { textAlign }]}>{fac.location}</Text>
+                    {'phoneNumber' in fac && fac.phoneNumber && <Text style={[styles.sectionText, { textAlign }]}>{t('facilities.phone', 'Phone')}: {fac.phoneNumber}</Text>}
+                    <Text style={[styles.sectionText, { textAlign }]}>{t('facilities.distance', 'Distance')}: {fac.distance || 'N/A'}</Text>
                     {'phoneNumber' in fac && fac.phoneNumber && (
                       <Pressable onPress={() => Linking.openURL(`tel:${fac.phoneNumber}`)} style={{ marginTop: 6 }} accessibilityRole="button">
-                        <Text style={styles.callLink}>Call</Text>
+                        <Text style={styles.callLink}>{t('common.call', 'Call')}</Text>
                       </Pressable>
                     )}
                   </View>
@@ -473,61 +475,61 @@ export default function Dashboard({ navigation }: any) {
           <View style={styles.profileSheet}>
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
               <View style={styles.modalHeaderRow}>
-                <Text style={styles.modalTitle}>Profile</Text>
+                <Text style={[styles.modalTitle, { textAlign }]}>{t('profile.title', 'Profile')}</Text>
                 <Pressable onPress={() => setProfileModal(false)} hitSlop={10}>
-                  <Text style={styles.modalCloseText}>Close</Text>
+                  <Text style={styles.modalCloseText}>{t('common.close', 'Close')}</Text>
                 </Pressable>
               </View>
               <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
                 <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.profileAvatar} resizeMode="cover" />
                 {profile ? (
                   <>
-                    <Text style={styles.profileName}>{profile.name}</Text>
-                    <Text style={styles.sectionText}>{profile.email}</Text>
-                    <Text style={styles.sectionText}>{profile.phone}</Text>
-                    <Text style={styles.sectionText}>{profile.date_of_birth}</Text>
+                    <Text style={[styles.profileName, { textAlign: 'center' }]}>{profile.name}</Text>
+                    <Text style={[styles.sectionText, { textAlign: 'center' }]}>{profile.email}</Text>
+                    <Text style={[styles.sectionText, { textAlign: 'center' }]}>{profile.phone}</Text>
+                    <Text style={[styles.sectionText, { textAlign: 'center' }]}>{profile.date_of_birth}</Text>
                   </>
                 ) : (
                   <View style={{ alignItems: 'center', marginTop: spacing.md }}>
-                    <Text style={styles.sectionText}>Aucune donnée de profil disponible</Text>
-                    <Text style={[styles.sectionText, { fontSize: 12, marginTop: 4 }]}>
-                      Veuillez créer votre profil dans les paramètres
+                    <Text style={[styles.sectionText, { textAlign: 'center' }]}>{t('profile.noProfileData', 'No profile data available')}</Text>
+                    <Text style={[styles.sectionText, { fontSize: 12, marginTop: 4, textAlign: 'center' }]}>
+                      {t('profile.manageHealthInfo', 'Please create your profile in settings')}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={styles.sectionTitle}>Allergies</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('profile.allergies', 'Allergies')}</Text>
               <View style={{ marginBottom: spacing.lg }}>
                 {profile?.allergies?.length ? (
                   profile.allergies.map((allergy) => (
-                    <Text key={allergy} style={styles.sectionText}>• {allergy}</Text>
+                    <Text key={allergy} style={[styles.sectionText, { textAlign }]}>• {allergy}</Text>
                   ))
                 ) : (
-                  <Text style={styles.sectionText}>No allergies listed.</Text>
+                  <Text style={[styles.sectionText, { textAlign }]}>{t('profile.noProfileData', 'No allergies listed.')}</Text>
                 )}
               </View>
-              <Text style={styles.sectionTitle}>Urgent contact</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('profile.ice', 'Urgent contact')}</Text>
               <View style={{ marginBottom: spacing.lg }}>
                 {profile?.emergency_contacts?.length ? (
                   <>
-                    <Text style={styles.contactName}>{profile.emergency_contacts[0].name}</Text>
-                    <Text style={styles.sectionText}>{profile.emergency_contacts[0].phone}</Text>
-                    <Text style={styles.sectionText}>{profile.emergency_contacts[0].relationship}</Text>
+                    <Text style={[styles.contactName, { textAlign }]}>{profile.emergency_contacts[0].name}</Text>
+                    <Text style={[styles.sectionText, { textAlign }]}>{profile.emergency_contacts[0].phone}</Text>
+                    <Text style={[styles.sectionText, { textAlign }]}>{profile.emergency_contacts[0].relationship}</Text>
                   </>
                 ) : (
-                  <Text style={styles.sectionText}>No urgent contact listed.</Text>
+                  <Text style={[styles.sectionText, { textAlign }]}>{t('profile.noEmergencyContacts', 'No urgent contact listed.')}</Text>
                 )}
               </View>
-              <Text style={styles.sectionTitle}>Other info</Text>
+              <Text style={[styles.sectionTitle, { textAlign }]}>{t('profile.medicalDetails', 'Other info')}</Text>
               <View style={{ marginBottom: spacing.lg }}>
                 {profile && (
                   <>
-                    {profile.blood_type && <Text style={styles.sectionText}>Blood Type: {profile.blood_type}</Text>}
+                    {profile.blood_type && <Text style={[styles.sectionText, { textAlign }]}>{t('profile.bloodType', 'Blood Type')}: {profile.blood_type}</Text>}
                     {profile.medical_conditions && profile.medical_conditions.length > 0 && (
-                      <Text style={styles.sectionText}>Conditions: {profile.medical_conditions.join(', ')}</Text>
+                      <Text style={[styles.sectionText, { textAlign }]}>{t('profile.conditions.label', 'Conditions')}: {profile.medical_conditions.join(', ')}</Text>
                     )}
                     {profile.medications && profile.medications.length > 0 && (
-                      <Text style={styles.sectionText}>Medications: {profile.medications.join(', ')}</Text>
+                      <Text style={[styles.sectionText, { textAlign }]}>{t('profile.medications', 'Medications')}: {profile.medications.join(', ')}</Text>
                     )}
                   </>
                 )}
