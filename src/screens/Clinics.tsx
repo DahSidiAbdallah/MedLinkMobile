@@ -4,6 +4,8 @@ import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, 
 import SkeletonImage from '../components/SkeletonImage';
 import { SkeletonFacilityCard, Skeleton } from '../components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { useRTL } from '../hooks/useRTL';
 import type { Facility } from '../types';
 import { colors, spacing, radius, shadow } from '../theme';
 import Card from '../components/Card';
@@ -17,15 +19,21 @@ import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
 import ScreenContainer from '../components/ScreenContainer';
 import CachedImage from '../components/CachedImage';
 
-const FILTERS = ['All', 'Clinic', 'Hospital', 'Pharmacy'];
-
-
 export default function FacilitiesScreen({ navigation }: any) {
+  const { t } = useTranslation();
+  const { isRTL, textAlign } = useRTL();
   const { facilities, loading, error } = useFacilities();
   const { startLoading, finishLoading } = useLoading();
   const _prefetched = useRef(new Set<string>());
   const { width } = useWindowDimensions();
   const listImageWidth = Math.min(140, Math.max(100, Math.floor(width * 0.32)));
+  
+  const FILTERS = [
+    t('facilities.all', 'All'),
+    t('facilities.clinic', 'Clinic'), 
+    t('facilities.hospital', 'Hospital'),
+    t('facilities.pharmacy', 'Pharmacy')
+  ];
   // Prefetch images for list when facilities update
   useEffect(() => {
     if (!facilities || facilities.length === 0) return;
@@ -43,7 +51,7 @@ export default function FacilitiesScreen({ navigation }: any) {
     ).finally(() => finishLoading(key));
   }, [facilities]);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState(FILTERS[0]);
   const [openNow, setOpenNow] = useState(false);
   const [hasDelivery, setHasDelivery] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
@@ -53,8 +61,15 @@ export default function FacilitiesScreen({ navigation }: any) {
   // Filter facilities by type, search, open now, and has delivery
   const filtered = useMemo(() => {
     let f = facilities;
-    if (filter !== 'All') {
-      f = f.filter(fac => fac.type.toLowerCase() === filter.toLowerCase());
+    if (filter !== FILTERS[0]) { // Not "All"
+      const filterType = filter.toLowerCase();
+      f = f.filter(fac => {
+        const facType = fac.type.toLowerCase();
+        return facType === filterType || 
+               (filter === t('facilities.clinic', 'Clinic') && facType === 'clinic') ||
+               (filter === t('facilities.hospital', 'Hospital') && facType === 'hospital') ||
+               (filter === t('facilities.pharmacy', 'Pharmacy') && facType === 'pharmacy');
+      });
     }
     if (openNow) {
       f = f.filter(fac => fac.isOpen);
@@ -71,7 +86,7 @@ export default function FacilitiesScreen({ navigation }: any) {
       );
     }
     return f;
-  }, [facilities, filter, search, openNow, hasDelivery]);
+  }, [facilities, filter, search, openNow, hasDelivery, t, FILTERS]);
 
   // Map handler (center map or show details)
   const handleMap = (lat: number, lng: number, name: string) => {
@@ -115,25 +130,33 @@ export default function FacilitiesScreen({ navigation }: any) {
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
       <View style={styles.headerSection}>
-        <Text style={styles.screenTitle}>Facilities</Text>
-        <Text style={styles.screenSubtitle}>Find clinics, hospitals & pharmacies</Text>
+        <Text style={[styles.screenTitle, { textAlign }]}>{t('facilities.title', 'Facilities')}</Text>
+        <Text style={[styles.screenSubtitle, { textAlign }]}>{t('facilities.findFacilities', 'Find clinics, hospitals & pharmacies')}</Text>
       </View>
 
       <Card style={styles.filterCard}>
         <View style={styles.searchWrapper}>
           <Ionicons name="search" size={18} color={colors.muted} />
           <TextInput
-            placeholder="Search facilities..."
+            placeholder={t('facilities.searchFacilities', 'Search facilities...')}
             value={search}
             onChangeText={setSearch}
-            style={styles.searchInput}
+            style={[styles.searchInput, { textAlign }]}
             placeholderTextColor={colors.muted}
           />
         </View>
         <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
         <View style={styles.chipRow}>
-          <Chip label={openNow ? 'Open Now ✓' : 'Open Now'} selected={openNow} onPress={() => setOpenNow(v => !v)} />
-          <Chip label={hasDelivery ? 'Delivery ✓' : 'Delivery'} selected={hasDelivery} onPress={() => setHasDelivery(v => !v)} />
+          <Chip 
+            label={openNow ? `${t('facilities.openNow', 'Open Now')} ✓` : t('facilities.openNow', 'Open Now')} 
+            selected={openNow} 
+            onPress={() => setOpenNow(v => !v)} 
+          />
+          <Chip 
+            label={hasDelivery ? `${t('facilities.delivery', 'Delivery')} ✓` : t('facilities.delivery', 'Delivery')} 
+            selected={hasDelivery} 
+            onPress={() => setHasDelivery(v => !v)} 
+          />
         </View>
       </Card>
 
@@ -169,24 +192,24 @@ export default function FacilitiesScreen({ navigation }: any) {
                 {fac.isOpen ? (
                   <View style={[styles.facilityBadge, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
                     <View style={styles.openDot} />
-                    <Text style={[styles.facilityBadgeText, { color: colors.success }]}>Open</Text>
+                    <Text style={[styles.facilityBadgeText, { color: colors.success }]}>{t('facilities.open', 'Open')}</Text>
                   </View>
                 ) : (
                   <View style={[styles.facilityBadge, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
-                    <Text style={[styles.facilityBadgeText, { color: colors.danger }]}>Closed</Text>
+                    <Text style={[styles.facilityBadgeText, { color: colors.danger }]}>{t('facilities.closed', 'Closed')}</Text>
                   </View>
                 )}
                 {fac.hasDelivery && (
                   <View style={[styles.facilityBadge, { backgroundColor: 'rgba(139,92,246,0.1)' }]}>
                     <Ionicons name="bicycle" size={12} color="#8B5CF6" />
-                    <Text style={[styles.facilityBadgeText, { color: '#8B5CF6' }]}>Delivery</Text>
+                    <Text style={[styles.facilityBadgeText, { color: '#8B5CF6' }]}>{t('facilities.delivery', 'Delivery')}</Text>
                   </View>
                 )}
               </View>
               {/* Hours */}
               {fac.hours && (
-                <Text style={{ color: colors.text, fontSize: 13, marginTop: 2 }}>
-                  Hours: {fac.hours}
+                <Text style={[{ color: colors.text, fontSize: 13, marginTop: 2 }, { textAlign }]}>
+                  {t('facilities.hours', 'Hours')}: {fac.hours}
                 </Text>
               )}
             </View>
@@ -210,8 +233,8 @@ export default function FacilitiesScreen({ navigation }: any) {
       {filtered.length === 0 && !loading && !error && (
         <View style={styles.emptyContainer}>
           <Ionicons name="business-outline" size={48} color={colors.mutedLight} />
-          <Text style={styles.emptyTitle}>No facilities found</Text>
-          <Text style={styles.emptyHint}>Try adjusting your filters or search</Text>
+          <Text style={[styles.emptyTitle, { textAlign: 'center' }]}>{t('facilities.noFacilities', 'No facilities found')}</Text>
+          <Text style={[styles.emptyHint, { textAlign: 'center' }]}>{t('facilities.adjustFilters', 'Try adjusting your filters or search')}</Text>
         </View>
       )}
 
@@ -240,36 +263,36 @@ export default function FacilitiesScreen({ navigation }: any) {
             {selectedFacility && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Summary</Text>
+                  <Text style={[styles.modalTitle, { textAlign }]}>{t('facilities.summary', 'Summary')}</Text>
                   <Pressable onPress={closeFacilityModal} hitSlop={10}>
-                    <Text style={styles.modalClose}>Close</Text>
+                    <Text style={styles.modalClose}>{t('common.close', 'Close')}</Text>
                   </Pressable>
                 </View>
                 <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
                   {selectedFacility.image ? (
                     <SkeletonImage source={{ uri: selectedFacility.image }} style={styles.modalAvatar} resizeMode="cover" />
                   ) : null}
-                  <Text style={styles.modalName}>{selectedFacility.name}</Text>
-                  <Text style={styles.modalSubtitle}>{selectedFacility.specialty}</Text>
+                  <Text style={[styles.modalName, { textAlign: 'center' }]}>{selectedFacility.name}</Text>
+                  <Text style={[styles.modalSubtitle, { textAlign: 'center' }]}>{selectedFacility.specialty}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: spacing.lg }}>
                   <Pill tone="primary">{selectedFacility.type.charAt(0).toUpperCase() + selectedFacility.type.slice(1)}</Pill>
-                  {selectedFacility.isOpen && <Pill tone="neutral">Open Now</Pill>}
-                  {selectedFacility.hasDelivery && <Pill tone="neutral">Has Delivery</Pill>}
+                  {selectedFacility.isOpen && <Pill tone="neutral">{t('facilities.openNow', 'Open Now')}</Pill>}
+                  {selectedFacility.hasDelivery && <Pill tone="neutral">{t('facilities.delivery', 'Delivery')}</Pill>}
                 </View>
                 <View style={{ gap: 6 }}>
-                  {selectedFacility.address && <Text style={styles.modalDetail}>Address: {selectedFacility.address}</Text>}
-                  {selectedFacility.phoneNumber && <Text style={styles.modalDetail}>Phone: {selectedFacility.phoneNumber}</Text>}
-                  {selectedFacility.hours && <Text style={styles.modalDetail}>Hours: {selectedFacility.hours}</Text>}
-                  {selectedFacility.rating && <Text style={styles.modalDetail}>Rating: {selectedFacility.rating.toFixed(1)}</Text>}
+                  {selectedFacility.address && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.address', 'Address')}: {selectedFacility.address}</Text>}
+                  {selectedFacility.phoneNumber && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.phone', 'Phone')}: {selectedFacility.phoneNumber}</Text>}
+                  {selectedFacility.hours && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.hours', 'Hours')}: {selectedFacility.hours}</Text>}
+                  {selectedFacility.rating && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.rating', 'Rating')}: {selectedFacility.rating.toFixed(1)}</Text>}
                   {selectedFacility.services && selectedFacility.services.length > 0 && (
-                    <Text style={styles.modalDetail}>Services: {selectedFacility.services.join(', ')}</Text>
+                    <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.services', 'Services')}: {selectedFacility.services.join(', ')}</Text>
                   )}
                   {selectedFacility.languages && selectedFacility.languages.length > 0 && (
-                    <Text style={styles.modalDetail}>Languages: {selectedFacility.languages.join(', ')}</Text>
+                    <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.languages', 'Languages')}: {selectedFacility.languages.join(', ')}</Text>
                   )}
                   {selectedFacility.acceptedInsurance && selectedFacility.acceptedInsurance.length > 0 && (
-                    <Text style={styles.modalDetail}>Insurance: {selectedFacility.acceptedInsurance.join(', ')}</Text>
+                    <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.insurance', 'Insurance')}: {selectedFacility.acceptedInsurance.join(', ')}</Text>
                   )}
                 </View>
               </>

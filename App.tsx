@@ -1,11 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// i18n initialization can perform async work and access storage.
-// Lazy-load it during startup to avoid module-evaluation side-effects
-// that may run before AppRegistry.registerComponent is called.
-// This prevents runtime failures on some runtimes (Hermes) where
-// certain modules or native bindings may not be ready yet.
-
-import * as Font from 'expo-font';
 // Statically import i18n to avoid dynamic import issues on some Hermes/native setups
 // This file performs i18n initialization (language detector, resource registration).
 try {
@@ -32,17 +25,16 @@ import BarcodeScanner from './src/screens/BarcodeScanner';
 import Settings from './src/screens/Settings';
 import { colors, shadow, radius, spacing } from './src/theme';
 import Login from './src/screens/Login';
-import SplashScreen from './SplashScreen';
-import { onAuthStateChanged, User, Auth } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
 import { RemindersProvider } from './src/hooks/RemindersContext';
 import { NotificationsProvider } from './src/notifications/NotificationsContext';
-import { LoadingProvider, useLoading } from './src/hooks/LoadingContext';
+import { LoadingProvider } from './src/hooks/LoadingContext';
 import { ToastProvider } from './src/hooks/useToast';
 import GlobalLoader from './src/components/GlobalLoader';
 import { createTelemetryService, setTelemetryService } from './src/core/telemetryService';
 import ErrorBoundary from './src/components/ErrorBoundary';
-import { initializeAuthPersistence, initializeAuthQuick, persistAuth, debugAuthState, getStoredAuth, isSessionValid, clearStoredAuth, restoreAuthFromStorage } from './src/lib/authPersistence';
+import { initializeAuthPersistence, initializeAuthQuick, persistAuth, debugAuthState, restoreAuthFromStorage, clearStoredAuth } from './src/lib/authPersistence';
 import { useOnboarding } from './src/hooks/useOnboarding';
 import OnboardingFlow from './src/components/OnboardingFlow';
 
@@ -72,17 +64,19 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
   }
 };
 
+import { useTranslation } from 'react-i18next';
+
 function CustomTabBar(props: Readonly<BottomTabBarProps>) {
   const { state, navigation, descriptors } = props;
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const baseHeight = 68;
-  const totalHeight = baseHeight + insets.bottom;
+  const baseHeight = 72;
   const windowHeight = Platform.OS === 'web' && typeof window !== 'undefined'
     ? (window as any).innerHeight
     : Dimensions.get('window').height;
   const ultraCompact = windowHeight < 540;
   const compact = windowHeight < 620 && !ultraCompact;
-  const fabSize = compact ? 64 : 72;
+  const fabSize = compact ? 68 : 76;
   const iconSize = compact ? 22 : 24;
   const labelFont = compact ? 11 : 12;
 
@@ -94,11 +88,15 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         right: 0,
         bottom: 0,
         backgroundColor: colors.card,
-        borderTopWidth: 1,
+        borderTopWidth: 0.5,
         borderTopColor: colors.line,
         paddingBottom: insets.bottom,
         paddingTop: spacing.md,
-        ...shadow.lg,
+        ...shadow.xl,
+        // Modern glass effect for iOS
+        ...(Platform.OS === 'ios' && {
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        }),
       }}
     >
       <View style={{ 
@@ -109,11 +107,28 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
       }}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
-          const label = options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-            ? options.title
-            : route.name;
+          
+          // Get translated label
+          let label = '';
+          switch (route.name) {
+            case 'Dashboard':
+              label = t('navigation.dashboard', 'Dashboard');
+              break;
+            case 'Reminders':
+              label = t('navigation.reminders', 'Reminders');
+              break;
+            case 'Barcode':
+              label = t('navigation.scanner', 'Scanner');
+              break;
+            case 'Clinics':
+              label = t('navigation.clinics', 'Clinics');
+              break;
+            case 'UserProfile':
+              label = t('navigation.profile', 'Profile');
+              break;
+            default:
+              label = route.name;
+          }
 
           const isFocused = state.index === index;
           const isBarcode = route.name === 'Barcode';
@@ -142,11 +157,17 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                     backgroundColor: colors.primary,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    marginTop: -spacing.lg,
+                    marginTop: -spacing.lg - 4,
                     ...shadow.primary,
+                    // Modern gradient effect
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 16,
+                    elevation: 12,
                   }}
                 >
-                  {getTabIcon(route, isFocused, '#fff', iconSize + 4)}
+                  {getTabIcon(route, isFocused, '#fff', iconSize + 6)}
                 </TouchableOpacity>
               </View>
             );
@@ -161,18 +182,23 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 paddingVertical: spacing.sm,
-                gap: 4,
+                gap: 6,
+                borderRadius: radius.md,
+                // Modern active state
+                backgroundColor: isFocused ? `${colors.primary}15` : 'transparent',
+                marginHorizontal: 4,
               }}
             >
               {getTabIcon(route, isFocused, isFocused ? colors.primary : colors.muted, iconSize)}
               <Text
                 style={{
                   fontSize: labelFont,
-                  fontWeight: isFocused ? '600' : '500',
+                  fontWeight: isFocused ? '700' : '500',
                   color: isFocused ? colors.primary : colors.muted,
+                  letterSpacing: 0.2,
                 }}
               >
-                {typeof label === 'string' ? label : route.name}
+                {label}
               </Text>
             </TouchableOpacity>
           );
@@ -243,18 +269,6 @@ function AppContent() {
     setUser(null);
     setAuthInitialized(true);
     setIsLoading(false);
-  };
-
-  const handleForceSignOut = async () => {
-    console.log('Force sign out requested');
-    try {
-      await clearStoredAuth();
-      setUser(null);
-      setAuthInitialized(true);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Force sign out failed:', error);
-    }
   };
 
   useEffect(() => {

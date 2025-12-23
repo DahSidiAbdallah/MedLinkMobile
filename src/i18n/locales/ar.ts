@@ -2,6 +2,7 @@ export default {
   translation: {
     common: {
       search: 'بحث',
+      call: 'اتصال',
       doctors: 'الأطباء',
       pharmacies: 'الصيدليات',
       reminders: 'التذكيرات',
@@ -14,6 +15,7 @@ export default {
       loading: 'جاري التحميل...',
       cancel: 'إلغاء',
       searchDoctorsAndClinics: 'البحث عن الأطباء والعيادات',
+      searchFunctionality: 'وظيفة البحث قادمة قريباً!',
       confirm: 'تأكيد',
       yes: 'نعم',
       no: 'لا',
@@ -51,6 +53,13 @@ export default {
       none: 'لا يوجد',
       and: 'و',
       ok: 'موافق'
+    },
+    navigation: {
+      dashboard: 'الرئيسية',
+      reminders: 'التذكيرات',
+      scanner: 'الماسح',
+      clinics: 'العيادات',
+      profile: 'الملف الشخصي'
     },
     auth: {
       signIn: 'تسجيل الدخول إلى حسابك',
@@ -275,6 +284,14 @@ export default {
       noInsuranceInfo: 'لا توجد معلومات تأمين.',
       preferences: 'التفضيلات',
       myMedications: 'أدويتي'
+    },
+    doctors: {
+      cardiologist: 'طبيب قلب',
+      dentist: 'طبيب أسنان',
+      therapist: 'معالج',
+      languages: 'اللغات',
+      insurance: 'التأمين',
+      availableSlots: 'المواعيد المتاحة'
     },
     appointments: {
       bookWith: 'حجز موعد مع',
@@ -532,7 +549,12 @@ export default {
       seeAll: 'رؤية الكل',
       healthSummary: 'ملخص الصحة',
       completedToday: 'مكتمل اليوم',
-      pendingReminders: 'التذكيرات المعلقة'
+      pendingReminders: 'التذكيرات المعلقة',
+      stayConsistent: 'حافظ على الاتساق مع جرعاتك',
+      greatJob: 'عمل رائع! تم إكمال جميع الجرعات اليوم!',
+      accessEmergency: 'الوصول إلى جهات الاتصال الطارئة والمرافق القريبة',
+      upcomingSchedule: 'جدول الأدوية القادم',
+      scannedMedications: 'الأدوية الممسوحة والمحفوظة'
     },
     errors: {
       cameraAccessDenied: 'تم رفض الوصول إلى الكاميرا. يرجى تمكين أذونات الكاميرا.',

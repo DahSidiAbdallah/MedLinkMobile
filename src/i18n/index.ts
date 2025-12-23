@@ -119,13 +119,15 @@ if (typeof document !== 'undefined') {
     document.documentElement.lang = lng;
   });
 } else {
-  // React Native RTL support
+  // React Native RTL support - but keep layout structure intact
   try {
     const { I18nManager } = require('react-native');
     i18n.on('languageChanged', (lng: string) => {
       const isRTL = lng === 'ar';
+      // Only force RTL for text content, not the entire layout
       if (I18nManager.isRTL !== isRTL) {
-        I18nManager.forceRTL(isRTL);
+        // We'll handle RTL at component level instead of globally
+        console.log(`Language changed to ${lng}, RTL: ${isRTL}`);
       }
     });
   } catch {}
