@@ -3,6 +3,8 @@ import { saveMedication } from '../utils/myMedications';
 // import { checkDrugSafety, type SafetyCheck } from '../utils/drugInteractionChecker';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useRTL } from '../hooks/useRTL';
 // Guard AsyncStorage import to avoid module-eval crashes on some runtimes
 let AsyncStorage: any = null;
 function getAsyncStorage() {
@@ -263,13 +265,13 @@ type ScanHistoryItem = {
   risk?: string | null;
 };
 
-const getUserMessage = (verification: VerificationResult | null, error: string | null): string => {
-  if (error) return 'Scan failed. Please try again.';
+const getUserMessage = (verification: VerificationResult | null, error: string | null, t: any): string => {
+  if (error) return t('scanner.scanFailed', 'Scan failed. Please try again.');
   if (!verification) return '';
-  if (verification.verified) return 'This product is authentic and safe.';
-  if (verification.expired) return 'Warning: This product is expired. Do not use.';
-  if (verification.recall) return 'Recall alert: This product has been recalled.';
-  return 'No authenticity or recall data found. Please exercise caution.';
+  if (verification.verified) return t('scanner.productAuthentic', 'This product is authentic and safe.');
+  if (verification.expired) return t('scanner.productExpired', 'Warning: This product is expired. Do not use.');
+  if (verification.recall) return t('scanner.productRecalled', 'Recall alert: This product has been recalled.');
+  return t('scanner.noRecallData', 'No authenticity or recall data found. Please exercise caution.');
 };
 
 async function fetchOpenFdaNdcInfo(ndc: string) {
@@ -340,6 +342,8 @@ const HISTORY_KEY = 'scan_history_v1';
 
 
 const BarcodeScanner: React.FC = () => {
+  const { t } = useTranslation();
+  const { isRTL, textAlign } = useRTL();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = React.useRef<any>(null)
   const lastFrameTs = React.useRef<number | null>(null)
@@ -451,7 +455,7 @@ const BarcodeScanner: React.FC = () => {
         if (profile.allergies && profile.allergies.length > 0) {
           for (const allergy of profile.allergies) {
             if (medName.includes(allergy.toLowerCase())) {
-              risk += `⚠️ Allergy risk: ${allergy}.\n`;
+              risk += `⚠️ ${t('scanner.allergyRisk', 'Allergy risk')}: ${allergy}.\n`;
             }
           }
         }
@@ -460,7 +464,7 @@ const BarcodeScanner: React.FC = () => {
         if (profile.medical_conditions && profile.medical_conditions.length > 0) {
           for (const cond of profile.medical_conditions) {
             if (result.label.contraindications && result.label.contraindications.toLowerCase().includes(cond.toLowerCase())) {
-              risk += `⚠️ Condition risk: ${cond}.\n`;
+              risk += `⚠️ ${t('scanner.conditionRisk', 'Condition risk')}: ${cond}.\n`;
             }
           }
         }
@@ -469,7 +473,7 @@ const BarcodeScanner: React.FC = () => {
         if (profile.medications && profile.medications.length > 0) {
           for (const med of profile.medications) {
             if (result.label.drug_interactions && result.label.drug_interactions.toLowerCase().includes(med.toLowerCase())) {
-              risk += `⚠️ Interaction risk: ${med}.\n`;
+              risk += `⚠️ ${t('scanner.interactionRisk', 'Interaction risk')}: ${med}.\n`;
             }
           }
         }
@@ -523,15 +527,15 @@ const BarcodeScanner: React.FC = () => {
       if (scanTimeout.current) clearTimeout(scanTimeout.current);
       // After 3s, suggest to center barcode
       scanTimeout.current = setTimeout(() => {
-        setGuidance('Center the barcode in the box.');
+        setGuidance(t('scanner.centerBarcode', 'Center the barcode in the box.'));
       }, 3000);
       // After 6s, suggest to move closer or improve lighting
       setTimeout(() => {
-        setGuidance('Move closer, hold steady, or improve lighting.');
+        setGuidance(t('scanner.moveCloser', 'Move closer, hold steady, or improve lighting.'));
       }, 6000);
       // After 10s, suggest to clean camera or try another code
       setTimeout(() => {
-        setGuidance('Try cleaning your camera or another barcode.');
+        setGuidance(t('scanner.cleanCamera', 'Try cleaning your camera or another barcode.'));
       }, 10000);
     } else {
       setGuidance(null);
@@ -545,20 +549,20 @@ const BarcodeScanner: React.FC = () => {
 
   const heroHeader = (
     <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-      <Text style={styles.heroTitle}>Medication scanner</Text>
-      <Text style={styles.heroSubtitle}>Verify authenticity and surface risks from your medical ID.</Text>
+      <Text style={[styles.heroTitle, { textAlign }]}>{t('scanner.medicationScanner', 'Medication scanner')}</Text>
+      <Text style={[styles.heroSubtitle, { textAlign }]}>{t('scanner.verifyAuthenticity', 'Verify authenticity and surface risks from your medical ID.')}</Text>
       <View style={styles.heroStats}>
         <View style={styles.statChip}>
-          <Text style={styles.statText}>{history.length} total scans</Text>
+          <Text style={styles.statText}>{history.length} {t('scanner.totalScans', 'total scans')}</Text>
         </View>
         {(profile?.allergies?.length ?? 0) > 0 ? (
           <View style={styles.statChip}>
-            <Text style={styles.statText}>{profile?.allergies?.length} allergies monitored</Text>
+            <Text style={styles.statText}>{profile?.allergies?.length} {t('scanner.allergiesMonitored', 'allergies monitored')}</Text>
           </View>
         ) : null}
         {(profile?.medications?.length ?? 0) > 0 ? (
           <View style={styles.statChip}>
-            <Text style={styles.statText}>{profile?.medications?.length} meds tracked</Text>
+            <Text style={styles.statText}>{profile?.medications?.length} {t('scanner.medsTracked', 'meds tracked')}</Text>
           </View>
         ) : null}
       </View>
@@ -584,16 +588,16 @@ const BarcodeScanner: React.FC = () => {
   });
 
   const filterOptions: { label: string; value: typeof filter }[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Successful', value: 'successful' },
-    { label: 'Unsuccessful', value: 'unsuccessful' },
-    { label: 'Risk matched', value: 'risk' },
+    { label: t('scanner.all', 'All'), value: 'all' },
+    { label: t('scanner.successful', 'Successful'), value: 'successful' },
+    { label: t('scanner.unsuccessful', 'Unsuccessful'), value: 'unsuccessful' },
+    { label: t('scanner.riskMatched', 'Risk matched'), value: 'risk' },
   ];
 
   const renderIdle = () => (
     <Card style={styles.scanCard}>
-      <Text style={styles.sectionTitle}>Align the barcode inside the frame</Text>
-      <Text style={styles.scanInstructions}>We automatically detect medication barcodes and GS1 data matrix codes.</Text>
+      <Text style={[styles.sectionTitle, { textAlign }]}>{t('scanner.alignBarcode', 'Align the barcode inside the frame')}</Text>
+      <Text style={[styles.scanInstructions, { textAlign: 'center' }]}>{t('scanner.autoDetect', 'We automatically detect medication barcodes and GS1 data matrix codes.')}</Text>
       <View style={styles.cameraShell}>
         <CameraView
           ref={cameraRef}
@@ -621,19 +625,19 @@ const BarcodeScanner: React.FC = () => {
               { color: showScanEffect ? colors.accent : barcodeDetected ? colors.accent : '#fff' },
             ]}
           >
-            {showScanEffect ? 'Scan complete!' : barcodeDetected ? 'Barcode detected' : 'Hold steady'}
+            {showScanEffect ? t('scanner.scanComplete', 'Scan complete!') : barcodeDetected ? t('scanner.barcodeDetected', 'Barcode detected') : t('scanner.holdSteady', 'Hold steady')}
           </Text>
         </View>
       </View>
-      {guidance ? <Text style={styles.guidance}>{guidance}</Text> : null}
+      {guidance ? <Text style={[styles.guidance, { textAlign: 'center' }]}>{guidance}</Text> : null}
     </Card>
   );
 
   const renderHistory = history.length > 0 ? (
     <Card style={styles.historyCard}>
       <View style={styles.historyHeader}>
-        <Text style={styles.historyTitle}>Recent scans</Text>
-        <Text style={styles.metaText}>{filteredHistory.length} shown</Text>
+        <Text style={[styles.historyTitle, { textAlign }]}>{t('scanner.recentScans', 'Recent scans')}</Text>
+        <Text style={styles.metaText}>{filteredHistory.length} {t('scanner.shown', 'shown')}</Text>
       </View>
       <View style={styles.filterRow}>
         {filterOptions.map(opt => (
@@ -654,7 +658,7 @@ const BarcodeScanner: React.FC = () => {
           <View style={styles.historyItem}>
             <Text style={styles.historyType}>{item.type}</Text>
             <Text style={styles.historyData}>{item.data}</Text>
-            <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error)}</Text>
+            <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error, t)}</Text>
             {item.risk ? <Text style={styles.riskText}>⚠️ {item.risk}</Text> : null}
             <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
           </View>
@@ -665,14 +669,14 @@ const BarcodeScanner: React.FC = () => {
 
   const renderResult = () => (
     <Card style={styles.resultCard}>
-      <Text style={styles.sectionTitle}>Scan analysis</Text>
-      <Text style={styles.metaText}>Type: {scanData?.type ?? 'Unknown'}</Text>
-      <Text style={styles.metaText}>Raw data: {scanData?.data ?? '—'}</Text>
-      <Text style={styles.userMessage}>{getUserMessage(verification, error)}</Text>
+      <Text style={[styles.sectionTitle, { textAlign }]}>{t('scanner.scanAnalysis', 'Scan analysis')}</Text>
+      <Text style={[styles.metaText, { textAlign }]}>{t('scanner.type', 'Type')}: {scanData?.type ?? 'Unknown'}</Text>
+      <Text style={[styles.metaText, { textAlign }]}>{t('scanner.rawData', 'Raw data')}: {scanData?.data ?? '—'}</Text>
+      <Text style={[styles.userMessage, { textAlign }]}>{getUserMessage(verification, error, t)}</Text>
       {riskWarning ? (
         <View style={styles.riskCard}>
-          <Text style={styles.riskTitle}>Medication risk</Text>
-          <Text style={styles.riskText}>{riskWarning}</Text>
+          <Text style={[styles.riskTitle, { textAlign }]}>{t('scanner.medicationRisk', 'Medication risk')}</Text>
+          <Text style={[styles.riskText, { textAlign }]}>{riskWarning}</Text>
         </View>
       ) : null}
       {loading ? (
@@ -682,13 +686,13 @@ const BarcodeScanner: React.FC = () => {
           {verification ? (
             <View style={{ gap: spacing.md }}>
               <View style={styles.analysisCard}>
-                {verification.verified ? <Text style={styles.positiveText}>Authenticity verified</Text> : null}
-                {verification.expired ? <Text style={styles.negativeText}>Expired — do not use</Text> : null}
+                {verification.verified ? <Text style={styles.positiveText}>{t('scanner.authenticityVerified', 'Authenticity verified')}</Text> : null}
+                {verification.expired ? <Text style={styles.negativeText}>{t('scanner.expired', 'Expired — do not use')}</Text> : null}
                 {verification.recall ? (
                   <View>
-                    <Text style={styles.negativeText}>Recall alert</Text>
+                    <Text style={styles.negativeText}>{t('scanner.recallAlert', 'Recall alert')}</Text>
                     <Text style={styles.metaText}>{verification.recall.reason_for_recall}</Text>
-                    <Text style={styles.metaText}>Status: {verification.recall.status}</Text>
+                    <Text style={styles.metaText}>{t('scanner.status', 'Status')}: {verification.recall.status}</Text>
                   </View>
                 ) : null}
                 {verification.message ? <Text style={styles.metaText}>{verification.message}</Text> : null}
@@ -700,23 +704,23 @@ const BarcodeScanner: React.FC = () => {
                 <View style={styles.analysisCard}>
                   {verification.labelInfo ? (
                     <>
-                      <Text style={styles.sectionTitle}>openFDA insights</Text>
-                      <Text style={styles.metaText}>Indications: {verification.labelInfo.indications || 'N/A'}</Text>
-                      <Text style={styles.metaText}>Dosage: {verification.labelInfo.dosage || 'N/A'}</Text>
-                      <Text style={styles.metaText}>Adverse reactions: {verification.labelInfo.sideEffects || 'N/A'}</Text>
+                      <Text style={styles.sectionTitle}>{t('scanner.openFdaInsights', 'openFDA insights')}</Text>
+                      <Text style={styles.metaText}>{t('scanner.indications', 'Indications')}: {verification.labelInfo.indications || 'N/A'}</Text>
+                      <Text style={styles.metaText}>{t('scanner.dosage', 'Dosage')}: {verification.labelInfo.dosage || 'N/A'}</Text>
+                      <Text style={styles.metaText}>{t('scanner.adverseReactions', 'Adverse reactions')}: {verification.labelInfo.sideEffects || 'N/A'}</Text>
                     </>
                   ) : null}
                   {verification.webscraperInfo ? (
                     <>
-                      <Text style={styles.sectionTitle}>Supplemental data</Text>
+                      <Text style={styles.sectionTitle}>{t('scanner.supplementalData', 'Supplemental data')}</Text>
                       {verification.webscraperInfo.indications ? (
-                        <Text style={styles.metaText}>Indications: {verification.webscraperInfo.indications}</Text>
+                        <Text style={styles.metaText}>{t('scanner.indications', 'Indications')}: {verification.webscraperInfo.indications}</Text>
                       ) : null}
                       {verification.webscraperInfo.dosage ? (
-                        <Text style={styles.metaText}>Dosage: {verification.webscraperInfo.dosage}</Text>
+                        <Text style={styles.metaText}>{t('scanner.dosage', 'Dosage')}: {verification.webscraperInfo.dosage}</Text>
                       ) : null}
                       {verification.webscraperInfo.sideEffects ? (
-                        <Text style={styles.metaText}>Side effects: {verification.webscraperInfo.sideEffects}</Text>
+                        <Text style={styles.metaText}>{t('scanner.sideEffects', 'Side effects')}: {verification.webscraperInfo.sideEffects}</Text>
                       ) : null}
                       {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects ? (
                         <Text style={styles.metaText}>{JSON.stringify(verification.webscraperInfo, null, 2)}</Text>
@@ -726,7 +730,7 @@ const BarcodeScanner: React.FC = () => {
                 </View>
               ) : null}
               {!verification.verified && !verification.recall && !verification.expired ? (
-                <Text style={styles.metaText}>No authenticity data available. Please exercise caution.</Text>
+                <Text style={styles.metaText}>{t('scanner.noAuthenticityData', 'No authenticity data available. Please exercise caution.')}</Text>
               ) : null}
             </View>
           ) : null}
@@ -745,7 +749,7 @@ const BarcodeScanner: React.FC = () => {
             setRiskWarning(null);
           }}
         >
-          <Text style={styles.secondaryText}>Scan again</Text>
+          <Text style={styles.secondaryText}>{t('scanner.scanAgain', 'Scan again')}</Text>
         </Pressable>
         {verification ? (
           <Pressable
@@ -760,18 +764,18 @@ const BarcodeScanner: React.FC = () => {
                   timestamp: Date.now(),
                 });
                 // Show success feedback in a proper way
-                setVerification({ ...verification, message: '✓ Saved to My Medications!' });
+                setVerification({ ...verification, message: t('scanner.savedToMedications', '✓ Saved to My Medications!') });
                 setTimeout(() => {
                   setScanned(false);
                   setScanData(null);
                   setVerification(null);
                 }, 1500);
               } catch (e) {
-                setError('Failed to save medication. Please try again.');
+                setError(t('scanner.failedToSave', 'Failed to save medication. Please try again.'));
               }
             }}
           >
-            <Text style={styles.primaryText}>Save medication</Text>
+            <Text style={styles.primaryText}>{t('scanner.saveMedication', 'Save medication')}</Text>
           </Pressable>
         ) : null}
       </View>

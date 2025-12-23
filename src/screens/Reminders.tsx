@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Switch, ActivityIndicator, Modal, TextInput, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '../hooks/useRTL';
 import { SkeletonReminderCard } from '../components/Skeleton';
 import { colors, spacing, shadow, radius } from '../theme';
 import { SegmentedControl } from '../components/SegmentedControl';
@@ -16,6 +17,7 @@ import ScreenContainer from '../components/ScreenContainer';
 
 export default function Reminders() {
   const { t } = useTranslation();
+  const { isRTL, textAlign } = useRTL();
   const [segment, setSegment] = useState('Active');
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({ title: '', datetime: '', frequency: '', description: '' });
@@ -41,10 +43,10 @@ export default function Reminders() {
     setToggleMsg(prev => ({ ...prev, [reminder.id]: '' }));
     try {
       await updateReminder(reminder.id, { active: !reminder.active });
-      setToggleMsg(prev => ({ ...prev, [reminder.id]: reminder.active ? 'Reminder turned off.' : 'Reminder activated.' }));
+      setToggleMsg(prev => ({ ...prev, [reminder.id]: reminder.active ? t('reminders.reminderTurnedOff', 'Reminder turned off.') : t('reminders.reminderActivated', 'Reminder activated.') }));
       refresh();
     } catch (e) {
-      setToggleMsg(prev => ({ ...prev, [reminder.id]: 'Failed to update reminder.' }));
+      setToggleMsg(prev => ({ ...prev, [reminder.id]: t('reminders.failedToUpdate', 'Failed to update reminder.') }));
     } finally {
       setToggling(prev => ({ ...prev, [reminder.id]: false }));
     }
@@ -60,15 +62,15 @@ export default function Reminders() {
   const validateField = (field: string, value: string) => {
     switch (field) {
       case 'title':
-        if (!value || value.trim().length < 2) return 'Title is required.';
+        if (!value || value.trim().length < 2) return t('reminders.titleRequired', 'Title is required.');
         break;
       case 'datetime':
-        if (!value) return 'Date/Time is required.';
-        if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value.trim())) return 'Format: YYYY-MM-DD HH:mm';
+        if (!value) return t('reminders.dateTimeRequired', 'Date/Time is required.');
+        if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value.trim())) return t('reminders.dateTimeFormat', 'Format: YYYY-MM-DD HH:mm');
         break;
       case 'frequency':
-        if (!value) return 'Frequency is required.';
-        if (!/^(Daily|Weekly|Monthly)$/i.test(value.trim())) return 'Use: Daily, Weekly, or Monthly.';
+        if (!value) return t('reminders.frequencyRequired', 'Frequency is required.');
+        if (!/^(Daily|Weekly|Monthly)$/i.test(value.trim())) return t('reminders.frequencyOptions', 'Use: Daily, Weekly, or Monthly.');
         break;
       default:
         return undefined;
@@ -97,7 +99,7 @@ export default function Reminders() {
       setFormErrors({});
       refresh();
     } catch (e: any) {
-      setFormErrors({ general: e?.message || 'Failed to create reminder' });
+      setFormErrors({ general: e?.message || t('reminders.failedToCreate', 'Failed to create reminder') });
     } finally {
       setCreating(false);
     }
@@ -127,8 +129,8 @@ export default function Reminders() {
         {filtered.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="calendar-outline" size={48} color={colors.mutedLight} />
-            <Text style={styles.emptyTitle}>{t('reminders.noReminders', 'No reminders')}</Text>
-            <Text style={styles.emptyHint}>{segment === 'Active' ? 'Add a reminder to get started' : 'No past reminders to show'}</Text>
+            <Text style={[styles.emptyTitle, { textAlign: 'center' }]}>{t('reminders.noReminders', 'No reminders')}</Text>
+            <Text style={[styles.emptyHint, { textAlign: 'center' }]}>{segment === 'Active' ? t('reminders.addReminderToStart', 'Add a reminder to get started') : t('reminders.noPastReminders', 'No past reminders to show')}</Text>
           </View>
         ) : null}
         {filtered.map(r => (
@@ -142,7 +144,7 @@ export default function Reminders() {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.reminderTitle}>{r.title}</Text>
+                <Text style={[styles.reminderTitle, { textAlign }]}>{r.title}</Text>
                 <View style={styles.reminderMeta}>
                   <Ionicons name="time-outline" size={12} color={colors.muted} />
                   <Text style={styles.reminderMetaText}>{r.datetime}</Text>
@@ -167,7 +169,7 @@ export default function Reminders() {
               </View>
             </View>
             {r.description ? (
-              <Text style={styles.description}>{r.description}</Text>
+              <Text style={[styles.description, { textAlign }]}>{r.description}</Text>
             ) : null}
             <View style={styles.actionsRow}>
               <Pressable
@@ -180,7 +182,7 @@ export default function Reminders() {
                   color={doneMap[r.id] ? '#fff' : colors.primary} 
                 />
                 <Text style={[styles.doneButtonText, doneMap[r.id] && styles.doneButtonTextActive]}>
-                  {doneMap[r.id] ? 'Completed' : 'Mark as done'}
+                  {doneMap[r.id] ? t('reminders.completed', 'Completed') : t('reminders.markAsDone', 'Mark as done')}
                 </Text>
               </Pressable>
             </View>
@@ -196,29 +198,29 @@ export default function Reminders() {
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
       <View style={styles.headerSection}>
-        <Text style={styles.screenTitle}>{t('reminders.title', 'Reminders')}</Text>
-        <Text style={styles.screenSubtitle}>{t('reminders.manageMedicationSchedule', 'Manage your medication schedule')}</Text>
+        <Text style={[styles.screenTitle, { textAlign }]}>{t('reminders.title', 'Reminders')}</Text>
+        <Text style={[styles.screenSubtitle, { textAlign }]}>{t('reminders.manageMedicationSchedule', 'Manage your medication schedule')}</Text>
       </View>
 
       <Card style={styles.statsCard}>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{filtered.length}</Text>
-          <Text style={styles.statLabel}>{t('calendar.today', 'Today')}</Text>
+          <Text style={[styles.statLabel, { textAlign: 'center' }]}>{t('calendar.today', 'Today')}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{completedCount}</Text>
-          <Text style={styles.statLabel}>{t('dashboard.completedToday', 'Completed today')}</Text>
+          <Text style={[styles.statLabel, { textAlign: 'center' }]}>{t('dashboard.completedToday', 'Completed today')}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{filtered.length - completedCount}</Text>
-          <Text style={styles.statLabel}>{t('dashboard.pendingReminders', 'Pending reminders')}</Text>
+          <Text style={[styles.statLabel, { textAlign: 'center' }]}>{t('dashboard.pendingReminders', 'Pending reminders')}</Text>
         </View>
       </Card>
 
       <Card style={styles.filterCard}>
-        <SegmentedControl options={['Active', 'Past']} value={segment} onChange={setSegment} />
+        <SegmentedControl options={[t('reminders.active', 'Active'), t('reminders.past', 'Past')]} value={segment} onChange={setSegment} />
         <View style={styles.calendarWrap}>
           <CalendarStrip value={selectedDate} onChange={setSelectedDate} />
         </View>
@@ -239,10 +241,10 @@ export default function Reminders() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={[{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }]}>{t('reminders.create', 'Create Reminder')}</Text>
+            <Text style={[{ fontWeight: 'bold', fontSize: 18, marginBottom: spacing.md }, { textAlign }]}>{t('reminders.create', 'Create Reminder')}</Text>
             <TextInput
-              style={[styles.input, formErrors.title && { borderColor: colors.danger }]}
-              placeholder="Title"
+              style={[styles.input, formErrors.title && { borderColor: colors.danger }, { textAlign }]}
+              placeholder={t('reminders.titlePlaceholder', 'Title')}
               value={form.title}
               onChangeText={v => {
                 setForm(f => ({ ...f, title: v }));
@@ -254,10 +256,10 @@ export default function Reminders() {
               }}
               autoFocus
             />
-            {formErrors.title && <Text style={styles.error}>{formErrors.title}</Text>}
+            {formErrors.title && <Text style={[styles.error, { textAlign }]}>{formErrors.title}</Text>}
             <TextInput
-              style={[styles.input, formErrors.datetime && { borderColor: colors.danger }]}
-              placeholder="Date/Time (YYYY-MM-DD HH:mm)"
+              style={[styles.input, formErrors.datetime && { borderColor: colors.danger }, { textAlign }]}
+              placeholder={t('reminders.dateTimePlaceholder', 'Date/Time (YYYY-MM-DD HH:mm)')}
               value={form.datetime}
               onChangeText={v => {
                 setForm(f => ({ ...f, datetime: v }));
@@ -268,10 +270,10 @@ export default function Reminders() {
                 setFormErrors((e: any) => ({ ...e, datetime: err }));
               }}
             />
-            {formErrors.datetime && <Text style={styles.error}>{formErrors.datetime}</Text>}
+            {formErrors.datetime && <Text style={[styles.error, { textAlign }]}>{formErrors.datetime}</Text>}
             <TextInput
-              style={[styles.input, formErrors.frequency && { borderColor: colors.danger }]}
-              placeholder="Frequency (Daily, Weekly, Monthly)"
+              style={[styles.input, formErrors.frequency && { borderColor: colors.danger }, { textAlign }]}
+              placeholder={t('reminders.frequencyPlaceholder', 'Frequency (Daily, Weekly, Monthly)')}
               value={form.frequency}
               onChangeText={v => {
                 setForm(f => ({ ...f, frequency: v }));
@@ -282,14 +284,14 @@ export default function Reminders() {
                 setFormErrors((e: any) => ({ ...e, frequency: err }));
               }}
             />
-            {formErrors.frequency && <Text style={styles.error}>{formErrors.frequency}</Text>}
+            {formErrors.frequency && <Text style={[styles.error, { textAlign }]}>{formErrors.frequency}</Text>}
             <TextInput
-              style={styles.input}
-              placeholder="Description (optional)"
+              style={[styles.input, { textAlign }]}
+              placeholder={t('reminders.descriptionPlaceholder', 'Description (optional)')}
               value={form.description}
               onChangeText={v => setForm(f => ({ ...f, description: v }))}
             />
-            {formErrors.general && <Text style={styles.error}>{formErrors.general}</Text>}
+            {formErrors.general && <Text style={[styles.error, { textAlign }]}>{formErrors.general}</Text>}
             <View style={{ flexDirection: 'row', marginTop: spacing.md, gap: 8 }}>
               <Pressable
                 style={[styles.modalBtn, { backgroundColor: colors.primary, flex: 1 }, creating && { opacity: 0.6 }]}

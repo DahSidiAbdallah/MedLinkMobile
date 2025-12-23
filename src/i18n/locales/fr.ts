@@ -14,6 +14,7 @@ export default {
       loading: 'Chargement...',
       cancel: 'Annuler',
       searchDoctorsAndClinics: 'Rechercher des médecins et des cliniques',
+      searchFunctionality: 'Fonctionnalité de recherche bientôt disponible !',
       confirm: 'Confirmer',
       yes: 'Oui',
       no: 'Non',
@@ -50,7 +51,15 @@ export default {
       saving: 'Sauvegarde...',
       none: 'Aucun',
       and: 'et',
-      ok: 'OK'
+      ok: 'OK',
+      call: 'Appeler'
+    },
+    navigation: {
+      dashboard: 'Tableau de bord',
+      reminders: 'Rappels',
+      scanner: 'Scanner',
+      clinics: 'Cliniques',
+      profile: 'Profil'
     },
     auth: {
       signIn: 'Connexion à votre compte',
@@ -272,6 +281,14 @@ export default {
       noInsuranceInfo: "Aucune information d'assurance.",
       preferences: 'Préférences',
       myMedications: 'Mes médicaments'
+    },
+    doctors: {
+      cardiologist: 'Cardiologue',
+      dentist: 'Dentiste',
+      therapist: 'Thérapeute',
+      languages: 'Langues',
+      insurance: 'Assurance',
+      availableSlots: 'Créneaux disponibles'
     },
     appointments: {
       bookWith: 'Prendre rendez-vous avec',
@@ -529,7 +546,12 @@ export default {
       seeAll: 'Voir tout',
       healthSummary: 'Résumé de santé',
       completedToday: "Terminé aujourd'hui",
-      pendingReminders: 'Rappels en attente'
+      pendingReminders: 'Rappels en attente',
+      stayConsistent: 'Restez cohérent avec vos doses',
+      greatJob: 'Excellent travail ! Toutes les doses terminées aujourd\'hui !',
+      accessEmergency: 'Accédez aux contacts d\'urgence et aux établissements à proximité',
+      upcomingSchedule: 'Votre programme de médicaments à venir',
+      scannedMedications: 'Médicaments scannés et sauvegardés'
     },
     errors: {
       cameraAccessDenied: 'L\'accès à la caméra a été refusé. Veuillez activer les autorisations de la caméra.',

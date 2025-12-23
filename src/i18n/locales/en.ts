@@ -15,6 +15,7 @@ export default {
       loading: 'Loading...',
       cancel: 'Cancel',
       searchDoctorsAndClinics: 'Search doctors and clinics',
+      searchFunctionality: 'Search functionality coming soon!',
       confirm: 'Confirm',
       yes: 'Yes',
       no: 'No',
@@ -51,7 +52,15 @@ export default {
       saving: 'Saving...',
       none: 'None',
       and: 'and',
-      ok: 'OK'
+      ok: 'OK',
+      call: 'Call'
+    },
+    navigation: {
+      dashboard: 'Dashboard',
+      reminders: 'Reminders',
+      scanner: 'Scanner',
+      clinics: 'Clinics',
+      profile: 'Profile'
     },
     auth: {
       signIn: 'Sign In',
@@ -310,6 +319,9 @@ export default {
       past: 'Past'
     },
     doctors: {
+      cardiologist: 'Cardiologist',
+      dentist: 'Dentist',
+      therapist: 'Therapist',
       languages: 'Languages',
       availableSlots: 'Available slots',
       insurance: 'Accepted Insurance'
@@ -380,7 +392,12 @@ export default {
       seeAll: 'See All',
       healthSummary: 'Health Summary',
       completedToday: 'Completed today',
-      pendingReminders: 'Pending reminders'
+      pendingReminders: 'Pending reminders',
+      stayConsistent: 'Stay consistent with your doses',
+      greatJob: 'Great job! All doses completed today!',
+      accessEmergency: 'Access emergency contacts & nearby facilities',
+      upcomingSchedule: 'Your upcoming medication schedule',
+      scannedMedications: 'Scanned and saved medications'
     },
     facilities: {
       title: 'Facilities',
