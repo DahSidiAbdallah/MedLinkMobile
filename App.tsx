@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 // i18n initialization can perform async work and access storage.
 // Lazy-load it during startup to avoid module-evaluation side-effects
@@ -21,52 +20,53 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, TouchableOpacity, ActivityIndicator, Platform, Text, Dimensions } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, Platform, Text, Dimensions, StatusBar, Pressable } from 'react-native';
 import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Dashboard from './src/screens/Dashboard';
 import Reminders from './src/screens/Reminders';
-
 import UserProfile from './src/screens/UserProfile';
 import Clinics from './src/screens/Clinics';
 import FacilityDetail from './src/screens/FacilityDetail';
 import BarcodeScanner from './src/screens/BarcodeScanner';
 import Settings from './src/screens/Settings';
-import { colors } from './src/theme';
+import { colors, shadow, radius, spacing } from './src/theme';
 import Login from './src/screens/Login';
 import SplashScreen from './SplashScreen';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User, Auth } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
 import { RemindersProvider } from './src/hooks/RemindersContext';
 import { NotificationsProvider } from './src/notifications/NotificationsContext';
 import { LoadingProvider, useLoading } from './src/hooks/LoadingContext';
+import { ToastProvider } from './src/hooks/useToast';
 import GlobalLoader from './src/components/GlobalLoader';
 import { createTelemetryService, setTelemetryService } from './src/core/telemetryService';
 import ErrorBoundary from './src/components/ErrorBoundary';
-
+import { initializeAuthPersistence, initializeAuthQuick, persistAuth, debugAuthState, getStoredAuth, isSessionValid, clearStoredAuth, restoreAuthFromStorage } from './src/lib/authPersistence';
+import { useOnboarding } from './src/hooks/useOnboarding';
+import OnboardingFlow from './src/components/OnboardingFlow';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-
 const getTabIcon = (route: { name: string }, focused: boolean, color: string, size: number) => {
   switch (route.name) {
     case 'Dashboard':
-      return <Ionicons name="home-outline" size={size} color={color} />;
+      return <Ionicons name={focused ? "home" : "home-outline"} size={size} color={color} />;
     case 'Reminders':
-      return <Ionicons name="notifications-outline" size={size} color={color} />;
+      return <Ionicons name={focused ? "notifications" : "notifications-outline"} size={size} color={color} />;
     case 'Barcode':
       return (
         <MaterialCommunityIcons
           name="barcode-scan"
-          size={size + 10}
+          size={size + 8}
           color="#fff"
         />
       );
     case 'Clinics':
-      return <Ionicons name="location-outline" size={size} color={color} />;
+      return <Ionicons name={focused ? "location" : "location-outline"} size={size} color={color} />;
     case 'UserProfile':
-      return <Ionicons name="person-outline" size={size} color={color} />;
+      return <Ionicons name={focused ? "person" : "person-outline"} size={size} color={color} />;
     default:
       return null;
   }
@@ -75,17 +75,16 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
 function CustomTabBar(props: Readonly<BottomTabBarProps>) {
   const { state, navigation, descriptors } = props;
   const insets = useSafeAreaInsets();
-  const baseHeight = 64;
+  const baseHeight = 68;
   const totalHeight = baseHeight + insets.bottom;
   const windowHeight = Platform.OS === 'web' && typeof window !== 'undefined'
     ? (window as any).innerHeight
     : Dimensions.get('window').height;
   const ultraCompact = windowHeight < 540;
   const compact = windowHeight < 620 && !ultraCompact;
-  const fabSize = compact ? 62 : 70;
+  const fabSize = compact ? 64 : 72;
   const iconSize = compact ? 22 : 24;
   const labelFont = compact ? 11 : 12;
-  const barcodeRoute = state.routes.find(r => r.name === 'Barcode');
 
   return (
     <View
@@ -98,236 +97,292 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         borderTopWidth: 1,
         borderTopColor: colors.line,
         paddingBottom: insets.bottom,
-        paddingTop: 8,
-        ...Platform.select({
-          ios: {
-            shadowColor: 'rgba(9,30,66,0.08)',
-            shadowOffset: { width: 0, height: -1 },
-            shadowOpacity: 1,
-            shadowRadius: 8,
-          },
-          android: {
-            elevation: 2,
-          },
-          web: {
-            boxShadow: '0 -1px 8px rgba(9,30,66,0.08)',
-          },
-        }),
+        paddingTop: spacing.md,
+        ...shadow.lg,
       }}
-      accessibilityElementsHidden={false}
-      importantForAccessibility="no-hide-descendants"
     >
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          height: baseHeight,
-          paddingHorizontal: 8,
-        }}
-      >
-        {state.routes.map((route) => {
-            const isActive = state.routeNames[state.index] === route.name;
-            const rawLabel =
-              descriptors[route.key]?.options?.tabBarLabel ??
-              descriptors[route.key]?.options?.title ??
-              route.name;
-            const label = typeof rawLabel === 'string' ? rawLabel : route.name;
-            
-            if (route.name === 'Barcode') {
-              return (
+      <View style={{ 
+        flexDirection: 'row', 
+        alignItems: 'center',
+        paddingHorizontal: spacing.lg,
+        height: baseHeight - spacing.md,
+      }}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.tabBarLabel !== undefined
+            ? options.tabBarLabel
+            : options.title !== undefined
+            ? options.title
+            : route.name;
+
+          const isFocused = state.index === index;
+          const isBarcode = route.name === 'Barcode';
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          if (isBarcode) {
+            return (
+              <View key={route.key} style={{ flex: 1, alignItems: 'center' }}>
                 <TouchableOpacity
-                  key={route.key}
-                  onPress={() => navigation.navigate(route.name)}
-                  activeOpacity={0.7}
+                  onPress={onPress}
                   style={{
-                    flex: 1,
-                    alignItems: 'center',
+                    width: fabSize,
+                    height: fabSize,
+                    borderRadius: fabSize / 2,
+                    backgroundColor: colors.primary,
                     justifyContent: 'center',
-                    paddingVertical: 6,
-                    minHeight: 50,
+                    alignItems: 'center',
+                    marginTop: -spacing.lg,
+                    ...shadow.primary,
                   }}
                 >
-                  <View
-                    style={{
-                      backgroundColor: isActive ? colors.primary : colors.mutedLight,
-                      borderRadius: 20,
-                      width: 40,
-                      height: 40,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <MaterialCommunityIcons 
-                      name="barcode-scan" 
-                      size={22} 
-                      color={isActive ? '#fff' : colors.text} 
-                    />
-                  </View>
-                  <Text
-                    style={{
-                      marginTop: 2,
-                      fontSize: labelFont,
-                      color: isActive ? colors.primary : colors.muted,
-                      fontWeight: isActive ? ('600' as const) : ('500' as const),
-                    }}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                  >
-                    Scan
-                  </Text>
+                  {getTabIcon(route, isFocused, '#fff', iconSize + 4)}
                 </TouchableOpacity>
-              );
-            }
-            
-            return (
-              <TouchableOpacity
-                key={route.key}
-                onPress={() => navigation.navigate(route.name)}
-                activeOpacity={0.7}
+              </View>
+            );
+          }
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={onPress}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: spacing.sm,
+                gap: 4,
+              }}
+            >
+              {getTabIcon(route, isFocused, isFocused ? colors.primary : colors.muted, iconSize)}
+              <Text
                 style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 6,
-                  minHeight: 50,
+                  fontSize: labelFont,
+                  fontWeight: isFocused ? '600' : '500',
+                  color: isFocused ? colors.primary : colors.muted,
                 }}
               >
-                {getTabIcon(route, isActive, isActive ? colors.primary : colors.muted, iconSize)}
-                <Text
-                  style={{
-                    marginTop: 2,
-                    fontSize: labelFont,
-                    color: isActive ? colors.primary : colors.muted,
-                    fontWeight: isActive ? ('600' as const) : ('500' as const),
-                  }}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                {typeof label === 'string' ? label : route.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </View>
   );
 }
 
-
-export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
-  // We statically imported i18n above; assume ready. Components that need translations
-  // should guard via react-i18next hooks (useSuspense:false is configured).
-  const [i18nReady] = useState(true);
-
-  // IMPORTANT: Effects below must run on every render cycle regardless of i18n readiness
-  // to keep the Hooks order stable across renders.
-  useEffect(() => {
-    // Initialize telemetry service on app startup. This avoids module-import side effects
-    const svc = createTelemetryService({ endpoint: 'https://example.com/telemetry' })
-    svc.init().catch(() => {})
-    setTelemetryService(svc)
-    return () => {
-      try { svc.shutdown() } catch (e) {}
-    }
-  }, [])
-
-  useEffect(() => {
-    let unsub: any = null;
-    unsub = onAuthStateChanged(auth, () => {
-      // auth state is handled inside AppContent
-    });
-    return () => unsub?.();
-  }, []);
-
-  if (!i18nReady) {
-    return (
-      <SafeAreaProvider>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaProvider>
-    );
-  }
-
-  // App content wrapped in LoadingProvider so any screen can register loads
+function TabNavigator() {
   return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <LoadingProvider>
-          <FontAndSplashLoader />
-          {showSplash ? <SplashScreen onFinish={() => setShowSplash(false)} /> : <AppContent showSplash={showSplash} setShowSplash={setShowSplash} />}
-          <GlobalLoader />
-        </LoadingProvider>
-      </SafeAreaProvider>
-    </ErrorBoundary>
+    <Tab.Navigator
+      tabBar={props => <CustomTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+        tabBarHideOnKeyboard: true,
+      }}
+    >
+      <Tab.Screen name="Dashboard" component={Dashboard} />
+      <Tab.Screen name="Reminders" component={Reminders} />
+      <Tab.Screen name="Barcode" component={BarcodeScanner} />
+      <Tab.Screen name="Clinics" component={Clinics} />
+      <Tab.Screen name="UserProfile" component={UserProfile} />
+    </Tab.Navigator>
   );
-
 }
-// AppContent handles authenticated app rendering; the duplicate block was removed to avoid
-// rendering the app twice which could cause overlays and status-bar issues.
 
-// Move FontAndSplashLoader and AppContent out of App to avoid nested component definition
-function FontAndSplashLoader() {
-  const { startLoading, finishLoading } = useLoading();
+function AppNavigator() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main" component={TabNavigator} />
+        <Stack.Screen 
+          name="FacilityDetail" 
+          component={FacilityDetail}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen 
+          name="Settings" 
+          component={Settings}
+          options={{ presentation: 'modal' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+function AppContent() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const { isOnboardingCompleted, isLoading: onboardingLoading, completeOnboarding } = useOnboarding();
+
+  // Set a timeout for loading to show manual continue option
   useEffect(() => {
-    const key = 'fonts';
-    startLoading(key);
-    let mounted = true;
-    Font.loadAsync({
-      ...Ionicons.font,
-      ...MaterialCommunityIcons.font,
-    }).then(() => {
-      if (mounted) {
-        // nothing here — App manages splash state
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        setLoadingTimeout(true);
       }
-    }).finally(() => finishLoading(key));
-    return () => { mounted = false; };
-  }, [startLoading, finishLoading]);
-  return null;
-}
+    }, 8000); // 8 seconds
 
-function AppContent({ showSplash, setShowSplash }: Readonly<{ showSplash: boolean; setShowSplash: (v: boolean) => void }>) {
-  const [user, setUser] = useState<any>(null);
-  const [authChecked, setAuthChecked] = useState(false);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
+  const handleManualContinue = () => {
+    console.log('Manual continue pressed, proceeding without auth');
+    setUser(null);
+    setAuthInitialized(true);
+    setIsLoading(false);
+  };
+
+  const handleForceSignOut = async () => {
+    console.log('Force sign out requested');
+    try {
+      await clearStoredAuth();
+      setUser(null);
+      setAuthInitialized(true);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Force sign out failed:', error);
+    }
+  };
 
   useEffect(() => {
-    let unsub: any = null;
-    let restored = false;
-    
-    const checkAuth = async () => {
+    let isMounted = true;
+
+    const initializeApp = async () => {
       try {
-        // First check if we have stored auth
-        const storedAuth = await import('./src/lib/authPersistence').then(m => m.getStoredAuth());
+        // Initialize telemetry service
+        const telemetryService = createTelemetryService();
+        setTelemetryService(telemetryService);
+
+        // Try quick auth initialization first
+        console.log('Starting auth initialization...');
+        await debugAuthState(); // Debug current state
         
-        unsub = onAuthStateChanged(auth, async (u) => {
-          if (u && !restored) {
-            // User is authenticated, persist the state
-            await import('./src/lib/authPersistence').then(m => m.persistAuth(u));
-            restored = true;
-          } else if (!u) {
-            // User is not authenticated, clear stored auth
-            await import('./src/lib/authPersistence').then(m => m.persistAuth(null));
+        let restoredUser: User | null = null;
+        
+        try {
+          restoredUser = await initializeAuthQuick();
+          
+          // If quick auth didn't work but we have stored auth, try manual restoration
+          if (!restoredUser) {
+            const manualUser = await restoreAuthFromStorage();
+            if (manualUser) {
+              console.log('Manually restored user from storage');
+              restoredUser = manualUser;
+            }
           }
-          setUser(u);
-          setAuthChecked(true);
-        });
-      } catch (e) {
-        console.warn('Auth initialization error:', e);
-        setAuthChecked(true);
+        } catch (error) {
+          console.warn('Quick auth failed, trying full initialization:', error);
+          // Fallback to full initialization
+          try {
+            restoredUser = await initializeAuthPersistence();
+          } catch (fullError) {
+            console.error('Full auth initialization failed:', fullError);
+            // Last resort: try manual restoration
+            restoredUser = await restoreAuthFromStorage();
+          }
+        }
+        
+        if (isMounted) {
+          console.log('Auth initialization complete, user:', restoredUser ? 'found' : 'not found');
+          setUser(restoredUser);
+          setAuthInitialized(true);
+        }
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        if (isMounted) {
+          setAuthInitialized(true);
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
-    
-    checkAuth();
-    
-    return () => unsub?.();
-  }, []);
 
-  if (!authChecked) {
+    initializeApp();
+
+    // Listen for auth state changes after initialization - but be less aggressive
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (isMounted && authInitialized) {
+        console.log('Auth state changed:', firebaseUser ? 'user signed in' : 'user signed out');
+        
+        if (firebaseUser) {
+          // User signed in - persist and update state
+          setUser(firebaseUser);
+          await persistAuth(firebaseUser);
+        } else {
+          // Firebase reports no user, but don't immediately clear our stored auth
+          // Only clear if we're sure the user actually signed out
+          console.log('Firebase reports no user, but keeping stored auth for now');
+          // Don't automatically clear stored auth or set user to null
+          // Let the user try to use the app with stored auth
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [authInitialized]);
+
+  if (isLoading || onboardingLoading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: colors.bg,
+        padding: spacing.xl,
+      }}>
         <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ 
+          marginTop: spacing.lg, 
+          color: colors.text, 
+          fontSize: 16,
+          textAlign: 'center',
+        }}>
+          {isLoading ? 'Initializing app...' : 'Loading...'}
+        </Text>
+        {loadingTimeout && (
+          <View style={{ marginTop: spacing.xl, alignItems: 'center' }}>
+            <Text style={{ 
+              color: colors.muted, 
+              fontSize: 14,
+              textAlign: 'center',
+              marginBottom: spacing.md,
+            }}>
+              Taking longer than expected?
+            </Text>
+            <Pressable
+              onPress={handleManualContinue}
+              style={{
+                paddingHorizontal: spacing.lg,
+                paddingVertical: spacing.md,
+                backgroundColor: colors.primary,
+                borderRadius: radius.md,
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: '600' }}>
+                Continue
+              </Text>
+            </Pressable>
+          </View>
+        )}
       </View>
     );
   }
@@ -336,38 +391,36 @@ function AppContent({ showSplash, setShowSplash }: Readonly<{ showSplash: boolea
     return <Login onLogin={() => setUser(auth.currentUser)} />;
   }
 
+  // Show onboarding for new users
+  if (!isOnboardingCompleted) {
+    return <OnboardingFlow onComplete={completeOnboarding} />;
+  }
+
   return (
     <RemindersProvider>
       <NotificationsProvider>
-        <View style={{ flex: 1 }}>
-          <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
-                <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
-                <Stack.Screen name="Settings" component={Settings} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </View>
+        <AppNavigator />
+        <GlobalLoader />
       </NotificationsProvider>
     </RemindersProvider>
   );
 }
 
-// removed earlier MainTabs variant that accepted onLogout prop; using the simpler MainTabs below
-
-function MainTabs() {
+export default function App() {
   return (
-  <Tab.Navigator initialRouteName="Dashboard" tabBar={TabBarRenderer} screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Dashboard" component={Dashboard} />
-      <Tab.Screen name="Reminders" component={Reminders} />
-    <Tab.Screen name="Barcode" component={BarcodeScanner} options={{ tabBarLabel: '' }} />
-      <Tab.Screen name="Clinics" component={Clinics} />
-      <Tab.Screen name="UserProfile" component={UserProfile} />
-    </Tab.Navigator>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <LoadingProvider>
+          <ToastProvider>
+            <StatusBar 
+              barStyle="dark-content" 
+              backgroundColor={colors.bg}
+              translucent={false}
+            />
+            <AppContent />
+          </ToastProvider>
+        </LoadingProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
-}
-
-// Top-level wrapper so we don't create a new component inline in JSX (avoids lint/runtime issues)
-function TabBarRenderer(props: Readonly<BottomTabBarProps>) {
-  return <CustomTabBar {...props} />;
 }

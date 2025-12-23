@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp, Pressable } from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp, Pressable, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, shadow } from '../theme';
+import { colors, radius, spacing, shadow, animation } from '../theme';
 
-type CardVariant = 'default' | 'elevated' | 'outlined' | 'filled';
+type CardVariant = 'default' | 'elevated' | 'outlined' | 'filled' | 'glass' | 'hero';
 
 type CardProps = {
   children: React.ReactNode;
@@ -48,72 +48,139 @@ const getVariantStyles = (variant: CardVariant) => {
   switch (variant) {
     case 'elevated':
       return {
-        card: { ...shadow.card, backgroundColor: colors.card },
+        card: { 
+          ...shadow.lg, 
+          backgroundColor: colors.card,
+          borderRadius: radius.lg,
+        },
         gradient: colors.cardGradient,
       };
     case 'outlined':
       return {
-        card: { borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.card },
+        card: { 
+          borderWidth: 1, 
+          borderColor: colors.line, 
+          backgroundColor: colors.card,
+          borderRadius: radius.md,
+        },
         gradient: ['transparent', 'transparent'] as const,
       };
     case 'filled':
       return {
-        card: { backgroundColor: colors.surface },
+        card: { 
+          backgroundColor: colors.surface,
+          borderRadius: radius.md,
+        },
         gradient: ['transparent', 'transparent'] as const,
+      };
+    case 'glass':
+      return {
+        card: { 
+          backgroundColor: colors.glass,
+          borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: colors.mutedLight,
+          ...shadow.sm,
+        },
+        gradient: ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.8)'] as const,
+      };
+    case 'hero':
+      return {
+        card: { 
+          backgroundColor: colors.primary,
+          borderRadius: radius.xl,
+          ...shadow.primary,
+        },
+        gradient: colors.heroGradient,
       };
     default:
       return {
-        card: { ...shadow.soft },
+        card: { 
+          ...shadow.card,
+          backgroundColor: colors.card,
+          borderRadius: radius.md,
+        },
         gradient: colors.cardGradient,
       };
   }
 };
 
-export default React.memo(function Card({ children, style, variant = 'default', onPress, disabled }: CardProps) {
+export default React.memo(function Card({ 
+  children, 
+  style, 
+  variant = 'default', 
+  onPress, 
+  disabled 
+}: CardProps) {
   const { marginStyle, contentStyle } = splitStyle(style);
   const variantStyles = getVariantStyles(variant);
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const isInteractive = !!onPress && !disabled;
+
+  const handlePressIn = () => {
+    if (!isInteractive) return;
+    Animated.spring(scaleAnim, {
+      toValue: 0.98,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    if (!isInteractive) return;
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  };
 
   const cardContent = (
     <LinearGradient
       colors={variantStyles.gradient as readonly [string, string, ...string[]]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.gradient, marginStyle]}
+      style={[
+        variantStyles.card,
+        contentStyle,
+        {
+          padding: spacing.lg,
+          overflow: 'hidden',
+        },
+      ]}
     >
-      <View style={[styles.card, variantStyles.card, contentStyle]}>
-        {children}
-      </View>
+      {children}
     </LinearGradient>
   );
 
-  if (onPress) {
+  if (isInteractive) {
     return (
-      <Pressable
-        onPress={onPress}
-        disabled={disabled}
-        style={({ pressed }) => [
-          { opacity: pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.99 : 1 }] },
+      <Animated.View 
+        style={[
+          marginStyle,
+          { transform: [{ scale: scaleAnim }] }
         ]}
       >
-        {cardContent}
-      </Pressable>
+        <Pressable
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          disabled={disabled}
+          style={({ pressed }) => [
+            pressed && { opacity: 0.95 }
+          ]}
+        >
+          {cardContent}
+        </Pressable>
+      </Animated.View>
     );
   }
 
-  return cardContent;
-});
-
-const styles = StyleSheet.create({
-  gradient: {
-    borderRadius: radius.lg + 4,
-    padding: 1,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg + 2,
-    padding: spacing.xl,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.7)',
-    overflow: 'hidden',
-  },
+  return (
+    <View style={marginStyle}>
+      {cardContent}
+    </View>
+  );
 });
