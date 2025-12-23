@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Modal, ScrollView, Linking, Platform
 import SkeletonImage from '../components/SkeletonImage';
 import { SkeletonReminderCard, Skeleton } from '../components/Skeleton';
 import { useLoading } from '../hooks/LoadingContext';
+import { useToast } from '../hooks/useToast';
 import { fetchUserProfile, type Profile } from '../core/userProfile';
 import { facilities } from '../data';
 import type { Facility } from '../types';
@@ -25,12 +26,12 @@ import Chip from '../components/Chip';
 import ProgressBar from '../components/ProgressBar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTodayStats } from '../core/completion';
-import { colors, spacing, type, shadow, radius } from '../theme';
+import { colors, spacing, typography, shadow, radius, animation } from '../theme';
 import { useTranslation } from 'react-i18next';
-
 
 export default function Dashboard({ navigation }: any) {
   const { t } = useTranslation();
+  const { showSuccess, showError, showInfo } = useToast();
   const [profileModal, setProfileModal] = useState(false);
   const [urgentCareModal, setUrgentCareModal] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
@@ -38,6 +39,34 @@ export default function Dashboard({ navigation }: any) {
   const { startLoading, finishLoading } = useLoading();
   const _prefetched = useRef(new Set<string>());
   const { reminders, loading: remindersLoading, error: remindersError, refresh, subscribe } = useReminders();
+
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    // Entrance animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: animation.slow,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }),
+    ]).start();
+  }, []);
 
   const renderReminders = () => {
     if (remindersLoading) {
@@ -48,7 +77,17 @@ export default function Dashboard({ navigation }: any) {
         </View>
       );
     }
-    if (remindersError) return <Text style={{ color: colors.danger }}>{remindersError}</Text>;
+    if (remindersError) {
+      return (
+        <View style={styles.errorState}>
+          <Ionicons name="alert-circle-outline" size={32} color={colors.danger} />
+          <Text style={styles.errorText}>Failed to load reminders</Text>
+          <Pressable onPress={refresh} style={styles.retryButton}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
+      );
+    }
     const activeReminders = reminders?.filter(r => r.active) ?? [];
     if (activeReminders.length === 0) {
       return (
@@ -56,24 +95,53 @@ export default function Dashboard({ navigation }: any) {
           <Ionicons name="notifications-off-outline" size={32} color={colors.mutedLight} />
           <Text style={styles.emptyStateText}>{t('dashboard.noActiveReminders', 'No active reminders')}</Text>
           <Text style={styles.emptyStateHint}>Add reminders to track your medications</Text>
+          <Pressable 
+            onPress={() => navigation.navigate('Reminders')}
+            style={styles.addReminderButton}
+          >
+            <Text style={styles.addReminderText}>Add Reminder</Text>
+          </Pressable>
         </View>
       );
     }
-    return activeReminders.map(rem => (
-      <Pressable 
-        key={rem.id} 
-        style={({ pressed }) => [styles.reminderCard, pressed && styles.reminderCardPressed]}
-        onPress={() => navigation.navigate('Reminders')}
+    return activeReminders.map((rem, index) => (
+      <Animated.View
+        key={rem.id}
+        style={{
+          opacity: fadeAnim,
+          transform: [
+            { translateY: slideAnim },
+            { scale: scaleAnim }
+          ]
+        }}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={styles.reminderTitle}>{rem.title}</Text>
-          <View style={styles.reminderBadge}>
-            <Text style={styles.reminderBadgeText}>{rem.frequency || 'Once'}</Text>
+        <Pressable 
+          style={({ pressed }) => [
+            styles.reminderCard, 
+            pressed && styles.reminderCardPressed,
+            { 
+              transform: [{ scale: pressed ? 0.98 : 1 }]
+            }
+          ]}
+          onPress={() => navigation.navigate('Reminders')}
+        >
+          <View style={styles.reminderHeader}>
+            <View style={styles.reminderIconContainer}>
+              <Ionicons name="medical" size={20} color={colors.primary} />
+            </View>
+            <View style={styles.reminderContent}>
+              <Text style={styles.reminderTitle}>{rem.title}</Text>
+              <Text style={styles.reminderMeta}>{rem.datetime}</Text>
+              {rem.description && (
+                <Text style={styles.reminderDescription}>{rem.description}</Text>
+              )}
+            </View>
+            <View style={styles.reminderBadge}>
+              <Text style={styles.reminderBadgeText}>{rem.frequency || 'Once'}</Text>
+            </View>
           </View>
-        </View>
-        <Text style={styles.reminderMeta}>{rem.datetime}</Text>
-        {rem.description ? <Text style={styles.reminderDescription}>{rem.description}</Text> : null}
-      </Pressable>
+        </Pressable>
+      </Animated.View>
     ));
   };
 
@@ -84,8 +152,10 @@ export default function Dashboard({ navigation }: any) {
     startLoading(key);
     (async () => {
       try {
+        console.log('Dashboard: Starting profile fetch...');
         const p = await fetchUserProfile();
         if (!mounted) return;
+        console.log('Dashboard: Profile fetch result:', p ? 'found' : 'not found');
         setProfile(p);
         // prefetch avatar if present
         const uri = (p as any)?.image || (p as any)?.avatar;
@@ -102,6 +172,8 @@ export default function Dashboard({ navigation }: any) {
           }
           finally { finishLoading(imgKey); }
         }
+      } catch (error) {
+        console.error('Dashboard: Profile fetch error:', error);
       } finally {
         finishLoading(key);
       }
@@ -130,110 +202,219 @@ export default function Dashboard({ navigation }: any) {
 
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
-      <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
-        <View style={styles.heroTopRow}>
-          <Pressable onPress={() => setProfileModal(true)} style={styles.avatarBtn} accessibilityLabel="Open profile" accessibilityRole="button">
-            <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
-          </Pressable>
-          <NotificationBell onPress={() => setNotificationsVisible(true)} />
-        </View>
-        <Text style={[type.h1, styles.heroTitle]}>Welcome{profile?.name ? `, ${profile.name}` : ''}</Text>
-        <Text style={[type.meta, styles.heroSubtitle]}>How is it going today?</Text>
-        <View style={styles.searchWrap}>
-          <Ionicons name="search" size={18} color={colors.muted} style={{ marginRight: 10 }} />
-          <TextInput
-            placeholder="Search doctors, facilities, meds"
-            placeholderTextColor={colors.muted}
-            style={styles.searchInput}
-            returnKeyType="search"
-          />
-        </View>
-        <View style={styles.chipsRow}>
-          <Chip label="Cardiologist" onPress={() => navigation.navigate('Clinics', { filter: 'cardiologist' })} />
-          <Chip label="Dentist" onPress={() => navigation.navigate('Clinics', { filter: 'dentist' })} />
-          <Chip label="Therapist" onPress={() => navigation.navigate('Clinics', { filter: 'therapist' })} />
-          <Chip label="Geneticist" onPress={() => navigation.navigate('Clinics', { filter: 'geneticist' })} />
-        </View>
-      </LinearGradient>
-
-      <Card style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionIconWrap}>
-            <Ionicons name="trending-up" size={20} color={colors.primary} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.sectionTitle}>Today's Progress</Text>
-            <Text style={styles.sectionSubtitle}>Stay consistent with your doses</Text>
-          </View>
-        </View>
-        <ProgressBar 
-          progress={progress} 
-          height={10}
-          showLabel 
-          label={`${pillsDone.done} of ${pillsDone.total} completed`}
-          variant={progress >= 1 ? 'success' : progress >= 0.5 ? 'default' : 'warning'}
-          style={{ marginTop: spacing.md }} 
-        />
-      </Card>
-
-      <Pressable
-        onPress={() => setUrgentCareModal(true)}
-        style={styles.urgentButton}
-        android_ripple={{ color: colors.primary600 }}
-        accessibilityRole="button"
-        accessibilityLabel="Open urgent care"
-        accessibilityHint="View nearby urgent care facilities and emergency contacts"
-        hitSlop={8}
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [
+            { translateY: slideAnim },
+            { scale: scaleAnim }
+          ]
+        }}
       >
-        <LinearGradient colors={colors.accentGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.urgentGradient}>
-          <Text style={styles.urgentLabel}>Urgent Care</Text>
-          <Text style={styles.urgentSub}>Access emergency contacts & open facilities nearby</Text>
+        <LinearGradient 
+          colors={colors.heroGradient} 
+          start={{ x: 0, y: 0 }} 
+          end={{ x: 1, y: 1 }} 
+          style={styles.heroCard}
+        >
+          <View style={styles.heroTopRow}>
+            <Pressable 
+              onPress={() => setProfileModal(true)} 
+              style={styles.avatarBtn} 
+              accessibilityLabel="Open profile" 
+              accessibilityRole="button"
+            >
+              <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
+            </Pressable>
+            <NotificationBell onPress={() => setNotificationsVisible(true)} />
+          </View>
+          <Text style={[typography.h1, styles.heroTitle]}>
+            Welcome{profile?.name ? `, ${profile.name}` : ''}
+          </Text>
+          <Text style={[typography.body, styles.heroSubtitle]}>
+            How are you feeling today?
+          </Text>
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={18} color={colors.muted} style={{ marginRight: 10 }} />
+            <TextInput
+              placeholder="Search doctors, facilities, medications..."
+              placeholderTextColor={colors.muted}
+              style={styles.searchInput}
+              returnKeyType="search"
+              onSubmitEditing={() => showInfo('Search', 'Search functionality coming soon!')}
+            />
+          </View>
+          <View style={styles.chipsRow}>
+            <Chip 
+              label="Cardiologist" 
+              onPress={() => navigation.navigate('Clinics', { filter: 'cardiologist' })} 
+            />
+            <Chip 
+              label="Dentist" 
+              onPress={() => navigation.navigate('Clinics', { filter: 'dentist' })} 
+            />
+            <Chip 
+              label="Therapist" 
+              onPress={() => navigation.navigate('Clinics', { filter: 'therapist' })} 
+            />
+          </View>
         </LinearGradient>
-      </Pressable>
+      </Animated.View>
 
-      <Card style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <View style={[styles.sectionIconWrap, { backgroundColor: 'rgba(16,185,129,0.12)' }]}>
-            <Ionicons name="notifications" size={20} color={colors.success} />
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }}
+      >
+        <Card variant="elevated" style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconWrap}>
+              <Ionicons name="trending-up" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sectionTitle}>Today's Progress</Text>
+              <Text style={styles.sectionSubtitle}>Stay consistent with your doses</Text>
+            </View>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.sectionTitle}>Active Reminders</Text>
-            <Text style={styles.sectionSubtitle}>Your upcoming medication schedule</Text>
-          </View>
-        </View>
-        <View style={styles.sectionBody}>{renderReminders()}</View>
-      </Card>
+          <ProgressBar 
+            progress={progress} 
+            height={12}
+            showLabel 
+            label={`${pillsDone.done} of ${pillsDone.total} completed`}
+            variant={progress >= 1 ? 'success' : progress >= 0.5 ? 'default' : 'warning'}
+            style={{ marginTop: spacing.lg }} 
+          />
+          {progress >= 1 && (
+            <View style={styles.congratsContainer}>
+              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+              <Text style={styles.congratsText}>Great job! All doses completed today!</Text>
+            </View>
+          )}
+        </Card>
+      </Animated.View>
 
-      <Card style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <View style={[styles.sectionIconWrap, { backgroundColor: 'rgba(139,92,246,0.12)' }]}>
-            <Ionicons name="medical" size={20} color="#8B5CF6" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.sectionTitle}>My Medications</Text>
-            <Text style={styles.sectionSubtitle}>Scanned and saved medications</Text>
-          </View>
-        </View>
-        <MyMedicationsList />
-      </Card>
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }}
+      >
+        <Pressable
+          onPress={() => setUrgentCareModal(true)}
+          style={styles.urgentButton}
+          android_ripple={{ color: colors.primary600 }}
+          accessibilityRole="button"
+          accessibilityLabel="Open urgent care"
+          accessibilityHint="View nearby urgent care facilities and emergency contacts"
+          hitSlop={8}
+        >
+          <LinearGradient 
+            colors={colors.accentGradient} 
+            start={{ x: 0, y: 0 }} 
+            end={{ x: 1, y: 1 }} 
+            style={styles.urgentGradient}
+          >
+            <Ionicons name="medical" size={24} color="#fff" style={{ marginBottom: 4 }} />
+            <Text style={styles.urgentLabel}>Urgent Care</Text>
+            <Text style={styles.urgentSub}>Access emergency contacts & nearby facilities</Text>
+          </LinearGradient>
+        </Pressable>
+      </Animated.View>
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>Our services</Text>
-        <View style={styles.servicesGrid}>
-          <View style={styles.serviceItem}>
-            <View style={styles.serviceIconWrap}><MaterialCommunityIcons name="barcode-scan" size={22} color={colors.primary} /></View>
-            <Text style={styles.serviceLabel}>Meds verification</Text>
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }}
+      >
+        <Card variant="elevated" style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconWrap, { backgroundColor: colors.success100 }]}>
+              <Ionicons name="notifications" size={20} color={colors.success} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sectionTitle}>Active Reminders</Text>
+              <Text style={styles.sectionSubtitle}>Your upcoming medication schedule</Text>
+            </View>
+            <Pressable 
+              onPress={() => navigation.navigate('Reminders')}
+              style={styles.sectionAction}
+            >
+              <Text style={styles.sectionActionText}>View All</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </Pressable>
           </View>
-          <View style={styles.serviceItem}>
-            <View style={styles.serviceIconWrap}><Ionicons name="medkit" size={20} color={colors.primary} /></View>
-            <Text style={styles.serviceLabel}>Medical ID</Text>
+          <View style={styles.sectionBody}>{renderReminders()}</View>
+        </Card>
+      </Animated.View>
+
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }}
+      >
+        <Card variant="elevated" style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconWrap, { backgroundColor: colors.secondary100 }]}>
+              <Ionicons name="medical" size={20} color={colors.secondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sectionTitle}>My Medications</Text>
+              <Text style={styles.sectionSubtitle}>Scanned and saved medications</Text>
+            </View>
+            <Pressable 
+              onPress={() => navigation.navigate('Barcode')}
+              style={styles.sectionAction}
+            >
+              <Text style={styles.sectionActionText}>Scan</Text>
+              <Ionicons name="camera" size={16} color={colors.primary} />
+            </Pressable>
           </View>
-          <View style={styles.serviceItem}>
-            <View style={styles.serviceIconWrap}><Ionicons name="business" size={20} color={colors.primary} /></View>
-            <Text style={styles.serviceLabel}>Facilities</Text>
+          <MyMedicationsList />
+        </Card>
+      </Animated.View>
+
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }}
+      >
+        <Card variant="elevated" style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.servicesGrid}>
+            <Pressable 
+              style={styles.serviceItem}
+              onPress={() => navigation.navigate('Barcode')}
+            >
+              <View style={styles.serviceIconWrap}>
+                <MaterialCommunityIcons name="barcode-scan" size={22} color={colors.primary} />
+              </View>
+              <Text style={styles.serviceLabel}>Scan Medication</Text>
+            </Pressable>
+            <Pressable 
+              style={styles.serviceItem}
+              onPress={() => navigation.navigate('UserProfile')}
+            >
+              <View style={styles.serviceIconWrap}>
+                <Ionicons name="medkit" size={20} color={colors.primary} />
+              </View>
+              <Text style={styles.serviceLabel}>Medical ID</Text>
+            </Pressable>
+            <Pressable 
+              style={styles.serviceItem}
+              onPress={() => navigation.navigate('Clinics')}
+            >
+              <View style={styles.serviceIconWrap}>
+                <Ionicons name="business" size={20} color={colors.primary} />
+              </View>
+              <Text style={styles.serviceLabel}>Find Facilities</Text>
+            </Pressable>
           </View>
-        </View>
-      </Card>
+        </Card>
+      </Animated.View>
 
       <NotificationsSheet visible={notificationsVisible} onClose={() => setNotificationsVisible(false)} />
 
@@ -307,7 +488,12 @@ export default function Dashboard({ navigation }: any) {
                     <Text style={styles.sectionText}>{profile.date_of_birth}</Text>
                   </>
                 ) : (
-                  <ActivityIndicator color={colors.primary} style={{ marginTop: 12 }} />
+                  <View style={{ alignItems: 'center', marginTop: spacing.md }}>
+                    <Text style={styles.sectionText}>Aucune donnée de profil disponible</Text>
+                    <Text style={[styles.sectionText, { fontSize: 12, marginTop: 4 }]}>
+                      Veuillez créer votre profil dans les paramètres
+                    </Text>
+                  </View>
                 )}
               </View>
               <Text style={styles.sectionTitle}>Allergies</Text>
@@ -357,13 +543,14 @@ export default function Dashboard({ navigation }: any) {
 const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
-    paddingBottom: spacing.xxl,
+    paddingBottom: 100, // Account for tab bar
   },
   heroCard: {
-    borderRadius: radius.xl,
+    borderRadius: radius.xxl,
     padding: spacing.xl,
-    gap: spacing.md,
-    ...shadow.card,
+    gap: spacing.lg,
+    ...shadow.xl,
+    marginHorizontal: spacing.md,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -371,41 +558,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.55)',
+    borderColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    ...shadow.sm,
   },
-  avatar: { width: 44, height: 44, borderRadius: 22 },
-  heroTitle: { color: '#FFFFFF' },
-  heroSubtitle: { color: 'rgba(255,255,255,0.85)' },
+  avatar: { 
+    width: 48, 
+    height: 48, 
+    borderRadius: 24 
+  },
+  heroTitle: { 
+    color: '#FFFFFF',
+    ...typography.h1,
+    fontWeight: '800',
+  },
+  heroSubtitle: { 
+    color: 'rgba(255,255,255,0.9)',
+    ...typography.body,
+  },
   searchWrap: {
-    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    backgroundColor: 'rgba(255,255,255,0.95)',
     borderRadius: radius.lg,
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: Platform.OS === 'ios' ? 14 : 12,
+    ...shadow.sm,
   },
   searchInput: {
     flex: 1,
     color: colors.text,
-    fontSize: 15,
+    ...typography.body,
   },
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginTop: spacing.md,
+    gap: spacing.sm,
   },
   sectionCard: {
-    gap: spacing.md,
+    gap: spacing.lg,
+    marginHorizontal: spacing.md,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -413,30 +612,73 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sectionIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(37,99,235,0.12)',
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.primary100,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionTitle: { fontWeight: '700', fontSize: 17, color: colors.text },
-  sectionSubtitle: { color: colors.muted, fontSize: 13, marginTop: 2 },
-  sectionMeta: { color: colors.muted, fontWeight: '600' },
-  sectionHint: { color: colors.muted, fontSize: 13 },
-  sectionBody: { gap: spacing.md },
+  sectionTitle: { 
+    ...typography.h3,
+    color: colors.text,
+  },
+  sectionSubtitle: { 
+    ...typography.small,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  sectionAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  sectionActionText: {
+    ...typography.smallSemibold,
+    color: colors.primary,
+  },
+  sectionBody: { 
+    gap: spacing.md 
+  },
+  congratsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.success100,
+    borderRadius: radius.md,
+  },
+  congratsText: {
+    ...typography.smallSemibold,
+    color: colors.success,
+    flex: 1,
+  },
   urgentButton: {
-    borderRadius: radius.pill,
+    borderRadius: radius.xl,
     overflow: 'hidden',
-    ...shadow.card,
+    ...shadow.lg,
+    marginHorizontal: spacing.md,
   },
   urgentGradient: {
-    paddingVertical: 18,
+    paddingVertical: spacing.xl,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
+    gap: spacing.xs,
   },
-  urgentLabel: { color: '#fff', fontWeight: '700', fontSize: 17 },
-  urgentSub: { color: 'rgba(255,255,255,0.85)', marginTop: 4, fontSize: 13, textAlign: 'center' },
+  urgentLabel: { 
+    color: '#fff',
+    ...typography.h3,
+    fontWeight: '700',
+  },
+  urgentSub: { 
+    color: 'rgba(255,255,255,0.9)',
+    ...typography.small,
+    textAlign: 'center',
+    maxWidth: 280,
+  },
   servicesGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -445,94 +687,210 @@ const styles = StyleSheet.create({
   serviceItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.bgSecondary,
   },
   serviceIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(37,99,235,0.16)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.sm,
+  },
+  serviceLabel: { 
+    ...typography.smallSemibold,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  // Reminder styles
+  reminderCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.line,
+    ...shadow.sm,
+  },
+  reminderCardPressed: {
+    backgroundColor: colors.hover,
+  },
+  reminderHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  reminderIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primary100,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  serviceLabel: { fontSize: 13, color: colors.text, fontWeight: '600', textAlign: 'center' },
-  notifications: {},
-  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  reminderContent: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  reminderTitle: { 
+    ...typography.bodyMedium,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  reminderMeta: { 
+    ...typography.small,
+    color: colors.muted,
+  },
+  reminderDescription: { 
+    ...typography.small,
+    color: colors.textSecondary,
+  },
+  reminderBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.sm,
+    backgroundColor: colors.chipBg,
+  },
+  reminderBadgeText: { 
+    ...typography.caption,
+    color: colors.chipText,
+    fontWeight: '600',
+  },
+  // Empty and error states
+  emptyState: {
+    alignItems: 'center',
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  emptyStateText: { 
+    ...typography.bodyMedium,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  emptyStateHint: { 
+    ...typography.small,
+    color: colors.muted,
+    textAlign: 'center',
+  },
+  addReminderButton: {
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+  },
+  addReminderText: {
+    ...typography.smallSemibold,
+    color: '#fff',
+  },
+  errorState: {
+    alignItems: 'center',
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  errorText: {
+    ...typography.bodyMedium,
+    color: colors.danger,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.danger,
+    borderRadius: radius.md,
+  },
+  retryText: {
+    ...typography.smallSemibold,
+    color: '#fff',
+  },
+  // Modal styles
+  modalOverlay: { 
+    flex: 1, 
+    backgroundColor: colors.overlay, 
+    justifyContent: 'flex-end' 
+  },
   facilityModalSheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    borderTopLeftRadius: radius.xxl,
+    borderTopRightRadius: radius.xxl,
     padding: spacing.xl,
     paddingBottom: 48,
     backgroundColor: colors.card,
     maxHeight: '85%',
-    ...shadow.card,
+    ...shadow.xl,
   },
   profileSheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    borderTopLeftRadius: radius.xxl,
+    borderTopRightRadius: radius.xxl,
     padding: spacing.xl,
     paddingBottom: 48,
     backgroundColor: colors.card,
     maxHeight: '85%',
-    ...shadow.card,
+    ...shadow.xl,
   },
-  modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
-  modalTitle: { fontWeight: 'bold', fontSize: 22, color: colors.text },
-  modalCloseText: { color: colors.muted, fontWeight: '600', fontSize: 16 },
-  sectionText: { color: colors.muted, fontSize: 14, marginTop: 2 },
-  contactBlock: { marginBottom: spacing.md },
-  contactName: { color: colors.text, fontWeight: '600' },
-  callLink: { color: colors.primary, fontWeight: '600' },
+  modalHeaderRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: spacing.xl,
+  },
+  modalTitle: { 
+    ...typography.h2,
+    color: colors.text,
+  },
+  modalCloseText: { 
+    ...typography.bodyMedium,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  sectionText: { 
+    ...typography.small,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  contactBlock: { 
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: radius.md,
+  },
+  contactName: { 
+    ...typography.bodyMedium,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  callLink: { 
+    ...typography.smallSemibold,
+    color: colors.primary,
+  },
   facilityItem: {
-    marginBottom: spacing.md,
-    paddingBottom: spacing.sm,
+    marginBottom: spacing.lg,
+    paddingBottom: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.line,
   },
-  facilityName: { color: colors.text, fontWeight: '600' },
-  facilityMeta: { color: colors.muted },
-  profileAvatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    borderWidth: 3,
-    borderColor: colors.surface,
-    marginBottom: 8,
-  },
-  profileName: { fontWeight: '700', fontSize: 22, color: colors.text, marginTop: 8 },
-  reminderCard: {
-    backgroundColor: 'rgba(37,99,235,0.08)',
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: 6,
-  },
-  reminderTitle: { color: colors.text, fontWeight: '600', fontSize: 15 },
-  reminderMeta: { color: colors.muted, fontSize: 13 },
-  reminderDescription: { color: colors.muted, fontSize: 13 },
-  reminderBadge: {
-    backgroundColor: 'rgba(255,255,255,0.86)',
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  reminderBadgeText: { color: colors.primary, fontWeight: '600', fontSize: 12 },
-  reminderCardPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-    gap: spacing.sm,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontWeight: '600',
+  facilityName: { 
+    ...typography.bodyMedium,
     color: colors.text,
+    fontWeight: '600',
   },
-  emptyStateHint: {
-    fontSize: 13,
+  facilityMeta: { 
+    ...typography.small,
     color: colors.muted,
-    textAlign: 'center',
+  },
+  profileAvatar: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 3,
+    borderColor: colors.line,
+    marginBottom: spacing.md,
+  },
+  profileName: { 
+    ...typography.h3,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
 });

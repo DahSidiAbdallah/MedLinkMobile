@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Platform,
   View,
@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -18,10 +19,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import BloodTypePicker from '../components/BloodTypePicker';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
+import Button from '../components/Button';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { auth, db } from '../lib/firebase';
-import { colors, spacing, type, radius } from '../theme';
+import { colors, spacing, typography, radius, shadow, animation } from '../theme';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../hooks/useToast';
 
 type LoginProps = { navigation?: any; onLogin?: () => void };
 
@@ -52,6 +55,7 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -59,6 +63,35 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
   const [registerStep, setRegisterStep] = useState<StepKey>(0);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    // Entrance animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: animation.slow,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }),
+    ]).start();
+  }, []);
 
   // Personal info fields
   const [name, setName] = useState('');
@@ -632,7 +665,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   heroTitle: {
-    ...type.h1,
+    ...typography.h1,
     color: '#fff',
   },
   heroSubtitle: {
