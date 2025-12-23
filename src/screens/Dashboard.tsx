@@ -548,10 +548,9 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Account for tab bar
   },
   heroCard: {
-    borderRadius: radius.xxl,
+    borderRadius: radius.lg,
     padding: spacing.xl,
     gap: spacing.lg,
-    ...shadow.xl,
     marginHorizontal: spacing.md,
   },
   heroTopRow: {
@@ -560,21 +559,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
-    ...shadow.sm,
   },
   avatar: { 
-    width: 48, 
-    height: 48, 
-    borderRadius: 24 
+    width: 44, 
+    height: 44, 
+    borderRadius: 22 
   },
   heroTitle: { 
     color: '#FFFFFF',
@@ -589,10 +587,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: Platform.OS === 'ios' ? 14 : 12,
-    ...shadow.sm,
   },
   searchInput: {
     flex: 1,
@@ -614,9 +611,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sectionIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
+    width: 40,
+    height: 40,
+    borderRadius: radius.sm,
     backgroundColor: colors.primary100,
     alignItems: 'center',
     justifyContent: 'center',
@@ -659,9 +656,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   urgentButton: {
-    borderRadius: radius.xl,
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    ...shadow.lg,
     marginHorizontal: spacing.md,
   },
   urgentGradient: {
@@ -695,13 +691,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSecondary,
   },
   serviceIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.primary100,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.sm,
   },
   serviceLabel: { 
     ...typography.smallSemibold,

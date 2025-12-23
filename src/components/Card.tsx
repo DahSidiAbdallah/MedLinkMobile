@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, StyleProp, Pressable, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, shadow, animation } from '../theme';
+import { colors, radius, spacing, shadow } from '../theme';
 
-type CardVariant = 'default' | 'elevated' | 'outlined' | 'filled' | 'glass' | 'hero';
+type CardVariant = 'default' | 'elevated' | 'outlined' | 'filled' | 'glass' | 'hero' | 'flat';
 
 type CardProps = {
   children: React.ReactNode;
@@ -48,59 +47,47 @@ const getVariantStyles = (variant: CardVariant) => {
   switch (variant) {
     case 'elevated':
       return {
-        card: { 
-          ...shadow.lg, 
-          backgroundColor: colors.card,
-          borderRadius: radius.lg,
-        },
-        gradient: colors.cardGradient,
+        backgroundColor: colors.card,
+        borderRadius: radius.lg,
+        ...shadow.card,
       };
     case 'outlined':
       return {
-        card: { 
-          borderWidth: 1, 
-          borderColor: colors.line, 
-          backgroundColor: colors.card,
-          borderRadius: radius.md,
-        },
-        gradient: ['transparent', 'transparent'] as const,
+        borderWidth: 1,
+        borderColor: colors.line,
+        backgroundColor: colors.card,
+        borderRadius: radius.md,
       };
     case 'filled':
       return {
-        card: { 
-          backgroundColor: colors.surface,
-          borderRadius: radius.md,
-        },
-        gradient: ['transparent', 'transparent'] as const,
+        backgroundColor: colors.surface,
+        borderRadius: radius.md,
       };
     case 'glass':
       return {
-        card: { 
-          backgroundColor: colors.glass,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: colors.mutedLight,
-          ...shadow.sm,
-        },
-        gradient: ['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.8)'] as const,
+        backgroundColor: colors.glass,
+        borderRadius: radius.lg,
+        borderWidth: 1,
+        borderColor: colors.line,
       };
     case 'hero':
       return {
-        card: { 
-          backgroundColor: colors.primary,
-          borderRadius: radius.xl,
-          ...shadow.primary,
-        },
-        gradient: colors.heroGradient,
+        backgroundColor: colors.primary,
+        borderRadius: radius.lg,
+      };
+    case 'flat':
+      return {
+        backgroundColor: colors.surface,
+        borderRadius: radius.md,
+        borderWidth: 1,
+        borderColor: colors.line,
       };
     default:
       return {
-        card: { 
-          ...shadow.card,
-          backgroundColor: colors.card,
-          borderRadius: radius.md,
-        },
-        gradient: colors.cardGradient,
+        backgroundColor: colors.card,
+        borderRadius: radius.md,
+        borderWidth: 1,
+        borderColor: colors.line,
       };
   }
 };
@@ -119,40 +106,34 @@ export default React.memo(function Card({
 
   const handlePressIn = () => {
     if (!isInteractive) return;
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 0.98,
+      duration: 100,
       useNativeDriver: true,
-      tension: 300,
-      friction: 10,
     }).start();
   };
 
   const handlePressOut = () => {
     if (!isInteractive) return;
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 1,
+      duration: 100,
       useNativeDriver: true,
-      tension: 300,
-      friction: 10,
     }).start();
   };
 
   const cardContent = (
-    <LinearGradient
-      colors={variantStyles.gradient as readonly [string, string, ...string[]]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+    <View
       style={[
-        variantStyles.card,
+        variantStyles,
         contentStyle,
         {
           padding: spacing.lg,
-          overflow: 'hidden',
         },
       ]}
     >
       {children}
-    </LinearGradient>
+    </View>
   );
 
   if (isInteractive) {
@@ -169,7 +150,7 @@ export default React.memo(function Card({
           onPressOut={handlePressOut}
           disabled={disabled}
           style={({ pressed }) => [
-            pressed && { opacity: 0.95 }
+            pressed && { opacity: 0.8 }
           ]}
         >
           {cardContent}

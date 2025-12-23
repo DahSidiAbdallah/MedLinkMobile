@@ -22,7 +22,7 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { auth, db } from '../lib/firebase';
-import { colors, spacing, typography, radius, shadow, animation } from '../theme';
+import { colors, spacing, typography, radius, animation } from '../theme';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../hooks/useToast';
 

@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize auth - try React Native persistence, fallback to default
+// Initialize auth with React Native persistence
 let auth: Auth;
 try {
   // Try to import React Native persistence

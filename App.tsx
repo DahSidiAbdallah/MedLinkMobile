@@ -25,6 +25,7 @@ import BarcodeScanner from './src/screens/BarcodeScanner';
 import Settings from './src/screens/Settings';
 import { colors, shadow, radius, spacing } from './src/theme';
 import Login from './src/screens/Login';
+import SplashScreen from './src/components/SplashScreen';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from './src/lib/firebase';
 import { RemindersProvider } from './src/hooks/RemindersContext';
@@ -88,12 +89,11 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         right: 0,
         bottom: 0,
         backgroundColor: colors.card,
-        borderTopWidth: 0.5,
+        borderTopWidth: 1,
         borderTopColor: colors.line,
         paddingBottom: insets.bottom,
         paddingTop: spacing.md,
-        ...shadow.xl,
-        // Modern glass effect for iOS
+        // Modern flat design
         ...(Platform.OS === 'ios' && {
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
         }),
@@ -158,13 +158,12 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                     justifyContent: 'center',
                     alignItems: 'center',
                     marginTop: -spacing.lg - 4,
-                    ...shadow.primary,
-                    // Modern gradient effect
+                    // Modern flat design
                     shadowColor: colors.primary,
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 16,
-                    elevation: 12,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 8,
                   }}
                 >
                   {getTabIcon(route, isFocused, '#fff', iconSize + 6)}
@@ -251,6 +250,9 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  
+  // Always call hooks in the same order
   const { isOnboardingCompleted, isLoading: onboardingLoading, completeOnboarding } = useOnboarding();
 
   // Set a timeout for loading to show manual continue option
@@ -353,6 +355,15 @@ function AppContent() {
       unsubscribe();
     };
   }, [authInitialized]);
+
+  // Show splash screen first
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        onFinish={() => setShowSplash(false)}
+      />
+    );
+  }
 
   if (isLoading || onboardingLoading) {
     return (
