@@ -1,103 +1,103 @@
 export const colors = {
-  // Primary - Modern blue with depth
-  primary: '#2563EB',
-  primary700: '#1D4ED8',
-  primary600: '#2563EB',
-  primary500: '#3B82F6',
-  primary400: '#60A5FA',
-  primary300: '#93C5FD',
-  primary200: '#DBEAFE',
-  primary100: '#EFF6FF',
-  primary50: '#F8FAFF',
+  // Primary - Ultra modern blue system
+  primary: '#0066FF',
+  primary700: '#0052CC',
+  primary600: '#0066FF',
+  primary500: '#1A7FFF',
+  primary400: '#4D9FFF',
+  primary300: '#80BFFF',
+  primary200: '#B3DFFF',
+  primary100: '#E6F3FF',
+  primary50: '#F0F7FF',
   
-  // Accent colors - Vibrant and engaging
-  accent: '#10B981',
-  accentDark: '#059669',
-  secondary: '#8B5CF6',
-  secondary100: '#F3F4F6',
+  // Accent colors - Modern and vibrant
+  accent: '#00D9FF',
+  accentDark: '#00B8D4',
+  secondary: '#6366F1',
+  secondary100: '#E0E7FF',
   
-  // Status colors - Clear and accessible
-  warn: '#F59E0B',
-  warnLight: '#FEF3C7',
-  warn100: '#FFFBEB',
-  danger: '#EF4444',
-  dangerLight: '#FECACA',
-  danger100: '#FEF2F2',
-  success: '#10B981',
-  successLight: '#D1FAE5',
-  success100: '#ECFDF5',
-  info: '#3B82F6',
-  infoLight: '#DBEAFE',
-  info100: '#EFF6FF',
+  // Status colors - Flat and clear
+  warn: '#FFB800',
+  warnLight: '#FFF4CC',
+  warn100: '#FFFAEB',
+  danger: '#FF3B30',
+  dangerLight: '#FFE5E5',
+  danger100: '#FFF0F0',
+  success: '#00C896',
+  successLight: '#E6FFF9',
+  success100: '#F0FFFC',
+  info: '#007AFF',
+  infoLight: '#E3F2FD',
+  info100: '#F0F8FF',
   
-  // Backgrounds - Layered depth
+  // Backgrounds - Ultra clean flat design
   bg: '#FFFFFF',
-  bgSecondary: '#F9FAFB',
-  bgTertiary: '#F3F4F6',
+  bgSecondary: '#F8F9FA',
+  bgTertiary: '#F0F0F0',
   card: '#FFFFFF',
-  surface: '#F9FAFB',
+  surface: '#FAFAFA',
   surfaceElevated: '#FFFFFF',
   
-  // Text - Enhanced hierarchy
-  text: '#111827',
-  textSecondary: '#374151',
-  textTertiary: '#6B7280',
-  muted: '#9CA3AF',
-  mutedLight: '#D1D5DB',
-  placeholder: '#9CA3AF',
+  // Text - Modern hierarchy
+  text: '#1A1A1A',
+  textSecondary: '#666666',
+  textTertiary: '#999999',
+  muted: '#CCCCCC',
+  mutedLight: '#E0E0E0',
+  placeholder: '#CCCCCC',
   
-  // Lines and borders - Refined
-  line: '#E5E7EB',
-  lineDark: '#D1D5DB',
-  border: '#E5E7EB',
-  borderFocus: '#3B82F6',
+  // Lines and borders - Minimal
+  line: '#F0F0F0',
+  lineDark: '#E0E0E0',
+  border: '#F0F0F0',
+  borderFocus: '#0066FF',
   
-  // Interactive states
-  hover: '#F3F4F6',
-  pressed: '#E5E7EB',
-  focus: '#DBEAFE',
+  // Interactive states - Subtle
+  hover: '#F5F5F5',
+  pressed: '#EEEEEE',
+  focus: '#E6F3FF',
   
-  // Overlays - Enhanced depth
-  overlay: 'rgba(17, 24, 39, 0.75)',
-  overlayLight: 'rgba(17, 24, 39, 0.1)',
+  // Overlays - Clean
+  overlay: 'rgba(0, 0, 0, 0.4)',
+  overlayLight: 'rgba(0, 0, 0, 0.1)',
   glass: 'rgba(255, 255, 255, 0.95)',
   glassLight: 'rgba(255, 255, 255, 0.8)',
-  glassDark: 'rgba(17, 24, 39, 0.8)',
+  glassDark: 'rgba(0, 0, 0, 0.05)',
   
-  // Chips - Enhanced contrast
-  chipBg: '#F3F4F6',
-  chipText: '#374151',
-  chipBgActive: '#DBEAFE',
-  chipTextActive: '#1D4ED8',
-  chipBorder: '#E5E7EB',
+  // Chips - Clean flat design
+  chipBg: '#F5F5F5',
+  chipText: '#333333',
+  chipBgActive: '#E6F3FF',
+  chipTextActive: '#0066FF',
+  chipBorder: '#F0F0F0',
   
-  // Progress - Smooth gradients
-  progressTrack: '#E5E7EB',
-  progressFill: '#3B82F6',
+  // Progress - Flat
+  progressTrack: '#F0F0F0',
+  progressFill: '#0066FF',
   
-  // Skeleton - Subtle animation
-  skeleton: '#F3F4F6',
+  // Skeleton - Subtle
+  skeleton: '#F5F5F5',
   skeletonHighlight: '#FFFFFF',
   
-  // Enhanced gradients - More sophisticated
-  primaryGradient: ['#3B82F6', '#1D4ED8'] as const,
-  accentGradient: ['#10B981', '#059669'] as const,
-  cardGradient: ['#FFFFFF', '#F9FAFB'] as const,
-  subtleGradient: ['#F9FAFB', '#F3F4F6'] as const,
-  warmGradient: ['#F59E0B', '#D97706'] as const,
-  coolGradient: ['#10B981', '#3B82F6'] as const,
-  heroGradient: ['#1E40AF', '#3B82F6', '#60A5FA'] as const,
-  dangerGradient: ['#EF4444', '#DC2626'] as const,
-  successGradient: ['#10B981', '#059669'] as const,
+  // Modern gradients - Subtle and sophisticated
+  primaryGradient: ['#0066FF', '#0052CC'] as const,
+  accentGradient: ['#00D9FF', '#00B8D4'] as const,
+  cardGradient: ['#FFFFFF', '#FAFAFA'] as const,
+  subtleGradient: ['#FAFAFA', '#F5F5F5'] as const,
+  warmGradient: ['#FFB800', '#FF9500'] as const,
+  coolGradient: ['#00C896', '#0066FF'] as const,
+  heroGradient: ['#0066FF', '#00D9FF'] as const,
+  dangerGradient: ['#FF3B30', '#FF2D20'] as const,
+  successGradient: ['#00C896', '#00B386'] as const,
 };
 
 export const radius = { 
-  xs: 6, 
-  sm: 8, 
-  md: 12, 
-  lg: 16, 
-  xl: 20, 
-  xxl: 24,
+  xs: 4, 
+  sm: 6, 
+  md: 8, 
+  lg: 12, 
+  xl: 16, 
+  xxl: 20,
   pill: 999 
 };
 
@@ -115,60 +115,60 @@ export const spacing = {
 };
 
 export const shadow = {
-  // Enhanced shadows for modern depth
+  // Flat design - minimal shadows
   none: {
     elevation: 0,
     shadowOpacity: 0,
   },
   sm: {
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
   },
   card: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  lg: {
     elevation: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
   },
-  lg: {
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-  },
   xl: {
-    elevation: 12,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-  },
-  // Colored shadows for special elements
-  primary: {
-    elevation: 8,
-    shadowColor: '#3B82F6',
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
+  },
+  // Colored shadows for special elements - more subtle
+  primary: {
+    elevation: 4,
+    shadowColor: '#0066FF',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   success: {
-    elevation: 8,
-    shadowColor: '#10B981',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    shadowColor: '#00C896',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   danger: {
-    elevation: 8,
-    shadowColor: '#EF4444',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    shadowColor: '#FF3B30',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
 };
 

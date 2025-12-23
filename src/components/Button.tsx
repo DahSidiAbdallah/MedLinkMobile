@@ -8,7 +8,6 @@ import {
   TextStyle,
   Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, shadow, typography } from '../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
@@ -30,21 +29,24 @@ type ButtonProps = {
 
 const sizeStyles = {
   sm: { 
-    paddingVertical: 10, 
+    paddingVertical: 8, 
     paddingHorizontal: 16, 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '600' as const,
     minHeight: 36,
   },
   md: { 
     paddingVertical: 12, 
     paddingHorizontal: 20, 
-    ...typography.bodyMedium,
+    fontSize: 16,
+    fontWeight: '600' as const,
     minHeight: 44,
   },
   lg: { 
     paddingVertical: 16, 
     paddingHorizontal: 24, 
-    ...typography.bodySemibold,
+    fontSize: 18,
+    fontWeight: '600' as const,
     minHeight: 52,
   },
 };
@@ -68,21 +70,19 @@ export default function Button({
 
   const handlePressIn = () => {
     if (isDisabled) return;
-    Animated.spring(scaleAnim, {
-      toValue: 0.96,
+    Animated.timing(scaleAnim, {
+      toValue: 0.98,
+      duration: 100,
       useNativeDriver: true,
-      tension: 300,
-      friction: 10,
     }).start();
   };
 
   const handlePressOut = () => {
     if (isDisabled) return;
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 1,
+      duration: 100,
       useNativeDriver: true,
-      tension: 300,
-      friction: 10,
     }).start();
   };
 
@@ -96,7 +96,7 @@ export default function Button({
       paddingVertical: sizeConfig.paddingVertical,
       paddingHorizontal: sizeConfig.paddingHorizontal,
       minHeight: sizeConfig.minHeight,
-      opacity: isDisabled ? 0.6 : 1,
+      opacity: isDisabled ? 0.5 : 1,
     };
 
     if (fullWidth) {
@@ -108,13 +108,12 @@ export default function Button({
         return { 
           ...base, 
           backgroundColor: colors.secondary,
-          ...shadow.card,
         };
       case 'outline':
         return { 
           ...base, 
           backgroundColor: 'transparent', 
-          borderWidth: 1.5, 
+          borderWidth: 1, 
           borderColor: colors.primary,
         };
       case 'ghost':
@@ -126,18 +125,16 @@ export default function Button({
         return { 
           ...base, 
           backgroundColor: colors.danger,
-          ...shadow.danger,
         };
       case 'success':
         return { 
           ...base, 
           backgroundColor: colors.success,
-          ...shadow.success,
         };
       default:
         return {
           ...base,
-          ...shadow.primary,
+          backgroundColor: colors.primary,
         };
     }
   };
@@ -147,26 +144,11 @@ export default function Button({
       case 'outline':
         return colors.primary;
       case 'ghost':
-        return colors.text;
+        return colors.primary;
       default:
         return '#FFFFFF';
     }
   };
-
-  const getGradientColors = (): readonly [string, string, ...string[]] => {
-    switch (variant) {
-      case 'danger':
-        return colors.dangerGradient;
-      case 'success':
-        return colors.successGradient;
-      case 'secondary':
-        return [colors.secondary, colors.secondary] as const;
-      default:
-        return colors.primaryGradient;
-    }
-  };
-
-  const shouldUseGradient = variant === 'primary' || variant === 'danger' || variant === 'success';
 
   const buttonContent = (
     <>
@@ -185,7 +167,6 @@ export default function Button({
               color: getTextColor(),
               fontSize: sizeConfig.fontSize,
               fontWeight: sizeConfig.fontWeight,
-              lineHeight: sizeConfig.lineHeight,
             },
             textStyle
           ]}
@@ -206,20 +187,9 @@ export default function Button({
         disabled={isDisabled}
         style={({ pressed }) => [
           getButtonStyle(),
-          pressed && !isDisabled && { opacity: 0.9 },
+          pressed && !isDisabled && { opacity: 0.8 },
         ]}
       >
-        {shouldUseGradient && !isDisabled ? (
-          <LinearGradient
-            colors={getGradientColors()}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              StyleSheet.absoluteFill,
-              { borderRadius: radius.md }
-            ]}
-          />
-        ) : null}
         {buttonContent}
       </Pressable>
     </Animated.View>
