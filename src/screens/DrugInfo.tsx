@@ -9,7 +9,7 @@ import { Pill } from '../components/Pill';
 import Chip from '../components/Chip';
 import { useDrugInfo } from '../hooks/useDrugInfo';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, radius, type } from '../theme';
+import { colors, spacing, radius } from '../theme';
 
 export default function DrugInfo({ navigation }: any) {
   const { searchDrug, suggestions, loading, error } = useDrugInfo();
@@ -120,8 +120,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   heroTitle: {
-    ...type.h1,
-    color: '#fff',
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: -0.5,
   },
   heroSubtitle: {
     color: 'rgba(255,255,255,0.78)',
@@ -160,7 +162,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sectionTitle: {
-    ...type.h2,
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    letterSpacing: -0.3,
   },
   headerRow: {
     flexDirection: 'row',

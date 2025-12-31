@@ -7,10 +7,11 @@ import {
   Pressable,
   StyleSheet,
   Alert,
-  Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Animated,
+  ScrollView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -22,7 +23,7 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { auth, db } from '../lib/firebase';
-import { colors, spacing, typography, radius, animation } from '../theme';
+import { colors, spacing, radius, animation, shadow } from '../theme';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../hooks/useToast';
 
@@ -53,7 +54,7 @@ const STEPS: { key: StepKey; label: string }[] = [
   { key: 1, label: 'Personal' },
 ];
 
-export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
+export default function Login({ onLogin }: Readonly<LoginProps>) {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const [email, setEmail] = useState('');
@@ -64,6 +65,7 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -122,12 +124,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
   const validateLogin = () => {
     const errors: { email?: string; password?: string } = {};
     if (!email) {
-      errors.email = 'Email is required.';
+      errors.email = t('auth.emailRequired', 'Email is required');
     } else if (!emailRegex.test(email)) {
-      errors.email = 'Please enter a valid email address.';
+      errors.email = t('auth.invalidEmail', 'Please enter a valid email address');
     }
     if (!password) {
-      errors.password = 'Password is required.';
+      errors.password = t('auth.passwordRequired', 'Password is required');
     }
     setLoginErrors(errors);
     return Object.keys(errors).length === 0;
@@ -136,19 +138,19 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
   const validateAccountStep = () => {
     const errors: RegisterErrorState = {};
     if (!email) {
-      errors.email = 'Email is required.';
+      errors.email = t('auth.emailRequired', 'Email is required');
     } else if (!emailRegex.test(email)) {
-      errors.email = 'Please enter a valid email address.';
+      errors.email = t('auth.invalidEmail', 'Please enter a valid email address');
     }
     if (!password) {
-      errors.password = 'Password is required.';
+      errors.password = t('auth.passwordRequired', 'Password is required');
     } else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      errors.password = 'Password must be at least 8 characters and include both letters and numbers.';
+      errors.password = t('auth.invalidPassword', 'Password must be at least 8 characters and include both letters and numbers');
     }
     if (!confirmPassword) {
-      errors.confirmPassword = 'Please confirm your password.';
+      errors.confirmPassword = 'Please confirm your password';
     } else if (password !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match.';
+      errors.confirmPassword = 'Passwords do not match';
     }
     setRegisterAccountErrors(errors);
     return Object.keys(errors).length === 0;
@@ -158,23 +160,23 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
     const errors: RegisterPersonalErrors = {};
     const health: HealthErrors = {};
     if (!name.trim()) {
-      errors.name = 'Full name is required.';
+      errors.name = t('auth.nameRequired', 'Full name is required');
     }
     if (phone && !/^\d{7,}$/.test(phone)) {
-      errors.phone = 'Please enter a valid phone number (at least 7 digits).';
+      errors.phone = 'Please enter a valid phone number (at least 7 digits)';
     }
     if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
-      errors.dateOfBirth = 'Date of Birth must be in YYYY-MM-DD format.';
+      errors.dateOfBirth = 'Date of Birth must be in YYYY-MM-DD format';
     }
     const bt = bloodType === 'custom' ? customBloodType.trim() : bloodType;
     if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt)) {
-      health.bloodType = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.';
+      health.bloodType = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-';
     }
     if (allergies.some(a => !a.trim())) {
-      health.allergies = 'Allergy cannot be empty.';
+      health.allergies = 'Allergy cannot be empty';
     }
     if (medicalConditions.some(c => !c.trim())) {
-      health.conditions = 'Condition cannot be empty.';
+      health.conditions = 'Condition cannot be empty';
     }
     setRegisterPersonalErrors(errors);
     setHealthErrors(health);
@@ -186,21 +188,25 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      showSuccess(t('auth.signInSuccess', 'Welcome back!'), t('auth.signInSuccessMessage', 'You have successfully signed in.'));
       if (onLogin) onLogin();
     } catch (e: any) {
+      let errorMessage = t('auth.genericError', 'Login failed. Please try again.');
+      
       if (e.code === 'auth/user-not-found') {
-        setLoginErrors({ email: 'No user found with this email.' });
+        errorMessage = 'No user found with this email';
       } else if (e.code === 'auth/wrong-password') {
-        setLoginErrors({ password: 'Incorrect password.' });
+        errorMessage = 'Incorrect password';
       } else if (e.code === 'auth/invalid-email') {
-        setLoginErrors({ email: 'Invalid email address.' });
+        errorMessage = 'Invalid email address';
       } else if (e.code === 'auth/invalid-credential') {
-        setLoginErrors({ password: 'Invalid credentials. Please check your email and password.' });
+        errorMessage = 'Invalid credentials. Please check your email and password';
       } else if (e.code === 'auth/too-many-requests') {
-        setLoginErrors({ email: 'Too many failed attempts. Please try again later.' });
-      } else {
-        setLoginErrors({ email: e.message || 'Login failed. Please try again.' });
+        errorMessage = 'Too many failed attempts. Please try again later';
       }
+      
+      showError('Login Failed', errorMessage);
+      setLoginErrors({ email: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -224,23 +230,62 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
         medical_conditions: medicalConditions.length > 0 ? medicalConditions : undefined,
       };
       await setDoc(doc(db, 'profiles', user.uid), profile);
-      Alert.alert('Account created', 'You can now log in.');
+      showSuccess(t('auth.signUpSuccess', 'Account created successfully!'), 'You can now access all features.');
       setIsRegister(false);
       setRegisterStep(0);
+      // Clear form
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setName('');
+      setPhone('');
+      setDateOfBirth('');
+      setBloodType('');
+      setAllergies([]);
+      setMedicalConditions([]);
     } catch (e: any) {
+      let errorMessage = 'Failed to create account. Please try again.';
+      
       if (e.code === 'auth/email-already-in-use') {
-        Alert.alert('Registration Error', 'This email is already in use. Please use a different email or log in.');
+        errorMessage = t('auth.accountExists', 'This email is already in use. Please use a different email or log in.');
       } else if (e.code === 'auth/invalid-email') {
-        Alert.alert('Registration Error', 'Invalid email address.');
+        errorMessage = 'Invalid email address';
       } else if (e.code === 'auth/weak-password') {
-        Alert.alert('Registration Error', 'Password is too weak. Please use a stronger password.');
+        errorMessage = 'Password is too weak. Please use a stronger password';
       } else if (e.code === 'auth/network-request-failed') {
-        Alert.alert('Network Error', 'Please check your internet connection and try again.');
-      } else {
-        Alert.alert('Registration Error', e.message || 'Failed to create account. Please try again.');
+        errorMessage = 'Please check your internet connection and try again';
       }
+      
+      showError('Registration Failed', errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      showError('Error', 'Please enter your email address');
+      return;
+    }
+    if (!emailRegex.test(forgotEmail)) {
+      showError('Error', 'Please enter a valid email address');
+      return;
+    }
+    
+    setForgotLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, forgotEmail);
+      showSuccess('Email Sent', 'Password reset email has been sent to your inbox');
+      setShowForgot(false);
+      setForgotEmail('');
+    } catch (e: any) {
+      let errorMessage = 'Failed to send reset email';
+      if (e.code === 'auth/user-not-found') {
+        errorMessage = 'No user found with this email address';
+      }
+      showError('Error', errorMessage);
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -248,35 +293,65 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
     props: React.ComponentProps<typeof TextInput> & {
       error?: string;
       id: string;
+      icon?: React.ComponentProps<typeof Ionicons>['name'];
+      showPasswordToggle?: boolean;
+      isPassword?: boolean;
+      passwordVisible?: boolean;
+      onTogglePassword?: () => void;
     },
   ) => {
-    const { error, id, ...rest } = props;
+    const { error, id, icon, showPasswordToggle, isPassword, passwordVisible, onTogglePassword, ...rest } = props;
     return (
-      <View style={{ width: '100%' }}>
-        <TextInput
-          {...rest}
-          style={[
-            styles.input,
-            focusedInput === id && styles.inputFocused,
-            error && styles.inputError,
-          ]}
-          onFocus={() => setFocusedInput(id)}
-          onBlur={event => {
-            rest.onBlur?.(event);
-            setFocusedInput(null);
-          }}
-          placeholderTextColor={colors.muted}
-        />
+      <View style={styles.inputContainer}>
+        <View style={[
+          styles.inputWrapper,
+          focusedInput === id && styles.inputWrapperFocused,
+          error && styles.inputWrapperError,
+        ]}>
+          {icon && (
+            <Ionicons 
+              name={icon} 
+              size={20} 
+              color={focusedInput === id ? colors.primary : colors.muted} 
+              style={styles.inputIcon}
+            />
+          )}
+          <TextInput
+            {...rest}
+            style={[styles.input, icon && styles.inputWithIcon]}
+            onFocus={() => setFocusedInput(id)}
+            onBlur={event => {
+              rest.onBlur?.(event);
+              setFocusedInput(null);
+            }}
+            placeholderTextColor={colors.muted}
+            secureTextEntry={isPassword && !passwordVisible}
+          />
+          {showPasswordToggle && (
+            <Pressable onPress={onTogglePassword} style={styles.passwordToggle}>
+              <Ionicons 
+                name={passwordVisible ? 'eye-off' : 'eye'} 
+                size={20} 
+                color={colors.muted} 
+              />
+            </Pressable>
+          )}
+        </View>
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
       </View>
     );
   };
 
   const renderLogin = () => (
-    <>
+    <View style={styles.formContainer}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>{t('auth.signInToAccount', 'Sign in to your account')}</Text>
+        <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
+      </View>
+
       {renderInput({
         id: 'login-email',
-        placeholder: 'Email',
+        placeholder: t('auth.emailPlaceholder', 'Enter your email'),
         autoCapitalize: 'none',
         keyboardType: 'email-address',
         value: email,
@@ -284,39 +359,55 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           setEmail(text);
           if (loginErrors.email) setLoginErrors(e => ({ ...e, email: undefined }));
         },
-        onBlur: () => {
-          if (!email) setLoginErrors(e => ({ ...e, email: 'Email is required.' }));
-          else if (!emailRegex.test(email)) setLoginErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
-          else setLoginErrors(e => ({ ...e, email: undefined }));
-        },
         error: loginErrors.email,
+        icon: 'mail-outline',
       })}
+
       {renderInput({
         id: 'login-password',
-        placeholder: 'Password',
-        secureTextEntry: true,
+        placeholder: t('auth.passwordPlaceholder', 'Enter your password'),
         value: password,
         onChangeText: text => {
           setPassword(text);
           if (loginErrors.password) setLoginErrors(e => ({ ...e, password: undefined }));
         },
-        onBlur: () => {
-          if (!password) setLoginErrors(e => ({ ...e, password: 'Password is required.' }));
-          else setLoginErrors(e => ({ ...e, password: undefined }));
-        },
         error: loginErrors.password,
+        icon: 'lock-closed-outline',
+        isPassword: true,
+        passwordVisible: showPassword,
+        showPasswordToggle: true,
+        onTogglePassword: () => setShowPassword(!showPassword),
       })}
-      <Pressable onPress={() => setShowForgot(true)} style={styles.forgotLink}>
-        <Text style={styles.forgotText}>Forgot password?</Text>
+
+      <Pressable onPress={() => setShowForgot(true)} style={styles.forgotButton}>
+        <Text style={styles.forgotText}>{t('auth.forgotPassword', 'Forgot password?')}</Text>
       </Pressable>
-      <Pressable style={[styles.primaryButton, loading && styles.disabled]} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>{t('auth.signInButton', 'Login')}</Text>}
-      </Pressable>
-    </>
+
+      <Button
+        title={loading ? 'Signing in...' : t('auth.signInButton', 'Sign In')}
+        onPress={handleLogin}
+        disabled={loading}
+        loading={loading}
+        fullWidth
+        style={styles.primaryButton}
+      />
+
+      <View style={styles.switchContainer}>
+        <Text style={styles.switchText}>{t('auth.noAccount', "Don't have an account?")}</Text>
+        <Pressable onPress={() => setIsRegister(true)}>
+          <Text style={styles.switchLink}>{t('auth.signUpHere', 'Sign up here')}</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 
   const renderAccountStep = () => (
-    <>
+    <View style={styles.formContainer}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Enter your email and password to get started</Text>
+      </View>
+
       {renderInput({
         id: 'register-email',
         placeholder: 'Email',
@@ -333,11 +424,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setRegisterAccountErrors(e => ({ ...e, email: undefined }));
         },
         error: registerAccountErrors.email,
+        icon: 'mail-outline',
       })}
+
       {renderInput({
         id: 'register-password',
         placeholder: 'Password',
-        secureTextEntry: true,
         value: password,
         onChangeText: text => {
           setPassword(text);
@@ -350,11 +442,16 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setRegisterAccountErrors(e => ({ ...e, password: undefined }));
         },
         error: registerAccountErrors.password,
+        icon: 'lock-closed-outline',
+        isPassword: true,
+        passwordVisible: showPassword,
+        showPasswordToggle: true,
+        onTogglePassword: () => setShowPassword(!showPassword),
       })}
+
       {renderInput({
         id: 'register-confirm',
         placeholder: 'Confirm Password',
-        secureTextEntry: true,
         value: confirmPassword,
         onChangeText: text => {
           setConfirmPassword(text);
@@ -366,20 +463,31 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
         },
         error: registerAccountErrors.confirmPassword,
+        icon: 'lock-closed-outline',
+        isPassword: true,
+        passwordVisible: showConfirmPassword,
+        showPasswordToggle: true,
+        onTogglePassword: () => setShowConfirmPassword(!showConfirmPassword),
       })}
-      <Pressable
-        style={[styles.primaryButton]}
+
+      <Button
+        title={t('common.next', 'Next')}
         onPress={() => {
           if (validateAccountStep()) setRegisterStep(1);
         }}
-      >
-        <Text style={styles.primaryButtonText}>{t('common.next', 'Next')}</Text>
-      </Pressable>
-    </>
+        fullWidth
+        style={styles.primaryButton}
+      />
+    </View>
   );
 
   const renderPersonalStep = () => (
-    <>
+    <View style={styles.formContainer}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Personal Information</Text>
+        <Text style={styles.subtitle}>Tell us about yourself to complete your medical profile</Text>
+      </View>
+
       {renderInput({
         id: 'register-name',
         placeholder: 'Full Name',
@@ -393,10 +501,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
         },
         error: registerPersonalErrors.name,
+        icon: 'person-outline',
       })}
+
       {renderInput({
         id: 'register-phone',
-        placeholder: 'Phone Number',
+        placeholder: 'Phone Number (optional)',
         keyboardType: 'phone-pad',
         value: phone,
         onChangeText: text => {
@@ -408,10 +518,12 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
         },
         error: registerPersonalErrors.phone,
+        icon: 'call-outline',
       })}
+
       {renderInput({
         id: 'register-dob',
-        placeholder: 'Date of Birth (YYYY-MM-DD)',
+        placeholder: 'Date of Birth (YYYY-MM-DD) - optional',
         keyboardType: 'numbers-and-punctuation',
         value: dateOfBirth,
         onChangeText: text => {
@@ -424,16 +536,19 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
         },
         error: registerPersonalErrors.dateOfBirth,
+        icon: 'calendar-outline',
       })}
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{t('auth.healthBasics', 'Health basics')}</Text>
-        {healthErrors.bloodType ? <Text style={styles.errorText}>{healthErrors.bloodType}</Text> : null}
+        <Text style={styles.sectionTitle}>{t('auth.healthBasics', 'Health Information (Optional)')}</Text>
       </View>
+      
+      {healthErrors.bloodType ? <Text style={styles.errorText}>{healthErrors.bloodType}</Text> : null}
       <BloodTypePicker value={bloodType} onChange={setBloodType} />
+      
       {bloodType === 'custom' && renderInput({
         id: 'register-blood-custom',
-        placeholder: 'Custom Blood Type',
+        placeholder: 'Custom Blood Type (e.g., A+, B-, O+)',
         value: customBloodType,
         onChangeText: text => setCustomBloodType(text),
         onBlur: () => {
@@ -443,15 +558,16 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
           else setHealthErrors(e => ({ ...e, bloodType: undefined }));
         },
         error: healthErrors.bloodType,
+        icon: 'water-outline',
       })}
 
       <View style={styles.chipRow}>
         <TextInput
-          placeholder="Add allergy"
+          placeholder="Add allergy (optional)"
           value={allergyInput}
           onChangeText={setAllergyInput}
-          style={[styles.input, { flex: 1 }]}
-          placeholderTextColor={colors.muted}
+          style={[styles.inputWrapper, { flex: 1 }]}
+          placeholderTextColor={colors.textSecondary}
         />
         <Pressable
           style={styles.addChip}
@@ -477,11 +593,11 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
 
       <View style={styles.chipRow}>
         <TextInput
-          placeholder="Add condition"
+          placeholder="Add medical condition (optional)"
           value={conditionInput}
           onChangeText={setConditionInput}
-          style={[styles.input, { flex: 1 }]}
-          placeholderTextColor={colors.muted}
+          style={[styles.inputWrapper, { flex: 1 }]}
+          placeholderTextColor={colors.textSecondary}
         />
         <Pressable
           style={styles.addChip}
@@ -505,10 +621,15 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
         ))}
       </View>
 
-      <Pressable style={[styles.primaryButton, loading && styles.disabled]} onPress={handleRegister} disabled={loading}>
-        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>{t('auth.signUpButton', 'Create account')}</Text>}
-      </Pressable>
-    </>
+      <Button
+        title={loading ? 'Creating account...' : t('auth.signUpButton', 'Create Account')}
+        onPress={handleRegister}
+        disabled={loading}
+        loading={loading}
+        fullWidth
+        style={styles.primaryButton}
+      />
+    </View>
   );
 
   return (
@@ -517,41 +638,59 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
       withPadding={false}
       contentContainerStyle={styles.container}
     >
-      <LinearGradient
-        colors={colors.primaryGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.hero}
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [
+            { translateY: slideAnim },
+            { scale: scaleAnim }
+          ]
+        }}
       >
-        <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <Text style={styles.heroTitle}>{isRegister ? 'Create your medical ID' : 'Welcome back'}</Text>
-        <Text style={styles.heroSubtitle}>
-          {isRegister ? 'Join MedLink to keep your medical essentials in one place.' : 'Sign in to continue your connected care journey.'}
-        </Text>
-        <SegmentedControl
-          options={['Login', 'Register']}
-          value={isRegister ? 'Register' : 'Login'}
-          onChange={value => {
-            const register = value === 'Register';
-            setIsRegister(register);
-            if (!register) setRegisterStep(0);
-          }}
-        />
-      </LinearGradient>
+        <LinearGradient
+          colors={colors.primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <Image source={require('../assets/logo.png')} style={styles.logo} />
+          <Text style={styles.heroTitle}>{isRegister ? 'Create your medical ID' : 'Welcome back'}</Text>
+          <Text style={styles.heroSubtitle}>
+            {isRegister ? 'Join MedLink to keep your medical essentials in one place.' : 'Sign in to continue your connected care journey.'}
+          </Text>
+          <SegmentedControl
+            options={['Login', 'Register']}
+            value={isRegister ? 'Register' : 'Login'}
+            onChange={value => {
+              const register = value === 'Register';
+              setIsRegister(register);
+              if (!register) setRegisterStep(0);
+            }}
+          />
+        </LinearGradient>
+      </Animated.View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ width: '100%' }}
       >
-        <View style={styles.formWrapper}>
-          <Card style={styles.cardSurface}>
+        <Animated.View
+          style={[
+            styles.formWrapper,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
+          <Card variant="elevated" style={styles.cardSurface}>
             {isRegister ? (
               <>
                 <View style={styles.stepper}>
                   {STEPS.map((step, index) => (
                     <View key={step.key} style={styles.stepItem}>
                       <View style={[styles.stepCircle, registerStep >= step.key && styles.stepCircleActive]}>
-                        <Text style={styles.stepNumber}>{index + 1}</Text>
+                        <Text style={[styles.stepNumber, registerStep >= step.key && { color: '#fff' }]}>{index + 1}</Text>
                       </View>
                       <Text style={[styles.stepLabel, registerStep === step.key && styles.stepLabelActive]}>
                         {step.label}
@@ -562,20 +701,22 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
                     </View>
                   ))}
                 </View>
-                <View style={{ gap: spacing.md }}>
-                  {registerStep === 0 ? renderAccountStep() : renderPersonalStep()}
-                </View>
+                {registerStep === 0 ? renderAccountStep() : renderPersonalStep()}
                 {registerStep === 1 ? (
-                  <Pressable style={styles.secondaryButton} onPress={() => setRegisterStep(0)}>
-                    <Text style={styles.secondaryText}>{t('common.back', 'Back')}</Text>
-                  </Pressable>
+                  <Button
+                    title={t('common.back', 'Back')}
+                    onPress={() => setRegisterStep(0)}
+                    variant="secondary"
+                    fullWidth
+                    style={styles.secondaryButton}
+                  />
                 ) : null}
               </>
             ) : (
-              <View style={{ gap: spacing.md }}>{renderLogin()}</View>
+              renderLogin()
             )}
           </Card>
-        </View>
+        </Animated.View>
       </KeyboardAvoidingView>
 
       <View style={styles.footerHint}>
@@ -585,61 +726,59 @@ export default function Login({ navigation, onLogin }: Readonly<LoginProps>) {
       </View>
 
       {showForgot && (
-        <View style={styles.modalOverlay}>
-          <Card style={styles.modalCard}>
-            <View style={{ alignItems: 'center', gap: spacing.sm }}>
-              <View style={styles.modalIconWrap}>
-                <Ionicons name="lock-closed" size={28} color={colors.primary} />
+        <Animated.View 
+          style={[
+            styles.modalOverlay,
+            {
+              opacity: fadeAnim,
+            }
+          ]}
+        >
+          <Animated.View
+            style={{
+              transform: [{ scale: scaleAnim }]
+            }}
+          >
+            <Card variant="elevated" style={styles.modalCard}>
+              <View style={{ alignItems: 'center', gap: spacing.sm }}>
+                <View style={styles.modalIconWrap}>
+                  <Ionicons name="lock-closed" size={28} color={colors.primary} />
+                </View>
+                <Text style={styles.modalTitle}>{t('auth.resetPassword', 'Reset password')}</Text>
+                <Text style={styles.modalSubtitle}>
+                  Enter your email address and we'll send you a password reset link.
+                </Text>
               </View>
-              <Text style={styles.modalTitle}>{t('auth.resetPassword', 'Reset password')}</Text>
-              <Text style={styles.modalSubtitle}>
-                Enter your email address and we'll send you a password reset link.
-              </Text>
-            </View>
-            {renderInput({
-              id: 'forgot-email',
-              placeholder: 'Email',
-              autoCapitalize: 'none',
-              keyboardType: 'email-address',
-              value: forgotEmail,
-              onChangeText: setForgotEmail,
-            })}
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.secondaryButton}
-                onPress={() => {
-                  setShowForgot(false);
-                  setForgotEmail('');
-                }}
-              >
-                <Text style={styles.secondaryText}>{t('common.cancel', 'Cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.primaryButton, styles.modalPrimary]}
-                onPress={async () => {
-                  if (!forgotEmail || !emailRegex.test(forgotEmail)) {
-                    Alert.alert('Invalid Email', 'Please enter a valid email address.');
-                    return;
-                  }
-                  setForgotLoading(true);
-                  try {
-                    await sendPasswordResetEmail(auth, forgotEmail);
-                    Alert.alert('Password Reset', 'A password reset link has been sent to your email.');
+              {renderInput({
+                id: 'forgot-email',
+                placeholder: 'Email',
+                autoCapitalize: 'none',
+                keyboardType: 'email-address',
+                value: forgotEmail,
+                onChangeText: setForgotEmail,
+                icon: 'mail-outline',
+              })}
+              <View style={styles.modalActions}>
+                <Button
+                  title={t('common.cancel', 'Cancel')}
+                  onPress={() => {
                     setShowForgot(false);
                     setForgotEmail('');
-                  } catch (e: any) {
-                    Alert.alert('Error', e.message || 'Failed to send reset email.');
-                  } finally {
-                    setForgotLoading(false);
-                  }
-                }}
-                disabled={forgotLoading}
-              >
-                {forgotLoading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.primaryButtonText}>{t('auth.sendLink', 'Send link')}</Text>}
-              </Pressable>
-            </View>
-          </Card>
-        </View>
+                  }}
+                  variant="secondary"
+                  style={styles.secondaryButton}
+                />
+                <Button
+                  title={forgotLoading ? 'Sending...' : t('auth.sendLink', 'Send link')}
+                  onPress={handleForgotPassword}
+                  disabled={forgotLoading}
+                  loading={forgotLoading}
+                  style={[styles.primaryButton, styles.modalPrimary]}
+                />
+              </View>
+            </Card>
+          </Animated.View>
+        </Animated.View>
       )}
     </ScreenContainer>
   );
@@ -665,13 +804,18 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   heroTitle: {
-    ...typography.h1,
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 36,
     color: '#fff',
+    textAlign: 'center',
   },
   heroSubtitle: {
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
   },
   formWrapper: {
     marginTop: -spacing.xxl * 0.7,
@@ -682,63 +826,119 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.lg,
   },
-  input: {
-    width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
-    fontSize: 16,
+  formContainer: {
+    gap: spacing.lg,
+  },
+  headerContainer: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 32,
     color: colors.text,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    gap: spacing.xs,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(37,99,235,0.15)',
+    borderColor: colors.line,
+    paddingHorizontal: spacing.md,
+    paddingVertical: Platform.OS === 'ios' ? spacing.md : spacing.sm,
+    ...shadow.sm,
   },
-  inputFocused: {
+  inputWrapperFocused: {
     borderColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
+    backgroundColor: colors.bg,
+    ...shadow.primary,
   },
-  inputError: {
+  inputWrapperError: {
     borderColor: colors.danger,
+    backgroundColor: colors.dangerLight,
+  },
+  inputIcon: {
+    marginRight: spacing.sm,
+  },
+  input: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  inputWithIcon: {
+    marginLeft: 0,
+  },
+  passwordToggle: {
+    padding: spacing.xs,
+    marginLeft: spacing.sm,
   },
   errorText: {
     color: colors.danger,
-    fontSize: 13,
-    marginTop: 6,
+    marginTop: spacing.xs,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
   },
-  forgotLink: {
+  forgotButton: {
     alignSelf: 'flex-end',
+    padding: spacing.xs,
   },
   forgotText: {
     color: colors.primary,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
   },
   primaryButton: {
     backgroundColor: colors.primary,
     borderRadius: radius.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.primary,
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 8 },
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    ...shadow.primary,
   },
   primaryButtonText: {
     color: colors.card,
-    fontWeight: '700',
     fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  switchText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
+  },
+  switchLink: {
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
   },
   disabled: {
     opacity: 0.7,
@@ -747,13 +947,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
     borderRadius: radius.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.surface,
   },
   secondaryText: {
-    color: colors.muted,
-    fontWeight: '600',
+    color: colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
   },
   sectionHeader: {
     marginTop: spacing.lg,
@@ -763,8 +966,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontWeight: '600',
     color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 24,
   },
   chipRow: {
     flexDirection: 'row',
@@ -778,11 +983,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.chipBg,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   tagList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
+    marginTop: spacing.sm,
   },
   tag: {
     flexDirection: 'row',
@@ -792,32 +1000,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.chipBorder,
   },
   tagText: {
     color: colors.chipText,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
   },
   stepper: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.sm,
+    padding: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: 'rgba(37,99,235,0.08)',
+    backgroundColor: colors.primary50,
+    marginBottom: spacing.lg,
   },
   stepItem: {
     flex: 1,
     alignItems: 'center',
+    position: 'relative',
   },
   stepCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(37,99,235,0.4)',
+    borderWidth: 2,
+    borderColor: colors.primary200,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: colors.bg,
   },
   stepCircleActive: {
     backgroundColor: colors.primary,
@@ -825,13 +1039,16 @@ const styles = StyleSheet.create({
   },
   stepNumber: {
     color: colors.primary,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
   },
   stepLabel: {
-    marginTop: 8,
-    color: colors.muted,
+    marginTop: spacing.xs,
+    color: colors.textSecondary,
     fontSize: 13,
     fontWeight: '600',
+    textAlign: 'center',
   },
   stepLabelActive: {
     color: colors.primary,
@@ -839,10 +1056,11 @@ const styles = StyleSheet.create({
   stepDivider: {
     position: 'absolute',
     top: 18,
-    right: -spacing.md,
+    left: '50%',
+    right: -50,
     height: 2,
-    width: '100%',
-    backgroundColor: 'rgba(37,99,235,0.2)',
+    backgroundColor: colors.primary200,
+    zIndex: -1,
   },
   stepDividerActive: {
     backgroundColor: colors.primary,
@@ -852,10 +1070,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   footerText: {
-    color: colors.muted,
+    color: colors.textSecondary,
     textAlign: 'center',
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
   },
   footerLink: {
     color: colors.primary,
@@ -867,7 +1086,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(15,23,42,0.35)',
+    backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
@@ -881,19 +1100,23 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(37,99,235,0.12)',
+    backgroundColor: colors.primary100,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
     color: colors.text,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 28,
   },
   modalSubtitle: {
-    color: colors.muted,
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 18,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
   },
   modalActions: {
     flexDirection: 'row',

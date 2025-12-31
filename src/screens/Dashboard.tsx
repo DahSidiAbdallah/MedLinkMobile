@@ -26,7 +26,7 @@ import Chip from '../components/Chip';
 import ProgressBar from '../components/ProgressBar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTodayStats } from '../core/completion';
-import { colors, spacing, typography, shadow, radius, animation } from '../theme';
+import { colors, spacing, shadow, radius, animation } from '../theme';
 import { useTranslation } from 'react-i18next';
 import { useRTL } from '../hooks/useRTL';
 
@@ -230,10 +230,10 @@ export default function Dashboard({ navigation }: any) {
             </Pressable>
             <NotificationBell onPress={() => setNotificationsVisible(true)} />
           </View>
-          <Text style={[typography.h1, styles.heroTitle, { textAlign }]}>
+          <Text style={[{ fontSize: 28, fontWeight: '700', lineHeight: 36 }, styles.heroTitle, { textAlign }]}>
             {t('dashboard.welcome', 'Welcome')}{profile?.name ? `, ${profile.name}` : ''}
           </Text>
-          <Text style={[typography.body, styles.heroSubtitle, { textAlign }]}>
+          <Text style={[{ fontSize: 16, fontWeight: '400', lineHeight: 24 }, styles.heroSubtitle, { textAlign }]}>
             {t('dashboard.welcomeUser', 'How are you feeling today?')}
           </Text>
           <View style={styles.searchWrap}>
@@ -576,12 +576,15 @@ const styles = StyleSheet.create({
   },
   heroTitle: { 
     color: '#FFFFFF',
-    ...typography.h1,
+    fontSize: 28,
     fontWeight: '800',
+    lineHeight: 36,
   },
   heroSubtitle: { 
     color: 'rgba(255,255,255,0.9)',
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
   },
   searchWrap: {
     flexDirection: 'row',
@@ -594,7 +597,9 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: colors.text,
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
   },
   chipsRow: {
     flexDirection: 'row',
@@ -619,11 +624,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sectionTitle: { 
-    ...typography.h3,
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 28,
     color: colors.text,
   },
   sectionSubtitle: { 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     color: colors.muted,
     marginTop: 2,
   },
@@ -635,7 +644,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   sectionActionText: {
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
     color: colors.primary,
   },
   sectionBody: { 
@@ -651,7 +662,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   congratsText: {
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
     color: colors.success,
     flex: 1,
   },
@@ -668,12 +681,15 @@ const styles = StyleSheet.create({
   },
   urgentLabel: { 
     color: '#fff',
-    ...typography.h3,
+    fontSize: 20,
     fontWeight: '700',
+    lineHeight: 28,
   },
   urgentSub: { 
     color: 'rgba(255,255,255,0.9)',
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     textAlign: 'center',
     maxWidth: 280,
   },
@@ -699,7 +715,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   serviceLabel: { 
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
     color: colors.text,
     textAlign: 'center',
   },
@@ -733,16 +751,21 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   reminderTitle: { 
-    ...typography.bodyMedium,
-    color: colors.text,
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    color: colors.text,
   },
   reminderMeta: { 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     color: colors.muted,
   },
   reminderDescription: { 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     color: colors.textSecondary,
   },
   reminderBadge: {
@@ -752,9 +775,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.chipBg,
   },
   reminderBadgeText: { 
-    ...typography.caption,
-    color: colors.chipText,
+    fontSize: 12,
     fontWeight: '600',
+    lineHeight: 16,
+    color: colors.chipText,
   },
   // Empty and error states
   emptyState: {
@@ -763,12 +787,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   emptyStateText: { 
-    ...typography.bodyMedium,
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
     color: colors.textSecondary,
     textAlign: 'center',
   },
   emptyStateHint: { 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     color: colors.muted,
     textAlign: 'center',
   },
@@ -780,7 +808,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   addReminderText: {
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
     color: '#fff',
   },
   errorState: {
@@ -789,7 +819,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   errorText: {
-    ...typography.bodyMedium,
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
     color: colors.danger,
     textAlign: 'center',
   },
@@ -800,7 +832,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   retryText: {
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
     color: '#fff',
   },
   // Modal styles
@@ -834,16 +868,21 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   modalTitle: { 
-    ...typography.h2,
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 32,
     color: colors.text,
   },
   modalCloseText: { 
-    ...typography.bodyMedium,
-    color: colors.primary,
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    color: colors.primary,
   },
   sectionText: { 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     color: colors.textSecondary,
     marginTop: 2,
   },
@@ -854,12 +893,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   contactName: { 
-    ...typography.bodyMedium,
-    color: colors.text,
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    color: colors.text,
   },
   callLink: { 
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
     color: colors.primary,
   },
   facilityItem: {
@@ -869,12 +911,15 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line,
   },
   facilityName: { 
-    ...typography.bodyMedium,
-    color: colors.text,
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    color: colors.text,
   },
   facilityMeta: { 
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     color: colors.muted,
   },
   profileAvatar: {
@@ -886,7 +931,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   profileName: { 
-    ...typography.h3,
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 28,
     color: colors.text,
     marginBottom: spacing.xs,
   },

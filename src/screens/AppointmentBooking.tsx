@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Alert, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius, type, shadow } from '../theme';
+import { colors, spacing, radius, shadow } from '../theme';
 import Card from '../components/Card';
 import ScreenContainer from '../components/ScreenContainer';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -376,7 +376,10 @@ const s = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    ...type.h2,
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    letterSpacing: -0.3,
     marginBottom: spacing.xs,
   },
   subtitle: {

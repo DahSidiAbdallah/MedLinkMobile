@@ -27,7 +27,7 @@ import MedicalSheet from './user-sheets/MedicalSheet';
 import InsuranceSheet from './user-sheets/InsuranceSheet';
 import EmergencySheet from './user-sheets/EmergencySheet';
 import EditProfileSheet from './user-sheets/EditProfileSheet';
-import { colors, spacing, type, radius, shadow } from '../theme';
+import { colors, spacing, radius, shadow } from '../theme';
 import pkg from '../../package.json';
 
 type UserProfileProps = {
@@ -189,7 +189,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   sectionTitle: {
-    ...type.h2,
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    letterSpacing: -0.3,
   },
   sectionHint: {
     color: colors.muted,
@@ -565,7 +568,7 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
       <Modal visible={langModal} animationType="fade" transparent onRequestClose={() => setLangModal(false)}>
         <View style={modalStyles.overlay}>
           <Card style={styles.modalCard}>
-            <Text style={{ ...type.h2, textAlign: 'center' }}>{t('common.languageSettings', 'Language Settings')}</Text>
+            <Text style={{ fontSize: 22, fontWeight: '600', color: '#1A1A1A', letterSpacing: -0.3, textAlign: 'center' }}>{t('common.languageSettings', 'Language Settings')}</Text>
             {languages.map(lang => (
               <Pressable
                 key={lang.code}

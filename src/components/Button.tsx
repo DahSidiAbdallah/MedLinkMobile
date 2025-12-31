@@ -8,7 +8,7 @@ import {
   TextStyle,
   Animated,
 } from 'react-native';
-import { colors, radius, spacing, shadow, typography } from '../theme';
+import { colors, radius, spacing, shadow } from '../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 type ButtonSize = 'sm' | 'md' | 'lg';

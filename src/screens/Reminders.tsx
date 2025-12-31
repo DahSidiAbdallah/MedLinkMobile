@@ -328,14 +328,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: '700',
     color: colors.text,
     marginBottom: 4,
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 36,
   },
   screenSubtitle: {
-    fontSize: 15,
-    color: colors.muted,
+    color: colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
   },
   statsCard: {
     flexDirection: 'row',

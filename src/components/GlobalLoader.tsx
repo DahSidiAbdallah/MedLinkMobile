@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions, Text, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, animation, radius, shadow, typography } from '../theme';
+import { colors, animation, radius, shadow } from '../theme';
 import { useLoading } from '../hooks/LoadingContext';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -150,6 +150,8 @@ const styles = StyleSheet.create({
   text: {
     marginTop: 16,
     color: colors.text,
-    ...typography.bodyMedium,
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 24,
   },
 });

@@ -59,11 +59,16 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 28,
     fontWeight: '700',
+    lineHeight: 36,
     color: '#fff',
+    textAlign: 'center',
   },
   heroSubtitle: {
     color: 'rgba(255,255,255,0.82)',
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
+    textAlign: 'center',
   },
   heroStats: {
     flexDirection: 'row',
