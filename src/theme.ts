@@ -258,6 +258,9 @@ export const typography = {
   },
 };
 
+// Make typography available as default export as well for compatibility
+export default typography;
+
 // Animation durations
 export const animation = {
   fast: 150,
@@ -276,12 +279,12 @@ export const breakpoints = {
 
 // Legacy type export for backward compatibility
 export const type = {
-  h1: { fontSize: 28, fontWeight: '700', color: colors.text, letterSpacing: -0.5 } as const,
-  h2: { fontSize: 22, fontWeight: '600', color: colors.text, letterSpacing: -0.3 } as const,
-  h3: { fontSize: 18, fontWeight: '600', color: colors.text } as const,
-  body: { fontSize: 16, color: colors.text, lineHeight: 24 } as const,
-  bodySmall: { fontSize: 14, color: colors.textSecondary, lineHeight: 20 } as const,
-  meta: { fontSize: 12, fontWeight: '500', color: colors.muted } as const,
-  label: { fontSize: 14, fontWeight: '600', color: colors.text } as const,
-  caption: { fontSize: 11, fontWeight: '500', color: colors.mutedLight, letterSpacing: 0.3 } as const,
+  h1: { fontSize: 28, fontWeight: '700', color: '#1A1A1A', letterSpacing: -0.5 } as const,
+  h2: { fontSize: 22, fontWeight: '600', color: '#1A1A1A', letterSpacing: -0.3 } as const,
+  h3: { fontSize: 18, fontWeight: '600', color: '#1A1A1A' } as const,
+  body: { fontSize: 16, color: '#1A1A1A', lineHeight: 24 } as const,
+  bodySmall: { fontSize: 14, color: '#666666', lineHeight: 20 } as const,
+  meta: { fontSize: 12, fontWeight: '500', color: '#CCCCCC' } as const,
+  label: { fontSize: 14, fontWeight: '600', color: '#1A1A1A' } as const,
+  caption: { fontSize: 11, fontWeight: '500', color: '#E0E0E0', letterSpacing: 0.3 } as const,
 };

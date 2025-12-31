@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions, Image as RNImage } from 'react-native';
-import { colors, spacing, type, radius, shadow } from '../theme';
+import { colors, spacing, radius, shadow } from '../theme';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { Pill } from '../components/Pill';
@@ -50,7 +50,7 @@ export default function FacilityDetail() {
         {/* Avatar, Name, Specialty */}
         <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
           <SkeletonImage source={{ uri: fac.image }} style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]} />
-          <Text style={[type.h2, { marginTop: spacing.sm }]}>{fac.name}</Text>
+          <Text style={[{ fontSize: 22, fontWeight: '600', color: '#1A1A1A', letterSpacing: -0.3 }, { marginTop: spacing.sm }]}>{fac.name}</Text>
           <Text style={{ color: colors.muted }}>{fac.specialty}</Text>
         </View>
         {/* Status */}

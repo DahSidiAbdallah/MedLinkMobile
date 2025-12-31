@@ -6,14 +6,13 @@ import {
   Dimensions,
   Animated,
   Pressable,
-  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, spacing, shadow, typography, animation } from '../theme';
+import { colors, spacing, shadow, animation } from '../theme';
 import Button from './Button';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 type OnboardingStep = {
   id: string;
@@ -216,9 +215,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   skipText: {
-    ...typography.bodyMedium,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   content: {
     flex: 1,
@@ -238,22 +238,25 @@ const styles = StyleSheet.create({
     ...shadow.lg,
   },
   title: {
-    ...typography.display,
+    fontSize: 32,
+    fontWeight: '800',
+    lineHeight: 40,
     color: '#fff',
     textAlign: 'center',
-    fontWeight: '800',
   },
   subtitle: {
-    ...typography.h3,
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 28,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    fontWeight: '600',
   },
   description: {
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 24,
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    lineHeight: 24,
     maxWidth: 300,
   },
   progressContainer: {
@@ -287,9 +290,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   navText: {
-    ...typography.bodyMedium,
-    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
+    color: '#fff',
   },
   nextButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',

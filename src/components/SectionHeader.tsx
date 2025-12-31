@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, type } from '../theme';
+import { colors, spacing } from '../theme';
 
 type SectionHeaderProps = {
   title: string;
@@ -72,7 +72,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    ...type.h3,
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.text,
   },
   subtitle: {
