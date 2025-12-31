@@ -23,7 +23,7 @@ import Clinics from './src/screens/Clinics';
 import FacilityDetail from './src/screens/FacilityDetail';
 import BarcodeScanner from './src/screens/BarcodeScanner';
 import Settings from './src/screens/Settings';
-import { colors, shadow, radius, spacing } from './src/theme';
+import { colors, spacing, radius, shadow, animation } from './src/theme';
 import Login from './src/screens/Login';
 import SplashScreen from './src/components/SplashScreen';
 import { onAuthStateChanged, User } from 'firebase/auth';

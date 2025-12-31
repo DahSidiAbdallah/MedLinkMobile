@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, shadow, typography, animation } from '../theme';
+import { colors, radius, spacing, shadow, animation } from '../theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -226,11 +226,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   title: {
-    ...typography.bodyMedium,
+    fontSize: 16,
     fontWeight: '600',
+    lineHeight: 24,
   },
   message: {
-    ...typography.small,
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
     opacity: 0.9,
   },
   actionButton: {
@@ -241,7 +244,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   actionText: {
-    ...typography.smallSemibold,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
   },
   closeButton: {
     padding: spacing.xs,

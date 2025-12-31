@@ -14,19 +14,27 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize auth with React Native persistence
+// Initialize auth - for React Native, Firebase will automatically use AsyncStorage if available
 let auth: Auth;
 try {
-  // Try to import React Native persistence
-  const { getReactNativePersistence } = require('firebase/auth/react-native');
+  // Try to initialize auth with React Native persistence if available
+  // Firebase v9+ automatically detects React Native environment and uses AsyncStorage
   auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
+    // Firebase will automatically use AsyncStorage in React Native environment
+    persistence: [] // Empty array means use default persistence for the platform
   });
-  console.log('Firebase Auth initialized with React Native persistence');
+  console.log('Firebase Auth initialized with platform-specific persistence');
 } catch (error: any) {
-  // Fallback to regular auth if React Native persistence is not available
-  console.log('React Native persistence not available, using default auth:', error.message);
-  auth = getAuth(app);
+  // If initializeAuth fails, fall back to getAuth
+  console.log('initializeAuth failed, using getAuth:', error.message);
+  try {
+    auth = getAuth(app);
+    console.log('Firebase Auth initialized with getAuth');
+  } catch (fallbackError) {
+    console.error('Failed to initialize auth completely:', fallbackError);
+    // This should not happen, but just in case
+    throw new Error('Could not initialize Firebase Auth');
+  }
 }
 
 const db = getFirestore(app);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, AccessibilityRole } from 'react-native';
-import { colors, spacing, radius, type } from '../theme';
+import { colors, spacing, radius } from '../theme';
 import CachedImage from './CachedImage';
 
 export const ListRow = React.memo(function ListRow(props: Readonly<{ title: string; subtitle?: string; imageUri?: string; right?: React.ReactNode; onPress?: () => void }>) {
@@ -29,6 +29,6 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.75)',
   },
   avatar: { width: 44, height: 44, borderRadius: 22, marginRight: spacing.xs },
-  title: { ...type.body, fontSize: 16, fontWeight: '600', color: colors.text },
+  title: { fontSize: 16, fontWeight: '600', color: colors.text },
   sub: { fontSize: 13, color: colors.muted, marginTop: 2, lineHeight: 18 },
 });
