@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import i18next from 'i18next';
 import { colors, spacing, radius } from '../theme';
 
 interface Props {
@@ -40,7 +41,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <View style={styles.container}>
           <View style={styles.card}>
             <View style={styles.textContainer}>
-              <Text style={styles.title}>Oops! Something went wrong</Text>
+              <Text style={styles.title}>{i18next.t('errors.somethingWrong', 'Oops! Something went wrong')}</Text>
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.message}>
@@ -53,7 +54,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               </Text>
             </View>
             <Pressable style={styles.button} onPress={this.handleReset}>
-              <Text style={styles.buttonText}>Try Again</Text>
+              <Text style={styles.buttonText}>{i18next.t('empty.tryAgain', 'Try again')}</Text>
             </Pressable>
           </View>
         </View>

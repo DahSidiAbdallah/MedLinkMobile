@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, Platform, UIManager, Modal, Pressable, AccessibilityInfo } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { colors } from '../theme'
 import { summarizeText, safeJoinArrayField } from '../utils/textHelpers'
 
@@ -33,7 +34,7 @@ const FieldBlock: React.FC<{ title: string; raw: string; fieldKey: string; limit
           }}
           style={{ marginTop: 6 }}
         >
-          <Text style={{ color: colors.primary, fontWeight: '600' }}>Read more</Text>
+          <Text style={{ color: colors.primary, fontWeight: '600' }}>{t('common.readMore', 'Read more')}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -41,6 +42,7 @@ const FieldBlock: React.FC<{ title: string; raw: string; fieldKey: string; limit
 }
 
 const LabelInfoView: React.FC<Props> = ({ labelInfo, label, truncateLimit = 300 }) => {
+  const { t } = useTranslation();
   const indicationsRaw = (labelInfo?.indications ?? safeJoinArrayField(label?.indications_and_usage)) || safeJoinArrayField(label?.indications)
   const dosageRaw = (labelInfo?.dosage ?? safeJoinArrayField(label?.dosage_and_administration)) || safeJoinArrayField(label?.dosage)
   const sideEffectsRaw = (labelInfo?.sideEffects ?? safeJoinArrayField(label?.adverse_reactions)) || safeJoinArrayField(label?.adverse)
@@ -62,9 +64,9 @@ const LabelInfoView: React.FC<Props> = ({ labelInfo, label, truncateLimit = 300 
 
   return (
     <View>
-      <FieldBlock title="Indications & Usage" raw={indicationsRaw || 'N/A'} fieldKey="indications" limit={truncateLimit} onOpenModal={openModal} />
-      <FieldBlock title="Dosage & Administration" raw={dosageRaw || 'N/A'} fieldKey="dosage" limit={truncateLimit} onOpenModal={openModal} />
-      <FieldBlock title="Adverse Reactions" raw={sideEffectsRaw || 'N/A'} fieldKey="sideEffects" limit={truncateLimit} onOpenModal={openModal} />
+      <FieldBlock title={t('drugs.indicationsUsage', 'Indications & Usage')} raw={indicationsRaw || 'N/A'} fieldKey="indications" limit={truncateLimit} onOpenModal={openModal} />
+      <FieldBlock title={t('drugs.dosageAdministration', 'Dosage & Administration')} raw={dosageRaw || 'N/A'} fieldKey="dosage" limit={truncateLimit} onOpenModal={openModal} />
+      <FieldBlock title={t('drugs.adverseReactions', 'Adverse Reactions')} raw={sideEffectsRaw || 'N/A'} fieldKey="sideEffects" limit={truncateLimit} onOpenModal={openModal} />
 
       <Modal
         visible={modalVisible}
@@ -83,7 +85,7 @@ const LabelInfoView: React.FC<Props> = ({ labelInfo, label, truncateLimit = 300 
             onPress={closeModal} 
             style={{ marginTop: 20 }}
           >
-            <Text style={{ color: colors.primary, fontWeight: '600' }}>Close</Text>
+            <Text style={{ color: colors.primary, fontWeight: '600' }}>{t('common.close', 'Close')}</Text>
           </Pressable>
         </View>
       </Modal>
