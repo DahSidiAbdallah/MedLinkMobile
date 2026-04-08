@@ -58,6 +58,8 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
   const scaleAnim = useRef(new Animated.Value(0.96)).current;
+  const langModalAnim = useRef(new Animated.Value(0)).current;
+  const langSlideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -89,6 +91,37 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
     { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
   ];
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+
+  useEffect(() => {
+    if (langModal) {
+      Animated.parallel([
+        Animated.timing(langModalAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(langSlideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 7,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(langModalAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(langSlideAnim, {
+          toValue: 300,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [langModal]);
 
   const openEdit = () => {
     if (!profile) return;
@@ -405,33 +438,73 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
       </ScreenContainer>
 
       {/* Language Modal */}
-      <Modal visible={langModal} animationType="slide" transparent onRequestClose={() => setLangModal(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>{t('common.languageSettings', 'Language Settings')}</Text>
-            
-            {languages.map(lang => (
-              <Pressable
-                key={lang.code}
-                onPress={async () => {
-                  await i18n.changeLanguage(lang.code);
-                  setLangModal(false);
-                }}
-                style={({ pressed }) => [
-                  styles.langOption,
-                  pressed && { opacity: 0.8 }
-                ]}
-              >
-                <View style={styles.langOptionLeft}>
-                  <RNImage source={lang.flag} style={styles.langFlag} resizeMode="contain" />
-                  <Text style={styles.langLabel}>{lang.label}</Text>
-                </View>
-                {i18n.language === lang.code && <Ionicons name="checkmark-circle" size={24} color={colors.primary} />}
-              </Pressable>
-            ))}
-          </View>
-        </View>
+      <Modal visible={langModal} animationType="none" transparent onRequestClose={() => setLangModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setLangModal(false)}>
+          <Animated.View 
+            style={[
+              styles.modalOverlay,
+              {
+                backgroundColor: colors.overlay,
+                opacity: langModalAnim,
+              }
+            ]}
+          >
+            <Pressable onPress={() => setLangModal(false)} style={{ flex: 1 }} />
+            <Animated.View
+              style={[
+                styles.modalContent,
+                {
+                  transform: [{ translateY: langSlideAnim }]
+                }
+              ]}
+            >
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>{t('common.languageSettings', 'Language Settings')}</Text>
+              <Text style={styles.modalSubtitle}>{t('common.selectLanguagePrompt', 'Choose your preferred language')}</Text>
+              
+              {languages.map((lang, index) => (
+                <Animated.View
+                  key={lang.code}
+                  style={{
+                    opacity: langModalAnim,
+                    transform: [
+                      {
+                        translateY: langSlideAnim.interpolate({
+                          inputRange: [0, 300],
+                          outputRange: [0, 50 + (index * 10)],
+                        })
+                      }
+                    ]
+                  }}
+                >
+                  <Pressable
+                    onPress={async () => {
+                      await i18n.changeLanguage(lang.code);
+                      setTimeout(() => setLangModal(false), 300);
+                    }}
+                    style={({ pressed }) => [
+                      styles.langOption,
+                      i18n.language === lang.code && styles.langOptionActive,
+                      pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+                    ]}
+                  >
+                    <View style={styles.langOptionLeft}>
+                      <View style={[styles.langFlagWrap, i18n.language === lang.code && styles.langFlagWrapActive]}>
+                        <RNImage source={lang.flag} style={styles.langFlag} resizeMode="contain" />
+                      </View>
+                      <Text style={[styles.langLabel, i18n.language === lang.code && styles.langLabelActive]}>{lang.label}</Text>
+                    </View>
+                    {i18n.language === lang.code && (
+                      <View style={styles.checkmarkWrap}>
+                        <Ionicons name="checkmark-circle" size={28} color={colors.primary} />
+                      </View>
+                    )}
+                  </Pressable>
+                </Animated.View>
+              ))}
+            </Animated.View>
+          </Animated.View>
+        </Pressable>
       </Modal>
 
       <MedicationsSheet visible={medicationsModal} onClose={() => setMedicationsModal(false)} />
@@ -693,7 +766,6 @@ const styles = StyleSheet.create({
   // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -715,11 +787,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.text,
     textAlign: 'center',
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
+  },
+  modalSubtitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    textAlign: 'center',
     marginBottom: spacing.md,
   },
   langOption: {
@@ -727,22 +805,52 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.bgSecondary,
-    padding: spacing.lg,
+    padding: spacing.xl,
     borderRadius: radius.xl,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    ...shadow.soft,
+  },
+  langOptionActive: {
+    backgroundColor: colors.primary50,
+    borderColor: colors.primary,
   },
   langOptionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.lg,
   },
+  langFlagWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.lg,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.soft,
+  },
+  langFlagWrapActive: {
+    backgroundColor: '#fff',
+    ...shadow.card,
+  },
   langFlag: {
-    width: 36,
-    height: 24,
+    width: 40,
+    height: 28,
     borderRadius: 6,
   },
   langLabel: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
+  },
+  langLabelActive: {
+    color: colors.primary,
+  },
+  checkmarkWrap: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

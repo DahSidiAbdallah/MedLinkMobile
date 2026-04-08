@@ -34,7 +34,7 @@ export default function FacilityDetail() {
   }, [fac, finishLoading, startLoading]);
 
   if (!fac) {
-    return <Text style={{ marginTop: spacing.xl, textAlign: 'center' }}>Facility not found.</Text>;
+    return <Text style={{ marginTop: spacing.xl, textAlign: 'center' }}>{t('facilities.notFound', 'Facility not found.')}</Text>;
   }
 
   return (
@@ -62,18 +62,18 @@ export default function FacilityDetail() {
 
         <Text style={styles.sectionTitle}>{t('facilities.information', 'Information')}</Text>
         <View style={{ marginBottom: spacing.lg }}>
-          {fac.address && <Text style={styles.detailText}>Address: {fac.address}</Text>}
-          {fac.phoneNumber && <Text style={styles.detailText}>Phone: {fac.phoneNumber}</Text>}
-          {fac.hours && <Text style={styles.detailText}>Hours: {fac.hours}</Text>}
-          {fac.rating && <Text style={styles.detailText}>Rating: {fac.rating.toFixed(1)}</Text>}
+          {fac.address && <Text style={styles.detailText}>{t('facilities.address', 'Address')}: {fac.address}</Text>}
+          {fac.phoneNumber && <Text style={styles.detailText}>{t('facilities.phone', 'Phone')}: {fac.phoneNumber}</Text>}
+          {fac.hours && <Text style={styles.detailText}>{t('facilities.hours', 'Hours')}: {fac.hours}</Text>}
+          {fac.rating && <Text style={styles.detailText}>{t('facilities.rating', 'Rating')}: {fac.rating.toFixed(1)}</Text>}
           {fac.services && fac.services.length > 0 && (
-            <Text style={styles.detailText}>Services: {fac.services.join(', ')}</Text>
+            <Text style={styles.detailText}>{t('facilities.services', 'Services')}: {fac.services.join(', ')}</Text>
           )}
           {fac.languages && fac.languages.length > 0 && (
-            <Text style={styles.detailText}>Languages: {fac.languages.join(', ')}</Text>
+            <Text style={styles.detailText}>{t('facilities.languages', 'Languages')}: {fac.languages.join(', ')}</Text>
           )}
           {fac.acceptedInsurance && fac.acceptedInsurance.length > 0 && (
-            <Text style={styles.detailText}>Insurance: {fac.acceptedInsurance.join(', ')}</Text>
+            <Text style={styles.detailText}>{t('facilities.insurance', 'Insurance')}: {fac.acceptedInsurance.join(', ')}</Text>
           )}
         </View>
       </View>

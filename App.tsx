@@ -234,6 +234,7 @@ function AppNavigator() {
 }
 
 function AppContent() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -396,7 +397,7 @@ function AppContent() {
                 borderRadius: radius.pill,
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Continue</Text>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>{t('common.continue', 'Continue')}</Text>
             </Pressable>
           </View>
         )}

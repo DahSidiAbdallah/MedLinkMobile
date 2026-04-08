@@ -32,12 +32,12 @@ export default function DrugInfo({ navigation }: any) {
   const hero = (
     <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
       <Text style={styles.heroTitle}>{t('drugs.medicationEncyclopedia', 'Medication encyclopedia')}</Text>
-      <Text style={styles.heroSubtitle}>Search trusted sources for drug insights, dosage guidance, and risk highlights.</Text>
+      <Text style={styles.heroSubtitle}>{t('drugs.heroSubtitle', 'Search trusted sources for drug insights, dosage guidance, and risk highlights.')}</Text>
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color={colors.muted} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search drugs"
+          placeholder={t('drugs.searchPlaceholder', 'Search for a medication...')}
           placeholderTextColor={colors.muted}
           value={query}
           onChangeText={setQuery}
@@ -72,7 +72,7 @@ export default function DrugInfo({ navigation }: any) {
             <ListRow
               key={drug}
               title={drug}
-              subtitle="Tap to view detailed information"
+              subtitle={t('drugs.tapToViewDetails', 'Tap to view detailed information')}
               onPress={() => handleSearch(drug)}
               right={<Ionicons name="information-circle-outline" size={20} color={colors.primary} />}
             />
@@ -90,15 +90,15 @@ export default function DrugInfo({ navigation }: any) {
             {drugInfo.warnings && drugInfo.warnings.length > 0 ? <Pill tone="warn">{t('drugs.warnings', 'Warning')}</Pill> : null}
           </View>
           {drugInfo.description ? <Text style={styles.bodyText}>{drugInfo.description}</Text> : null}
-          {drugInfo.dosage ? <Text style={styles.bodyText}>Dosage: {drugInfo.dosage}</Text> : null}
-          {drugInfo.side_effects ? <Text style={styles.bodyText}>Side effects: {drugInfo.side_effects.join(', ')}</Text> : null}
-          {drugInfo.interactions ? <Text style={styles.bodyText}>Interactions: {drugInfo.interactions.join(', ')}</Text> : null}
+          {drugInfo.dosage ? <Text style={styles.bodyText}>{t('drugs.dosage', 'Dosage')}: {drugInfo.dosage}</Text> : null}
+          {drugInfo.side_effects ? <Text style={styles.bodyText}>{t('drugs.sideEffects', 'Side Effects')}: {drugInfo.side_effects.join(', ')}</Text> : null}
+          {drugInfo.interactions ? <Text style={styles.bodyText}>{t('drugs.interactions', 'Drug Interactions')}: {drugInfo.interactions.join(', ')}</Text> : null}
         </Card>
       ) : (
         <Card style={styles.emptyState}>
           <Ionicons name="medical-outline" size={26} color={colors.primary} />
           <Text style={styles.emptyTitle}>{t('drugs.noDrugSelected', 'No drug selected')}</Text>
-          <Text style={styles.emptyText}>Search to view FDA-backed monographs, interactions, and dosage guides.</Text>
+          <Text style={styles.emptyText}>{t('drugs.emptyText', 'Search to view FDA-backed monographs, interactions, and dosage guides.')}</Text>
         </Card>
       )}
     </ScreenContainer>

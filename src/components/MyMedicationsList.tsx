@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMedications } from '../utils/myMedications';
 import { colors } from '../theme';
@@ -35,6 +36,7 @@ const styles = StyleSheet.create({
 });
 
 export default function MyMedicationsList() {
+  const { t } = useTranslation();
   const [medications, setMedications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,13 +65,13 @@ export default function MyMedicationsList() {
     return (
       <View style={{ alignItems: 'center', marginTop: 12 }}>
         <ActivityIndicator color={colors.primary} />
-        <Text style={{ color: colors.muted, marginTop: 8 }}>Loading medications...</Text>
+        <Text style={{ color: colors.muted, marginTop: 8 }}>{t('profile.loadingMedications', 'Loading medications...')}</Text>
       </View>
     );
   }
 
   if (!medications.length) {
-    return <Text style={{ color: colors.muted, textAlign: 'center', marginTop: 12 }}>No medications saved.</Text>;
+    return <Text style={{ color: colors.muted, textAlign: 'center', marginTop: 12 }}>{t('profile.noMedications', 'No medications saved.')}</Text>;
   }
 
   return (
@@ -77,29 +79,29 @@ export default function MyMedicationsList() {
       {medications.map((item, index) => (
         <View key={`${item.code}_${index}`} style={styles.card}>
           <Text style={styles.title}>{item.labelInfo?.indications?.slice(0, 40) || 'Medication'}</Text>
-          <Text style={styles.label}>Code:</Text>
+          <Text style={styles.label}>{t('drugs.code', 'Code')}:</Text>
           <Text style={styles.value}>{item.code}</Text>
           {item.labelInfo?.indications && (
             <>
-              <Text style={styles.label}>Indications:</Text>
+              <Text style={styles.label}>{t('scanner.indications', 'Indications')}:</Text>
               <Text style={styles.value}>{item.labelInfo.indications}</Text>
             </>
           )}
           {item.labelInfo?.dosage && (
             <>
-              <Text style={styles.label}>Dosage:</Text>
+              <Text style={styles.label}>{t('scanner.dosage', 'Dosage')}:</Text>
               <Text style={styles.value}>{item.labelInfo.dosage}</Text>
             </>
           )}
           {item.labelInfo?.sideEffects && (
             <>
-              <Text style={styles.label}>Side Effects:</Text>
+              <Text style={styles.label}>{t('scanner.sideEffects', 'Side Effects')}:</Text>
               <Text style={styles.value}>{item.labelInfo.sideEffects}</Text>
             </>
           )}
           {item.recall && (
             <>
-              <Text style={[styles.label, { color: colors.danger }]}>Recall:</Text>
+              <Text style={[styles.label, { color: colors.danger }]}>{t('scanner.recallAlert', 'Recall')}:</Text>
               <Text style={[styles.value, { color: colors.danger }]}>{item.recall.reason_for_recall}</Text>
             </>
           )}
@@ -114,7 +116,7 @@ export default function MyMedicationsList() {
               paddingHorizontal: 16,
             }}
           >
-            <Text style={{ color: colors.card, fontWeight: 'bold' }}>Delete</Text>
+            <Text style={{ color: colors.card, fontWeight: 'bold' }}>{t('actions.delete', 'Delete')}</Text>
           </TouchableOpacity>
         </View>
       ))}

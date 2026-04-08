@@ -6,10 +6,11 @@ import {
   Dimensions,
   Animated,
   Pressable,
+  Image as RNImage,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, shadow, animation } from '../theme';
+import { colors, spacing, shadow, animation, radius } from '../theme';
 import Button from './Button';
 import { useTranslation } from 'react-i18next';
 
@@ -42,7 +43,13 @@ type OnboardingFlowProps = {
 };
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const languages = [
+    { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
+    { code: 'fr', label: t('languages.french', 'French'), flag: require('../assets/fr.svg') },
+    { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
+  ];
 
   const onboardingSteps: OnboardingStep[] = [
     {
@@ -80,9 +87,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   ];
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [showLanguageSelection, setShowLanguageSelection] = useState(true);
   const scrollX = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const langFadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Entrance animation
@@ -102,6 +111,23 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }, []);
 
   const handleNext = () => {
+    if (showLanguageSelection) {
+      // Transition from language selection to onboarding
+      Animated.timing(langFadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowLanguageSelection(false);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }).start();
+      });
+      return;
+    }
+
     if (currentStep < onboardingSteps.length - 1) {
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep);
@@ -114,6 +140,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     } else {
       onComplete();
     }
+  };
+
+  const handleLanguageSelect = async (langCode: string) => {
+    await i18n.changeLanguage(langCode);
   };
 
   const handleSkip = () => {
@@ -136,6 +166,101 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const step = onboardingSteps[currentStep];
   const isLastStep = currentStep === onboardingSteps.length - 1;
 
+  // Language Selection Screen
+  if (showLanguageSelection) {
+    return (
+      <Animated.View 
+        style={[
+          styles.container,
+          {
+            opacity: langFadeAnim,
+          }
+        ]}
+      >
+        <LinearGradient
+          colors={colors.primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.background}
+        >
+          <View style={styles.header}>
+            <Pressable onPress={onComplete} style={styles.skipButton}>
+              <Text style={styles.skipText}>{t('onboarding.skip', 'Skip')}</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.content}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="language" size={64} color="#fff" />
+            </View>
+            
+            <Text style={styles.title}>{t('common.languageSettings', 'Language Settings')}</Text>
+            <Text style={styles.description}>{t('common.selectLanguagePrompt', 'Choose your preferred language')}</Text>
+
+            <View style={styles.languageOptions}>
+              {languages.map((lang, index) => (
+                <Animated.View
+                  key={lang.code}
+                  style={{
+                    opacity: langFadeAnim,
+                    transform: [
+                      {
+                        translateY: langFadeAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [50, 0],
+                        })
+                      },
+                      {
+                        scale: langFadeAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.8, 1],
+                        })
+                      }
+                    ]
+                  }}
+                >
+                  <Pressable
+                    onPress={() => handleLanguageSelect(lang.code)}
+                    style={({ pressed }) => [
+                      styles.languageCard,
+                      i18n.language === lang.code && styles.languageCardActive,
+                      pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+                    ]}
+                  >
+                    <View style={[styles.langFlagWrap, i18n.language === lang.code && styles.langFlagWrapActive]}>
+                      <RNImage source={lang.flag} style={styles.langFlagLarge} resizeMode="contain" />
+                    </View>
+                    <Text style={[styles.languageLabel, i18n.language === lang.code && styles.languageLabelActive]}>
+                      {lang.label}
+                    </Text>
+                    {i18n.language === lang.code && (
+                      <View style={styles.checkmark}>
+                        <Ionicons name="checkmark-circle" size={28} color="#fff" />
+                      </View>
+                    )}
+                  </Pressable>
+                </Animated.View>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.navigation}>
+            <Button
+              title={t('onboarding.next', 'Next')}
+              onPress={handleNext}
+              variant="ghost"
+              style={styles.nextButton}
+              textStyle={styles.nextButtonText}
+              icon={<Ionicons name="chevron-forward" size={20} color="#fff" />}
+              iconPosition="right"
+            />
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    );
+  }
+
+  // Regular Onboarding Steps
   return (
     <Animated.View 
       style={[
@@ -319,5 +444,62 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: '#fff',
     fontWeight: '700',
+  },
+  languageOptions: {
+    width: '100%',
+    gap: spacing.lg,
+    marginTop: spacing.xl,
+  },
+  languageCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.xxl,
+    gap: spacing.lg,
+    borderWidth: 3,
+    borderColor: 'transparent',
+    ...shadow.card,
+  },
+  languageCardActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    ...shadow.xl,
+  },
+  langFlagWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.soft,
+  },
+  langFlagWrapActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+    ...shadow.lg,
+  },
+  langFlagLarge: {
+    width: 48,
+    height: 32,
+    borderRadius: 8,
+  },
+  languageLabel: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.9)',
+    letterSpacing: -0.3,
+  },
+  languageLabelActive: {
+    color: '#fff',
+    fontWeight: '800',
+  },
+  checkmark: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

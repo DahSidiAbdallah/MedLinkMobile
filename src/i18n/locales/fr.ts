@@ -53,7 +53,14 @@ export default {
       and: 'et',
       ok: 'OK',
       call: 'Appeler',
-      back: 'Retour'
+      back: 'Retour',
+      selectDate: 'Sélectionner une date',
+      tapToAdd: 'Appuyez pour ajouter',
+      readMore: 'Lire la suite',
+      from: 'de',
+      tagline: 'Votre compagnon santé',
+      noImage: 'Pas d\'image',
+      continue: 'Continuer'
     },
     navigation: {
       dashboard: 'Accueil',
@@ -66,6 +73,7 @@ export default {
       signIn: 'Connexion à votre compte',
       signUp: 'Créer un nouveau compte',
       email: 'Adresse e-mail',
+      emailAddress: 'Adresse e-mail',
       password: 'Mot de passe',
       passwordRequirements: 'Le mot de passe doit contenir au moins 8 caractères et uniquement des lettres et des chiffres',
       createAccount: 'Créer un compte',
@@ -78,6 +86,7 @@ export default {
       passwordRequired: 'Le mot de passe est requis',
       invalidPassword: 'Le mot de passe doit contenir au moins 8 caractères et uniquement des lettres et des chiffres',
       incorrectCredentials: 'Email ou mot de passe incorrect',
+      invalidCredentials: 'Email ou mot de passe incorrect',
       accountExists: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
         insurance: 'Assurance',
         provider: 'Fournisseur',
@@ -378,7 +387,12 @@ export default {
       providerWithValue: 'Fournisseur : {{provider}}',
       noInsuranceInfo: "Aucune information d'assurance.",
       preferences: 'Préférences',
-      myMedications: 'Mes médicaments'
+      myMedications: 'Mes médicaments',
+      noMedications: 'Aucun médicament enregistré.',
+      loadingMedications: 'Chargement des médicaments...',
+      manageHealthInfo: 'Gérez vos informations de santé',
+      healthSummary: 'Résumé de santé',
+      healthSummaryHint: 'Consultez et maintenez vos données médicales à jour.'
     },
     doctors: {
       cardiologist: 'Cardiologue',
@@ -398,6 +412,7 @@ export default {
       bookingError: 'Échec de la prise de rendez-vous. Veuillez réessayer.',
       cancelError: 'Échec de l\'annulation du rendez-vous',
       cancelled: 'Rendez-vous annulé avec succès',
+      booking: 'Réservation...',
       title: 'Rendez-vous le',
       confirmBooking: 'Confirmer la réservation',
       status: {
@@ -501,7 +516,9 @@ export default {
       services: 'Services',
       languages: 'Langues',
       insurance: 'Assurance',
-      phone: 'Téléphone'
+      phone: 'Téléphone',
+      notFound: 'Établissement introuvable.',
+      address: 'Adresse'
     },
     drugs: {
       title: 'Informations sur les médicaments',
@@ -551,6 +568,12 @@ export default {
       medicationEncyclopedia: 'Encyclopédie des médicaments',
       suggestedMatches: 'Correspondances suggérées',
       noDrugSelected: 'Aucun médicament sélectionné',
+      heroSubtitle: 'Recherchez des sources fiables pour des informations sur les médicaments, des conseils de dosage et des alertes de risque.',
+      tapToViewDetails: 'Appuyez pour voir les détails',
+      emptyText: 'Recherchez pour consulter les monographies FDA, les interactions et les guides de dosage.',
+      indicationsUsage: 'Indications et utilisation',
+      dosageAdministration: 'Posologie et administration',
+      code: 'Code'
     },
     scanner: {
       title: 'Scanner de codes-barres',
@@ -660,6 +683,7 @@ export default {
       serverError: 'Erreur du serveur. Veuillez réessayer plus tard.',
       fullNameRequired: 'Le nom complet est requis.',
       phoneInvalid: 'Les numéros mauritaniens doivent comporter 8 chiffres et commencer par 2, 3 ou 4.',
+      somethingWrong: 'Oups ! Quelque chose s\'est mal passé',
       bloodTypeInvalid: 'Le groupe sanguin doit être A+, A-, B+, B-, AB+, AB-, O+ ou O-.',
       providerShort: 'Le nom du fournisseur est trop court.',
       policyShort: 'Le numéro de police est trop court.',
@@ -690,6 +714,49 @@ export default {
       stopMetforminProcedures: 'Arrêtez la metformine avant les procédures avec contraste',
       riskMuscleDamage: 'Risque de dommages musculaires',
       avoidConcurrentUseAntibiotics: 'Évitez l\'utilisation avec certains antibiotiques'
+    },
+    loading: {
+      default: 'Chargement...',
+      pleaseWait: 'Veuillez patienter...',
+      loadingProfile: 'Chargement du profil...',
+      loadingData: 'Chargement des données...',
+      saving: 'Sauvegarde...',
+      processing: 'Traitement...',
+      verifying: 'Vérification...',
+      authenticating: 'Authentification...'
+    },
+    empty: {
+      noData: 'Aucune donnée disponible',
+      noResults: 'Aucun résultat trouvé',
+      tryAgain: 'Réessayer',
+      refresh: 'Actualiser'
+    },
+    actions: {
+      retry: 'Réessayer',
+      refresh: 'Actualiser',
+      goBack: 'Retour',
+      continue: 'Continuer',
+      submit: 'Soumettre',
+      done: 'Terminé',
+      apply: 'Appliquer',
+      reset: 'Réinitialiser',
+      clear: 'Effacer',
+      delete: 'Supprimer',
+      edit: 'Modifier',
+      view: 'Voir',
+      share: 'Partager',
+      copy: 'Copier',
+      download: 'Télécharger'
+    },
+    time: {
+      today: 'Aujourd\'hui',
+      yesterday: 'Hier',
+      daysAgo: 'Il y a {{count}} jours'
+    },
+    location: {
+      enableTitle: 'Activer la localisation',
+      enableSubtitle: 'Pour afficher les cliniques, hôpitaux et pharmacies à proximité, nous avons besoin de votre localisation.',
+      allowButton: 'Autoriser la localisation'
     },
     onboarding: {
       skip: 'Passer',

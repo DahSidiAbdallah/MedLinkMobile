@@ -358,9 +358,9 @@ export default function AppointmentBooking({ navigation }: { navigation: any }) 
                 disabled={loading}
               >
                 {loading ? (
-                  <Text style={s.modalButtonTextConfirm}>Booking...</Text>
+                  <Text style={s.modalButtonTextConfirm}>{t('appointments.booking', 'Booking...')}</Text>
                 ) : (
-                  <Text style={s.modalButtonTextConfirm}>Confirm</Text>
+                  <Text style={s.modalButtonTextConfirm}>{t('appointments.confirm', 'Confirm')}</Text>
                 )}
               </TouchableOpacity>
             </View>

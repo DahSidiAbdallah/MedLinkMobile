@@ -54,7 +54,12 @@ export default {
       and: 'and',
       ok: 'OK',
       call: 'Call',
-      back: 'Back'
+      back: 'Back',
+      readMore: 'Read more',
+      from: 'from',
+      tagline: 'Your Health Companion',
+      noImage: 'No Image',
+      continue: 'Continue'
     },
     navigation: {
       dashboard: 'Home',
@@ -186,6 +191,7 @@ export default {
       confirmBooking: 'Confirm Booking',
       cancel: 'Cancel appointment',
       noAppointments: 'You have no upcoming appointments',
+      booking: 'Booking...',
       status: {
         scheduled: 'Scheduled',
         confirmed: 'Confirmed',
@@ -216,6 +222,8 @@ export default {
       healthSummaryHint: 'Review and keep your medical data up to date.',
       preferences: 'Preferences',
       myMedications: 'My Medications',
+      noMedications: 'No medications saved.',
+      loadingMedications: 'Loading medications...',
 
       deleteError: 'Error deleting profile',
       primary: 'Primary',
@@ -312,6 +320,12 @@ export default {
       medicationEncyclopedia: 'Medication encyclopedia',
       suggestedMatches: 'Suggested matches',
       noDrugSelected: 'No drug selected',
+      heroSubtitle: 'Search trusted sources for drug insights, dosage guidance, and risk highlights.',
+      tapToViewDetails: 'Tap to view detailed information',
+      emptyText: 'Search to view FDA-backed monographs, interactions, and dosage guides.',
+      indicationsUsage: 'Indications & Usage',
+      dosageAdministration: 'Dosage & Administration',
+      code: 'Code'
     },
     reminders: {
       title: 'Medication & Appointment Reminders',
@@ -456,6 +470,7 @@ export default {
       serverError: 'Server error. Please try again later.',
       fullNameRequired: 'Full name is required.',
       phoneInvalid: 'Mauritania numbers must be 8 digits, start with 2, 3, or 4.',
+      somethingWrong: 'Oops! Something went wrong',
       rating: 'Rating',
       anyRating: 'Any Rating',
       insurance: 'Insurance',
@@ -527,7 +542,9 @@ export default {
       services: 'Services',
       languages: 'Languages',
       insurance: 'Insurance',
-      phone: 'Phone'
+      phone: 'Phone',
+      notFound: 'Facility not found.',
+      address: 'Address'
     },
     scanner: {
       title: 'Barcode Scanner',
@@ -655,6 +672,11 @@ export default {
       today: 'Today',
       yesterday: 'Yesterday',
       daysAgo: '{{count}} days ago'
+    },
+    location: {
+      enableTitle: 'Enable Location',
+      enableSubtitle: 'To show nearby clinics, hospitals, and pharmacies, we need your location.',
+      allowButton: 'Allow Location'
     },
     onboarding: {
       skip: 'Skip',
