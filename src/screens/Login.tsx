@@ -49,14 +49,16 @@ type HealthErrors = {
   conditions?: string;
 };
 
-const STEPS: { key: StepKey; label: string }[] = [
-  { key: 0, label: 'Account' },
-  { key: 1, label: 'Personal' },
-];
-
 export default function Login({ onLogin }: Readonly<LoginProps>) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showSuccess, showError } = useToast();
+
+  const STEPS: { key: StepKey; label: string }[] = [
+    { key: 0, label: t('auth.stepAccount', 'Account') },
+    { key: 1, label: t('auth.stepPersonal', 'Personal') },
+  ];
+  const loginLabel = t('auth.loginLabel', 'Login');
+  const registerLabel = t('auth.registerLabel', 'Register');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -148,9 +150,9 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       errors.password = t('auth.invalidPassword', 'Password must be at least 8 characters and include both letters and numbers');
     }
     if (!confirmPassword) {
-      errors.confirmPassword = 'Please confirm your password';
+      errors.confirmPassword = t('auth.confirmPasswordRequired', 'Please confirm your password');
     } else if (password !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = t('auth.passwordsDoNotMatch', 'Passwords do not match');
     }
     setRegisterAccountErrors(errors);
     return Object.keys(errors).length === 0;
@@ -163,20 +165,20 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       errors.name = t('auth.nameRequired', 'Full name is required');
     }
     if (phone && !/^\d{7,}$/.test(phone)) {
-      errors.phone = 'Please enter a valid phone number (at least 7 digits)';
+      errors.phone = t('auth.phoneInvalid', 'Please enter a valid phone number (at least 7 digits)');
     }
     if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
-      errors.dateOfBirth = 'Date of Birth must be in YYYY-MM-DD format';
+      errors.dateOfBirth = t('auth.dobInvalid', 'Date of Birth must be in YYYY-MM-DD format');
     }
     const bt = bloodType === 'custom' ? customBloodType.trim() : bloodType;
     if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt)) {
-      health.bloodType = 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-';
+      health.bloodType = t('auth.bloodTypeFormatInvalid', 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-');
     }
     if (allergies.some(a => !a.trim())) {
-      health.allergies = 'Allergy cannot be empty';
+      health.allergies = t('auth.allergyEmpty', 'Allergy cannot be empty');
     }
     if (medicalConditions.some(c => !c.trim())) {
-      health.conditions = 'Condition cannot be empty';
+      health.conditions = t('auth.conditionEmpty', 'Condition cannot be empty');
     }
     setRegisterPersonalErrors(errors);
     setHealthErrors(health);
@@ -194,18 +196,18 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       let errorMessage = t('auth.genericError', 'Login failed. Please try again.');
       
       if (e.code === 'auth/user-not-found') {
-        errorMessage = 'No user found with this email';
+        errorMessage = t('auth.userNotFound', 'No user found with this email');
       } else if (e.code === 'auth/wrong-password') {
-        errorMessage = 'Incorrect password';
+        errorMessage = t('auth.wrongPassword', 'Incorrect password');
       } else if (e.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address';
+        errorMessage = t('auth.invalidEmailAddress', 'Invalid email address');
       } else if (e.code === 'auth/invalid-credential') {
-        errorMessage = 'Invalid credentials. Please check your email and password';
+        errorMessage = t('auth.invalidCredential', 'Invalid credentials. Please check your email and password');
       } else if (e.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many failed attempts. Please try again later';
+        errorMessage = t('auth.tooManyRequests', 'Too many failed attempts. Please try again later');
       }
-      
-      showError('Login Failed', errorMessage);
+
+      showError(t('auth.loginFailed', 'Login Failed'), errorMessage);
       setLoginErrors({ email: errorMessage });
     } finally {
       setLoading(false);
@@ -230,7 +232,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         medical_conditions: medicalConditions.length > 0 ? medicalConditions : undefined,
       };
       await setDoc(doc(db, 'profiles', user.uid), profile);
-      showSuccess(t('auth.signUpSuccess', 'Account created successfully!'), 'You can now access all features.');
+      showSuccess(t('auth.signUpSuccess', 'Account created successfully!'), t('auth.registerSuccessMessage', 'You can now access all features.'));
       setIsRegister(false);
       setRegisterStep(0);
       // Clear form
@@ -244,19 +246,19 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       setAllergies([]);
       setMedicalConditions([]);
     } catch (e: any) {
-      let errorMessage = 'Failed to create account. Please try again.';
-      
+      let errorMessage = t('auth.createAccountFailed', 'Failed to create account. Please try again.');
+
       if (e.code === 'auth/email-already-in-use') {
-        errorMessage = t('auth.accountExists', 'This email is already in use. Please use a different email or log in.');
+        errorMessage = t('auth.emailAlreadyInUse', 'This email is already in use.');
       } else if (e.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address';
+        errorMessage = t('auth.invalidEmailAddress', 'Invalid email address');
       } else if (e.code === 'auth/weak-password') {
-        errorMessage = 'Password is too weak. Please use a stronger password';
+        errorMessage = t('auth.weakPassword', 'Password is too weak. Please use a stronger password');
       } else if (e.code === 'auth/network-request-failed') {
-        errorMessage = 'Please check your internet connection and try again';
+        errorMessage = t('auth.networkError', 'Please check your internet connection and try again');
       }
-      
-      showError('Registration Failed', errorMessage);
+
+      showError(t('auth.registrationFailed', 'Registration Failed'), errorMessage);
     } finally {
       setLoading(false);
     }
@@ -264,26 +266,26 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
   const handleForgotPassword = async () => {
     if (!forgotEmail) {
-      showError('Error', 'Please enter your email address');
+      showError(t('common.error', 'Error'), t('auth.forgotEmailEmpty', 'Please enter your email address'));
       return;
     }
     if (!emailRegex.test(forgotEmail)) {
-      showError('Error', 'Please enter a valid email address');
+      showError(t('common.error', 'Error'), t('auth.invalidEmail', 'Please enter a valid email address'));
       return;
     }
-    
+
     setForgotLoading(true);
     try {
       await sendPasswordResetEmail(auth, forgotEmail);
-      showSuccess('Email Sent', 'Password reset email has been sent to your inbox');
+      showSuccess(t('auth.emailSentTitle', 'Email Sent'), t('auth.forgotEmailSent', 'Password reset email has been sent to your inbox'));
       setShowForgot(false);
       setForgotEmail('');
     } catch (e: any) {
-      let errorMessage = 'Failed to send reset email';
+      let errorMessage = t('auth.forgotEmailFailed', 'Failed to send reset email');
       if (e.code === 'auth/user-not-found') {
-        errorMessage = 'No user found with this email address';
+        errorMessage = t('auth.forgotEmailNotFound', 'No user found with this email address');
       }
-      showError('Error', errorMessage);
+      showError(t('common.error', 'Error'), errorMessage);
     } finally {
       setForgotLoading(false);
     }
@@ -346,7 +348,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
     <View style={styles.formContainer}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>{t('auth.signInToAccount', 'Sign in to your account')}</Text>
-        <Text style={styles.subtitle}>Welcome back! Please enter your details</Text>
+        <Text style={styles.subtitle}>{t('auth.loginSubtitle', 'Welcome back! Please enter your details')}</Text>
       </View>
 
       {renderInput({
@@ -384,7 +386,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       </Pressable>
 
       <Button
-        title={loading ? 'Signing in...' : t('auth.signInButton', 'Sign In')}
+        title={loading ? t('auth.signingIn', 'Signing in...') : t('auth.signInButton', 'Sign In')}
         onPress={handleLogin}
         disabled={loading}
         loading={loading}
@@ -404,13 +406,13 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
   const renderAccountStep = () => (
     <View style={styles.formContainer}>
       <View style={styles.headerContainer}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Enter your email and password to get started</Text>
+        <Text style={styles.title}>{t('auth.createAccountTitle', 'Create Account')}</Text>
+        <Text style={styles.subtitle}>{t('auth.createAccountSubtitle', 'Enter your email and password to get started')}</Text>
       </View>
 
       {renderInput({
         id: 'register-email',
-        placeholder: 'Email',
+        placeholder: t('auth.emailAddress', 'Email'),
         autoCapitalize: 'none',
         keyboardType: 'email-address',
         value: email,
@@ -419,8 +421,8 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
           if (registerAccountErrors.email) setRegisterAccountErrors(e => ({ ...e, email: undefined }));
         },
         onBlur: () => {
-          if (!email) setRegisterAccountErrors(e => ({ ...e, email: 'Email is required.' }));
-          else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: 'Please enter a valid email address.' }));
+          if (!email) setRegisterAccountErrors(e => ({ ...e, email: t('auth.emailRequired', 'Email is required.') }));
+          else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: t('auth.invalidEmail', 'Please enter a valid email address.') }));
           else setRegisterAccountErrors(e => ({ ...e, email: undefined }));
         },
         error: registerAccountErrors.email,
@@ -429,16 +431,16 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
       {renderInput({
         id: 'register-password',
-        placeholder: 'Password',
+        placeholder: t('auth.password', 'Password'),
         value: password,
         onChangeText: text => {
           setPassword(text);
           if (registerAccountErrors.password) setRegisterAccountErrors(e => ({ ...e, password: undefined }));
         },
         onBlur: () => {
-          if (!password) setRegisterAccountErrors(e => ({ ...e, password: 'Password is required.' }));
+          if (!password) setRegisterAccountErrors(e => ({ ...e, password: t('auth.passwordRequired', 'Password is required.') }));
           else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password))
-            setRegisterAccountErrors(e => ({ ...e, password: 'Password must be at least 8 characters and include both letters and numbers.' }));
+            setRegisterAccountErrors(e => ({ ...e, password: t('auth.invalidPassword', 'Password must be at least 8 characters and include both letters and numbers.') }));
           else setRegisterAccountErrors(e => ({ ...e, password: undefined }));
         },
         error: registerAccountErrors.password,
@@ -451,15 +453,15 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
       {renderInput({
         id: 'register-confirm',
-        placeholder: 'Confirm Password',
+        placeholder: t('auth.confirmPassword', 'Confirm Password'),
         value: confirmPassword,
         onChangeText: text => {
           setConfirmPassword(text);
           if (registerAccountErrors.confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
         },
         onBlur: () => {
-          if (!confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Please confirm your password.' }));
-          else if (password !== confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: 'Passwords do not match.' }));
+          if (!confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: t('auth.confirmPasswordRequired', 'Please confirm your password.') }));
+          else if (password !== confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: t('auth.passwordsDoNotMatch', 'Passwords do not match.') }));
           else setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
         },
         error: registerAccountErrors.confirmPassword,
@@ -484,20 +486,20 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
   const renderPersonalStep = () => (
     <View style={styles.formContainer}>
       <View style={styles.headerContainer}>
-        <Text style={styles.title}>Personal Information</Text>
-        <Text style={styles.subtitle}>Tell us about yourself to complete your medical profile</Text>
+        <Text style={styles.title}>{t('auth.personalInfoTitle', 'Personal Information')}</Text>
+        <Text style={styles.subtitle}>{t('auth.personalInfoSubtitle', 'Tell us about yourself to complete your medical profile')}</Text>
       </View>
 
       {renderInput({
         id: 'register-name',
-        placeholder: 'Full Name',
+        placeholder: t('auth.fullName', 'Full Name'),
         value: name,
         onChangeText: text => {
           setName(text);
           if (registerPersonalErrors.name) setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
         },
         onBlur: () => {
-          if (!name.trim()) setRegisterPersonalErrors(e => ({ ...e, name: 'Full name is required.' }));
+          if (!name.trim()) setRegisterPersonalErrors(e => ({ ...e, name: t('auth.nameRequired', 'Full name is required.') }));
           else setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
         },
         error: registerPersonalErrors.name,
@@ -506,7 +508,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
       {renderInput({
         id: 'register-phone',
-        placeholder: 'Phone Number (optional)',
+        placeholder: t('auth.phonePlaceholderOptional', 'Phone Number (optional)'),
         keyboardType: 'phone-pad',
         value: phone,
         onChangeText: text => {
@@ -514,7 +516,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
           if (registerPersonalErrors.phone) setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
         },
         onBlur: () => {
-          if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: 'Please enter a valid phone number (at least 7 digits).' }));
+          if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: t('auth.phoneInvalid', 'Please enter a valid phone number (at least 7 digits).') }));
           else setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
         },
         error: registerPersonalErrors.phone,
@@ -523,7 +525,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
       {renderInput({
         id: 'register-dob',
-        placeholder: 'Date of Birth (YYYY-MM-DD) - optional',
+        placeholder: t('auth.dobPlaceholder', 'Date of Birth (YYYY-MM-DD) - optional'),
         keyboardType: 'numbers-and-punctuation',
         value: dateOfBirth,
         onChangeText: text => {
@@ -532,7 +534,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         },
         onBlur: () => {
           if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth))
-            setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: 'Date of Birth must be in YYYY-MM-DD format.' }));
+            setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: t('auth.dobInvalid', 'Date of Birth must be in YYYY-MM-DD format.') }));
           else setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
         },
         error: registerPersonalErrors.dateOfBirth,
@@ -548,13 +550,13 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       
       {bloodType === 'custom' && renderInput({
         id: 'register-blood-custom',
-        placeholder: 'Custom Blood Type (e.g., A+, B-, O+)',
+        placeholder: t('auth.bloodCustomPlaceholder', 'Custom Blood Type (e.g., A+, B-, O+)'),
         value: customBloodType,
         onChangeText: text => setCustomBloodType(text),
         onBlur: () => {
           const bt = customBloodType.trim();
           if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt))
-            setHealthErrors(e => ({ ...e, bloodType: 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.' }));
+            setHealthErrors(e => ({ ...e, bloodType: t('auth.bloodTypeFormatInvalid', 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.') }));
           else setHealthErrors(e => ({ ...e, bloodType: undefined }));
         },
         error: healthErrors.bloodType,
@@ -563,7 +565,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
       <View style={styles.chipRow}>
         <TextInput
-          placeholder="Add allergy (optional)"
+          placeholder={t('auth.allergyPlaceholder', 'Add allergy (optional)')}
           value={allergyInput}
           onChangeText={setAllergyInput}
           style={[styles.inputWrapper, { flex: 1 }]}
@@ -593,7 +595,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
       <View style={styles.chipRow}>
         <TextInput
-          placeholder="Add medical condition (optional)"
+          placeholder={t('auth.conditionPlaceholder', 'Add medical condition (optional)')}
           value={conditionInput}
           onChangeText={setConditionInput}
           style={[styles.inputWrapper, { flex: 1 }]}
@@ -622,7 +624,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       </View>
 
       <Button
-        title={loading ? 'Creating account...' : t('auth.signUpButton', 'Create Account')}
+        title={loading ? t('auth.creatingAccount', 'Creating account...') : t('auth.signUpButton', 'Create Account')}
         onPress={handleRegister}
         disabled={loading}
         loading={loading}
@@ -654,19 +656,31 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
           style={styles.hero}
         >
           <Image source={require('../assets/logo.png')} style={styles.logo} />
-          <Text style={styles.heroTitle}>{isRegister ? 'Create your medical ID' : 'Welcome back'}</Text>
+          <Text style={styles.heroTitle}>{isRegister ? t('auth.registerTitle', 'Create your medical ID') : t('auth.welcomeBack', 'Welcome back')}</Text>
           <Text style={styles.heroSubtitle}>
-            {isRegister ? 'Join MedLink to keep your medical essentials in one place.' : 'Sign in to continue your connected care journey.'}
+            {isRegister ? t('auth.registerSubtitle', 'Join MedLink to keep your medical essentials in one place.') : t('auth.welcomeSubtitle', 'Sign in to continue your connected care journey.')}
           </Text>
           <SegmentedControl
-            options={['Login', 'Register']}
-            value={isRegister ? 'Register' : 'Login'}
+            options={[loginLabel, registerLabel]}
+            value={isRegister ? registerLabel : loginLabel}
             onChange={value => {
-              const register = value === 'Register';
+              const register = value === registerLabel;
               setIsRegister(register);
               if (!register) setRegisterStep(0);
             }}
           />
+          {/* Language Switcher */}
+          <View style={styles.langSwitcher}>
+            {([{ code: 'en', flag: '🇺🇸' }, { code: 'fr', flag: '🇫🇷' }, { code: 'ar', flag: '🇸🇦' }] as const).map(lang => (
+              <Pressable
+                key={lang.code}
+                onPress={() => i18n.changeLanguage(lang.code)}
+                style={[styles.langBtn, i18n.language === lang.code && styles.langBtnActive]}
+              >
+                <Text style={styles.langFlag}>{lang.flag}</Text>
+              </Pressable>
+            ))}
+          </View>
         </LinearGradient>
       </Animated.View>
 
@@ -746,12 +760,12 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
                 </View>
                 <Text style={styles.modalTitle}>{t('auth.resetPassword', 'Reset password')}</Text>
                 <Text style={styles.modalSubtitle}>
-                  Enter your email address and we'll send you a password reset link.
+                  {t('auth.forgotPasswordSubtitle', "Enter your email address and we'll send you a password reset link.")}
                 </Text>
               </View>
               {renderInput({
                 id: 'forgot-email',
-                placeholder: 'Email',
+                placeholder: t('auth.emailAddress', 'Email'),
                 autoCapitalize: 'none',
                 keyboardType: 'email-address',
                 value: forgotEmail,
@@ -769,7 +783,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
                   style={styles.secondaryButton}
                 />
                 <Button
-                  title={forgotLoading ? 'Sending...' : t('auth.sendLink', 'Send link')}
+                  title={forgotLoading ? t('auth.sending', 'Sending...') : t('auth.sendLink', 'Send link')}
                   onPress={handleForgotPassword}
                   disabled={forgotLoading}
                   loading={forgotLoading}
@@ -1124,5 +1138,26 @@ const styles = StyleSheet.create({
   },
   modalPrimary: {
     flex: 1,
+  },
+  langSwitcher: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  langBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  langBtnActive: {
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.7)',
+  },
+  langFlag: {
+    fontSize: 20,
   },
 });

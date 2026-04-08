@@ -4,7 +4,6 @@ import { saveMedication } from '../utils/myMedications';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRTL } from '../hooks/useRTL';
 // Guard AsyncStorage import to avoid module-eval crashes on some runtimes
 let AsyncStorage: any = null;
 function getAsyncStorage() {
@@ -13,7 +12,6 @@ function getAsyncStorage() {
     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
     AsyncStorage = require('@react-native-async-storage/async-storage').default;
   } catch (e) {
-    // AsyncStorage not available in BarcodeScanner, using in-memory fallback
     const store: Record<string, string> = {};
     AsyncStorage = {
       getItem: async (k: string) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
@@ -24,242 +22,22 @@ function getAsyncStorage() {
   return AsyncStorage;
 }
 import { fetchUserProfile, Profile } from '../core/userProfile';
-import { FlatList, View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ensureFocus } from '../utils/cameraHelper';
-import { LinearGradient } from 'expo-linear-gradient';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
 import Chip from '../components/Chip';
-import { SkeletonHistoryItem } from '../components/Skeleton';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, spacing, shadow, radius } from '../theme';
 import { verifyScannedCode, VerificationResult } from '../utils/verification';
 import { parseGs1DataMatrix } from '../utils/gs1';
 import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs } from '../core/barcode';
 import { getTelemetryService, makeScanTelemetryEvent } from '../core/telemetryService';
 import { hapticSuccess } from '../utils/haptics';
-import { summarizeText, safeJoinArrayField } from '../utils/textHelpers';
 import LabelInfoView from '../components/LabelInfoView';
 
-const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  hero: {
-    paddingTop: spacing.xxl * 1.2,
-    paddingBottom: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-    borderBottomLeftRadius: radius.xl + 6,
-    borderBottomRightRadius: radius.xl + 6,
-    gap: spacing.md,
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 36,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  heroSubtitle: {
-    color: 'rgba(255,255,255,0.82)',
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  heroStats: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-  },
-  statChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-  },
-  statText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  scanCard: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  scanInstructions: {
-    color: colors.muted,
-    textAlign: 'center',
-  },
-  cameraShell: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    backgroundColor: '#000',
-  },
-  overlayFrame: {
-    position: 'absolute',
-    top: '32%',
-    left: '12%',
-    width: '76%',
-    height: '32%',
-    borderRadius: radius.md,
-    borderWidth: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  overlayText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  guidance: {
-    color: colors.warn,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  resultCard: {
-    gap: spacing.md,
-  },
-  userMessage: {
-    color: colors.text,
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  riskCard: {
-    backgroundColor: 'rgba(239,68,68,0.12)',
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.xs,
-  },
-  riskTitle: {
-    color: colors.danger,
-    fontWeight: '700',
-  },
-  riskText: {
-    color: colors.danger,
-    lineHeight: 20,
-  },
-  positiveText: {
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  negativeText: {
-    color: colors.danger,
-    fontWeight: '600',
-  },
-  analysisCard: {
-    backgroundColor: colors.glass,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  metaText: {
-    color: colors.muted,
-    fontSize: 13,
-  },
-  errorText: {
-    color: colors.danger,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  resultButtons: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  secondaryButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryText: {
-    color: colors.muted,
-    fontWeight: '600',
-  },
-  primaryButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryText: {
-    color: colors.card,
-    fontWeight: '700',
-  },
-  historyCard: {
-    gap: spacing.md,
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  historyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  historyItem: {
-    backgroundColor: colors.glass,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    gap: spacing.xs,
-    ...shadow.soft,
-  },
-  historyType: {
-    fontSize: 13,
-    color: colors.muted,
-    fontWeight: '600',
-  },
-  historyData: {
-    fontSize: 15,
-    color: colors.text,
-  },
-  historyMsg: {
-    fontSize: 14,
-    color: colors.primary,
-  },
-  historyTime: {
-    fontSize: 12,
-    color: colors.muted,
-    textAlign: 'right',
-  },
-  loader: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
-
-// Helper: produce an rgba string from accent hex with alpha
-const accentRgba = (alpha: number) => {
-  try {
-    const hex = colors.accent.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  } catch (e) {
-    return `rgba(34,197,94,${alpha})`;
-  }
-};
+// ── Types ────────────────────────────────────────────────────────────────────
 
 type ScanHistoryItem = {
   timestamp: number;
@@ -270,88 +48,149 @@ type ScanHistoryItem = {
   risk?: string | null;
 };
 
+type RiskItem = {
+  type: 'allergy' | 'condition' | 'interaction';
+  label: string;
+  detail: string;
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 const getUserMessage = (verification: VerificationResult | null, error: string | null, t: any): string => {
   if (error) return t('scanner.scanFailed', 'Scan failed. Please try again.');
   if (!verification) return '';
   if (verification.verified) return t('scanner.productAuthentic', 'This product is authentic and safe.');
   if (verification.expired) return t('scanner.productExpired', 'Warning: This product is expired. Do not use.');
   if (verification.recall) return t('scanner.productRecalled', 'Recall alert: This product has been recalled.');
-  return t('scanner.noRecallData', 'No authenticity or recall data found. Please exercise caution.');
+  return t('scanner.noRecallData', 'No authenticity data found for this product.');
 };
 
-async function fetchOpenFdaNdcInfo(ndc: string) {
-  // NDC can be 10 or 11 digits. OpenFDA expects 10-digit (with hyphens) or 11-digit (no hyphens)
-  // We'll try both formats
-  const ndc10 = ndc.length === 10 ? ndc : ndc.replace(/(\d{5})(\d{3})(\d{2})/, '$1-$2-$3');
-  const ndc11 = ndc.length === 11 ? ndc : ndc.replace(/-/g, '');
-  const url = `https://api.fda.gov/drug/ndc.json?search=product_ndc:${ndc10}+product_ndc:${ndc11}`;
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('OpenFDA API error');
-    const data = await resp.json();
-    if (data.results && data.results.length > 0) {
-      return data.results[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function fetchOpenFdaRecall(ndc: string) {
-  // Try to find recall info for this NDC
-  const url = `https://api.fda.gov/drug/enforcement.json?search=openfda.product_ndc:${ndc}&limit=1`;
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    if (data.results && data.results.length > 0) {
-      return data.results[0];
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
-
-// Helper functions for code type detection
 function parseCodeType(data: string, type: string) {
-  // GTIN-14: 14 digits, GTIN-13: 13 digits, GTIN-12: 12 digits, GTIN-8: 8 digits
   if (/^\d{14}$/.test(data)) return { codeType: 'GTIN-14', parsed: data };
   if (/^\d{13}$/.test(data)) return { codeType: 'GTIN-13', parsed: data };
   if (/^\d{12}$/.test(data)) return { codeType: 'GTIN-12', parsed: data };
   if (/^\d{8}$/.test(data)) return { codeType: 'GTIN-8', parsed: data };
-  // NDC-11: 11 digits, NDC-10: 10 digits
   if (/^\d{11}$/.test(data)) return { codeType: 'NDC-11', parsed: data };
   if (/^\d{10}$/.test(data)) return { codeType: 'NDC-10', parsed: data };
-  // DataMatrix: often contains GS1 Application Identifiers (AI)
   if (type === 'datamatrix') {
     const gs1 = parseGs1DataMatrix(data);
-    if (gs1) {
-      return {
-        codeType: 'GS1 DataMatrix',
-        parsed: gs1.gtin,
-        extra: gs1, // expiry and lot info
-      };
-    }
+    if (gs1) return { codeType: 'GS1 DataMatrix', parsed: gs1.gtin, extra: gs1 };
     return { codeType: 'DataMatrix', parsed: data };
   }
-  // QR, PDF417, etc.
   if (type === 'qr') return { codeType: 'QR Code', parsed: data };
   if (type === 'pdf417') return { codeType: 'PDF417', parsed: data };
-  // Fallback
   return { codeType: 'Unknown', parsed: data };
+}
+
+/** Parse profile risks into a structured list for display.
+ *  Handles both the raw openFDA label shape (openfda.brand_name, contraindications array)
+ *  and the simplified labelInfo shape. */
+function buildRiskItems(profile: Profile, result: VerificationResult, t: any): RiskItem[] {
+  const risks: RiskItem[] = [];
+  const label = result.label;
+  const labelInfo = result.labelInfo;
+
+  // Build searchable text from all available drug data sources
+  const brandName = (
+    label?.openfda?.brand_name?.[0] ||
+    label?.brand_name ||
+    labelInfo?.indications ||
+    ''
+  ).toLowerCase();
+
+  const genericName = (
+    label?.openfda?.generic_name?.[0] ||
+    label?.generic_name ||
+    ''
+  ).toLowerCase();
+
+  const medName = `${brandName} ${genericName}`;
+
+  // contraindications is a top-level array in openFDA label response
+  const contraindicationsRaw = Array.isArray(label?.contraindications)
+    ? label.contraindications.join(' ')
+    : (label?.contraindications || '');
+  const contraindications = contraindicationsRaw.toLowerCase();
+
+  // drug_interactions is also a top-level array
+  const interactionsRaw = Array.isArray(label?.drug_interactions)
+    ? label.drug_interactions.join(' ')
+    : (label?.drug_interactions || '');
+  const interactions = interactionsRaw.toLowerCase();
+
+  // warnings also useful for condition checks
+  const warningsRaw = Array.isArray(label?.warnings_and_cautions)
+    ? label.warnings_and_cautions.join(' ')
+    : (label?.warnings_and_cautions || label?.warnings || '');
+  const warnings = warningsRaw.toLowerCase();
+
+  if (!medName.trim() && !contraindications && !interactions) return risks;
+
+  // ── Allergy check ─────────────────────────────────────────────
+  if (profile.allergies) {
+    for (const allergy of profile.allergies) {
+      const a = allergy.toLowerCase();
+      if (medName.includes(a) || contraindications.includes(a) || warnings.includes(a)) {
+        risks.push({
+          type: 'allergy',
+          label: t('scanner.allergyRisk', 'Allergy Risk'),
+          detail: `${t('scanner.allergyTo', 'Your profile lists an allergy to')} "${allergy}".`,
+        });
+      }
+    }
+  }
+
+  // ── Medical condition contraindication check ───────────────────
+  if (profile.medical_conditions) {
+    for (const cond of profile.medical_conditions) {
+      const c = cond.toLowerCase();
+      if (contraindications.includes(c) || warnings.includes(c)) {
+        risks.push({
+          type: 'condition',
+          label: t('scanner.conditionRisk', 'Contraindication'),
+          detail: `${t('scanner.contraindicatedFor', 'This medication may be contraindicated for your condition:')} "${cond}".`,
+        });
+      }
+    }
+  }
+
+  // ── Drug interaction check ─────────────────────────────────────
+  if (profile.medications) {
+    for (const med of profile.medications) {
+      const m = med.toLowerCase();
+      if (interactions.includes(m)) {
+        risks.push({
+          type: 'interaction',
+          label: t('scanner.interactionRisk', 'Drug Interaction'),
+          detail: `${t('scanner.interactsWith', 'Potential interaction with your current medication:')} "${med}".`,
+        });
+      }
+    }
+  }
+
+  return risks;
 }
 
 const HISTORY_KEY = 'scan_history_v1';
 
+// ── Status badge config ───────────────────────────────────────────────────────
+
+function getStatusConfig(verification: VerificationResult | null, error: string | null, t: any) {
+  if (error) return { icon: 'close-circle' as const, color: colors.danger, bg: colors.dangerLight, label: t('scanner.error', 'Error') };
+  if (!verification) return null;
+  if (verification.verified) return { icon: 'checkmark-circle' as const, color: colors.success, bg: colors.successLight, label: t('scanner.authentic', 'Authentic') };
+  if (verification.expired) return { icon: 'time' as const, color: colors.warn, bg: colors.warnLight, label: t('scanner.expired', 'Expired') };
+  if (verification.recall) return { icon: 'warning' as const, color: colors.danger, bg: colors.dangerLight, label: t('scanner.recalled', 'Recalled') };
+  return { icon: 'help-circle' as const, color: colors.textTertiary, bg: colors.bgSecondary, label: t('scanner.unknown', 'No Data') };
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 const BarcodeScanner: React.FC = () => {
   const { t } = useTranslation();
-  const { isRTL, textAlign } = useRTL();
   const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = React.useRef<any>(null)
-  const lastFrameTs = React.useRef<number | null>(null)
+  const cameraRef = React.useRef<any>(null);
+  const lastFrameTs = React.useRef<number | null>(null);
   const [scanned, setScanned] = useState(false);
   const [scanData, setScanData] = useState<any>(null);
   const [verification, setVerification] = useState<VerificationResult | null>(null);
@@ -359,23 +198,21 @@ const BarcodeScanner: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ScanHistoryItem[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [riskWarning, setRiskWarning] = useState<string | null>(null);
-  const [lastRisk, setLastRisk] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'successful' | 'unsuccessful' | 'risk'>('all');
+  const [risks, setRisks] = useState<RiskItem[]>([]);
+  const [filter, setFilter] = useState<'all' | 'successful' | 'risk'>('all');
+  const [pulse, setPulse] = useState(true);
+  const [barcodeDetected, setBarcodeDetected] = useState(false);
   const [showScanEffect, setShowScanEffect] = useState(false);
   const [guidance, setGuidance] = useState<string | null>(null);
-  const [pulse, setPulse] = useState(true);
-  const [expandedFields, setExpandedFields] = useState<Record<string, boolean>>({});
-  const [barcodeDetected, setBarcodeDetected] = useState(false);
   const scanTimeout = useRef<NodeJS.Timeout | null>(null);
   const pulseTimeout = useRef<NodeJS.Timeout | null>(null);
-  // Pulse animation for scan box
+
+  // Pulse animation for scan frame
   useEffect(() => {
     if (!scanned && !scanData) {
-      setPulse(true);
       const animate = () => {
         setPulse(p => !p);
-        pulseTimeout.current = setTimeout(animate, 700);
+        pulseTimeout.current = setTimeout(animate, 800);
       };
       animate();
       return () => { if (pulseTimeout.current) clearTimeout(pulseTimeout.current); };
@@ -386,30 +223,39 @@ const BarcodeScanner: React.FC = () => {
   }, [scanned, scanData]);
 
   useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-    // Load user profile for cross-checking
+    if (!permission?.granted) requestPermission();
+
     async function loadProfile() {
       const userProfile = await fetchUserProfile();
       setProfile(userProfile);
     }
-    // Load scan history from AsyncStorage
     async function loadHistory() {
       try {
         const raw = await getAsyncStorage().getItem(HISTORY_KEY);
-        if (raw) {
-          setHistory(JSON.parse(raw));
-        }
+        if (raw) setHistory(JSON.parse(raw));
       } catch {}
     }
     loadProfile();
     loadHistory();
-  // ensure focus when camera is available
-  ensureFocus(cameraRef).catch(() => {})
+    ensureFocus(cameraRef).catch(() => {});
   }, [permission]);
 
-  // Only allow one scan at a time
+  // Guidance messages while idle
+  useEffect(() => {
+    if (!scanned && !scanData) {
+      setGuidance(null);
+      setBarcodeDetected(false);
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+      scanTimeout.current = setTimeout(() => {
+        setGuidance(t('scanner.centerBarcode', 'Center the barcode in the frame.'));
+      }, 3000);
+    } else {
+      setGuidance(null);
+      if (scanTimeout.current) clearTimeout(scanTimeout.current);
+    }
+    return () => { if (scanTimeout.current) clearTimeout(scanTimeout.current); };
+  }, [scanned, scanData]);
+
   const handleBarCodeScanned = async ({ data, type }: { data: string; type: string }) => {
     if (scanned) return;
     setScanned(true);
@@ -417,26 +263,23 @@ const BarcodeScanner: React.FC = () => {
     setLoading(true);
     setError(null);
     setVerification(null);
-    setRiskWarning(null);
-    setLastRisk(null);
+    setRisks([]);
     setShowScanEffect(true);
+
     let result: VerificationResult | null = null;
     let err: string | null = null;
-    let risk = '';
+    let riskItems: RiskItem[] = [];
     const telemetryStart = Date.now();
     let telemetry: any = { scanType: type };
+
     try {
-      // Normalization step
       const norm = normalizeBarcode(data);
       if (norm.gtin) telemetry.gtin = norm.gtin;
       telemetry.normalizedType = norm.type;
 
-      // If EAN, validate check digit
       if (norm.type === 'EAN' && norm.gtin) {
         telemetry.eanCheck = validateEAN13CheckDigit(norm.gtin);
       }
-
-      // If DataMatrix-like, parse GS1 AIs
       if (norm.type === 'DATAMATRIX') {
         const ais = parseGs1AIs(data);
         telemetry.gs1 = { ais };
@@ -446,52 +289,21 @@ const BarcodeScanner: React.FC = () => {
 
       result = await verifyScannedCode(data, type);
       setVerification(result);
-      // Haptic feedback on positive findings
+
       if (result && (result.verified || result.recall)) {
-        try { await hapticSuccess() } catch {}
+        try { await hapticSuccess(); } catch {}
       }
       telemetry.lookupSuccess = !!result;
-      
-      // Cross-check with user profile for risks (BASIC VERSION)
+
+      // Cross-examination against user profile
       if (profile && result && result.label) {
-        const medName = (result.label.brand_name || result.label.generic_name || '').toLowerCase();
-        
-        // Check allergies
-        if (profile.allergies && profile.allergies.length > 0) {
-          for (const allergy of profile.allergies) {
-            if (medName.includes(allergy.toLowerCase())) {
-              risk += `⚠️ ${t('scanner.allergyRisk', 'Allergy risk')}: ${allergy}.\n`;
-            }
-          }
-        }
-        
-        // Check medical conditions (simple keyword match)
-        if (profile.medical_conditions && profile.medical_conditions.length > 0) {
-          for (const cond of profile.medical_conditions) {
-            if (result.label.contraindications && result.label.contraindications.toLowerCase().includes(cond.toLowerCase())) {
-              risk += `⚠️ ${t('scanner.conditionRisk', 'Condition risk')}: ${cond}.\n`;
-            }
-          }
-        }
-        
-        // Check current medications (simple keyword match)
-        if (profile.medications && profile.medications.length > 0) {
-          for (const med of profile.medications) {
-            if (result.label.drug_interactions && result.label.drug_interactions.toLowerCase().includes(med.toLowerCase())) {
-              risk += `⚠️ ${t('scanner.interactionRisk', 'Interaction risk')}: ${med}.\n`;
-            }
-          }
-        }
-        
-        if (risk) {
-          setRiskWarning(risk.trim());
-          setLastRisk(risk.trim());
-        }
+        riskItems = buildRiskItems(profile, result, t);
+        setRisks(riskItems);
       }
     } catch (e: any) {
-      err = e?.message || 'Verification failed. Please try scanning again.';
+      err = e?.message || t('scanner.verificationFailed', 'Verification failed. Please try again.');
       setError(err);
-      telemetry.errorCodes = ['verification_failed']
+      telemetry.errorCodes = ['verification_failed'];
     } finally {
       telemetry.decodeTimeMs = Date.now() - telemetryStart;
       const event = makeScanTelemetryEvent({
@@ -501,303 +313,988 @@ const BarcodeScanner: React.FC = () => {
         cacheHit: telemetry.cacheHit || false,
         sourceBadges: [],
         errorCodes: telemetry.errorCodes || [],
-      })
-  const svc = getTelemetryService()
-  svc?.record(event as any)
+      });
+      const svc = getTelemetryService();
+      svc?.record(event as any);
       setLoading(false);
       setTimeout(() => setShowScanEffect(false), 600);
-      const newItem = {
+
+      const newItem: ScanHistoryItem = {
         timestamp: Date.now(),
         data,
         type,
         verification: result,
         error: err,
-        risk: risk.trim() || null,
+        risk: riskItems.length > 0 ? riskItems.map(r => r.detail).join('\n') : null,
       };
       setHistory(prev => {
         const updated = [newItem, ...prev];
-        getAsyncStorage().setItem(HISTORY_KEY, JSON.stringify(updated)).catch((e: any) => {
-          // Failed to save scan history
-        });
+        getAsyncStorage().setItem(HISTORY_KEY, JSON.stringify(updated)).catch(() => {});
         return updated;
       });
     }
   };
 
-  // Advanced camera guidance: show dynamic messages
-  useEffect(() => {
-    if (!scanned && !scanData) {
-      setGuidance(null);
-      setBarcodeDetected(false);
-      if (scanTimeout.current) clearTimeout(scanTimeout.current);
-      // After 3s, suggest to center barcode
-      scanTimeout.current = setTimeout(() => {
-        setGuidance(t('scanner.centerBarcode', 'Center the barcode in the box.'));
-      }, 3000);
-      // After 6s, suggest to move closer or improve lighting
-      setTimeout(() => {
-        setGuidance(t('scanner.moveCloser', 'Move closer, hold steady, or improve lighting.'));
-      }, 6000);
-      // After 10s, suggest to clean camera or try another code
-      setTimeout(() => {
-        setGuidance(t('scanner.cleanCamera', 'Try cleaning your camera or another barcode.'));
-      }, 10000);
-    } else {
-      setGuidance(null);
-      setBarcodeDetected(false);
-      if (scanTimeout.current) clearTimeout(scanTimeout.current);
-    }
-    return () => {
-      if (scanTimeout.current) clearTimeout(scanTimeout.current);
-    };
-  }, [scanned, scanData]);
+  const resetScan = () => {
+    setScanned(false);
+    setScanData(null);
+    setVerification(null);
+    setError(null);
+    setLoading(false);
+    setRisks([]);
+  };
 
-  const heroHeader = (
-    <LinearGradient colors={colors.primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-      <Text style={[styles.heroTitle, { textAlign }]}>{t('scanner.medicationScanner', 'Medication scanner')}</Text>
-      <Text style={[styles.heroSubtitle, { textAlign }]}>{t('scanner.verifyAuthenticity', 'Verify authenticity and surface risks from your medical ID.')}</Text>
-      <View style={styles.heroStats}>
-        <View style={styles.statChip}>
-          <Text style={styles.statText}>{history.length} {t('scanner.totalScans', 'total scans')}</Text>
-        </View>
-        {(profile?.allergies?.length ?? 0) > 0 ? (
-          <View style={styles.statChip}>
-            <Text style={styles.statText}>{profile?.allergies?.length} {t('scanner.allergiesMonitored', 'allergies monitored')}</Text>
-          </View>
-        ) : null}
-        {(profile?.medications?.length ?? 0) > 0 ? (
-          <View style={styles.statChip}>
-            <Text style={styles.statText}>{profile?.medications?.length} {t('scanner.medsTracked', 'meds tracked')}</Text>
-          </View>
-        ) : null}
-      </View>
-    </LinearGradient>
-  );
+  // ── Permission denied state ───────────────────────────────────────────────
 
   if (!permission?.granted) {
     return (
-      <ScreenContainer header={heroHeader}>
-        <View style={styles.loader}>
-          <ActivityIndicator color={colors.primary} />
+      <ScreenContainer>
+        <View style={styles.permissionContainer}>
+          <View style={styles.permissionIcon}>
+            <Ionicons name="camera-outline" size={40} color={colors.primary} />
+          </View>
+          <Text style={styles.permissionTitle}>{t('scanner.cameraRequired', 'Camera Access Required')}</Text>
+          <Text style={styles.permissionSub}>{t('scanner.cameraPermission', 'Allow camera access to scan medication barcodes.')}</Text>
+          <Pressable style={styles.permissionBtn} onPress={requestPermission}>
+            <Text style={styles.permissionBtnText}>{t('scanner.grantPermission', 'Grant Access')}</Text>
+          </Pressable>
         </View>
       </ScreenContainer>
     );
   }
 
+  // ── Filter history ────────────────────────────────────────────────────────
+
   const filteredHistory = history.filter(item => {
     if (filter === 'all') return true;
-    if (filter === 'successful') return item.verification && (item.verification.verified || item.verification.recall || item.verification.expired);
-    if (filter === 'unsuccessful') return !item.verification || (!item.verification.verified && !item.verification.recall && !item.verification.expired);
-    if (filter === 'risk') return item.risk && item.risk.length > 0;
+    if (filter === 'successful') return !!(item.verification?.verified || item.verification?.recall || item.verification?.expired);
+    if (filter === 'risk') return !!(item.risk && item.risk.length > 0);
     return true;
   });
 
   const filterOptions: { label: string; value: typeof filter }[] = [
     { label: t('scanner.all', 'All'), value: 'all' },
-    { label: t('scanner.successful', 'Successful'), value: 'successful' },
-    { label: t('scanner.unsuccessful', 'Unsuccessful'), value: 'unsuccessful' },
-    { label: t('scanner.riskMatched', 'Risk matched'), value: 'risk' },
+    { label: t('scanner.successful', 'Verified'), value: 'successful' },
+    { label: t('scanner.riskMatched', 'Risk'), value: 'risk' },
   ];
 
+  // ── Idle (camera) view ────────────────────────────────────────────────────
+
   const renderIdle = () => (
-    <Card style={styles.scanCard}>
-      <Text style={[styles.sectionTitle, { textAlign }]}>{t('scanner.alignBarcode', 'Align the barcode inside the frame')}</Text>
-      <Text style={[styles.scanInstructions, { textAlign: 'center' }]}>{t('scanner.autoDetect', 'We automatically detect medication barcodes and GS1 data matrix codes.')}</Text>
-      <View style={styles.cameraShell}>
-        <CameraView
-          ref={cameraRef}
-          style={StyleSheet.absoluteFillObject}
-          autofocus={'on' as any}
-          onBarcodeScanned={scanned ? undefined : (event: { data: string; type: string }) => {
-            if (!barcodeDetected) setBarcodeDetected(true);
-            handleBarCodeScanned(event);
-          }}
-        />
-        <View
-          style={[
-            styles.overlayFrame,
-            {
-              borderColor: showScanEffect ? colors.accent : barcodeDetected ? colors.accent : 'rgba(255,255,255,0.7)',
-              backgroundColor: showScanEffect ? accentRgba(0.12) : barcodeDetected ? accentRgba(0.05) : 'transparent',
-              borderStyle: 'dashed',
-              borderWidth: pulse ? 3 : 1,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.overlayText,
-              { color: showScanEffect ? colors.accent : barcodeDetected ? colors.accent : '#fff' },
-            ]}
-          >
-            {showScanEffect ? t('scanner.scanComplete', 'Scan complete!') : barcodeDetected ? t('scanner.barcodeDetected', 'Barcode detected') : t('scanner.holdSteady', 'Hold steady')}
+    <>
+      {/* Camera card */}
+      <View style={styles.cameraCard}>
+        <View style={styles.cameraShell}>
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFillObject}
+            autofocus={'on' as any}
+            onBarcodeScanned={scanned ? undefined : (event: { data: string; type: string }) => {
+              if (!barcodeDetected) setBarcodeDetected(true);
+              handleBarCodeScanned(event);
+            }}
+          />
+          {/* Dark corners overlay */}
+          <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            <View style={styles.overlayTop} />
+            <View style={styles.overlayRow}>
+              <View style={styles.overlaySide} />
+              {/* Scan frame */}
+              <View style={[
+                styles.scanFrame,
+                barcodeDetected && styles.scanFrameActive,
+                showScanEffect && styles.scanFrameSuccess,
+              ]}>
+                {/* Corner markers */}
+                <View style={[styles.corner, styles.cornerTL, barcodeDetected && styles.cornerActive]} />
+                <View style={[styles.corner, styles.cornerTR, barcodeDetected && styles.cornerActive]} />
+                <View style={[styles.corner, styles.cornerBL, barcodeDetected && styles.cornerActive]} />
+                <View style={[styles.corner, styles.cornerBR, barcodeDetected && styles.cornerActive]} />
+                {/* Scan line */}
+                {!barcodeDetected && (
+                  <View style={[styles.scanLine, { opacity: pulse ? 0.7 : 0.3 }]} />
+                )}
+                {barcodeDetected && (
+                  <View style={styles.detectedBadge}>
+                    <Ionicons name="checkmark" size={14} color="#fff" />
+                    <Text style={styles.detectedText}>{t('scanner.barcodeDetected', 'Detected')}</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.overlaySide} />
+            </View>
+            <View style={styles.overlayBottom} />
+          </View>
+        </View>
+
+        {/* Guidance / instruction */}
+        <View style={styles.cameraFooter}>
+          <Ionicons
+            name={barcodeDetected ? 'checkmark-circle' : 'scan-outline'}
+            size={18}
+            color={barcodeDetected ? colors.success : colors.textTertiary}
+          />
+          <Text style={[styles.cameraGuideText, barcodeDetected && { color: colors.success }]}>
+            {showScanEffect
+              ? t('scanner.scanComplete', 'Scan complete!')
+              : barcodeDetected
+              ? t('scanner.barcodeDetected', 'Barcode detected — processing...')
+              : guidance || t('scanner.autoDetect', 'Align barcode within the frame')}
           </Text>
         </View>
       </View>
-      {guidance ? <Text style={[styles.guidance, { textAlign: 'center' }]}>{guidance}</Text> : null}
-    </Card>
+
+      {/* Profile context */}
+      {profile && (
+        <Card style={styles.profileContextCard}>
+          <View style={styles.profileContextRow}>
+            <Ionicons name="shield-checkmark-outline" size={16} color={colors.primary} />
+            <Text style={styles.profileContextText}>
+              {t('scanner.crossCheckActive', 'Cross-checking against your medical profile')}
+            </Text>
+          </View>
+          <View style={styles.profileTagRow}>
+            {(profile.allergies?.length ?? 0) > 0 && (
+              <View style={styles.profileTag}>
+                <Text style={styles.profileTagText}>{profile.allergies!.length} {t('scanner.allergies', 'allergies')}</Text>
+              </View>
+            )}
+            {(profile.medications?.length ?? 0) > 0 && (
+              <View style={styles.profileTag}>
+                <Text style={styles.profileTagText}>{profile.medications!.length} {t('scanner.meds', 'medications')}</Text>
+              </View>
+            )}
+            {(profile.medical_conditions?.length ?? 0) > 0 && (
+              <View style={styles.profileTag}>
+                <Text style={styles.profileTagText}>{profile.medical_conditions!.length} {t('scanner.conditions', 'conditions')}</Text>
+              </View>
+            )}
+          </View>
+        </Card>
+      )}
+    </>
   );
 
-  const renderHistory = history.length > 0 ? (
-    <Card style={styles.historyCard}>
-      <View style={styles.historyHeader}>
-        <Text style={[styles.historyTitle, { textAlign }]}>{t('scanner.recentScans', 'Recent scans')}</Text>
-        <Text style={styles.metaText}>{filteredHistory.length} {t('scanner.shown', 'shown')}</Text>
-      </View>
-      <View style={styles.filterRow}>
-        {filterOptions.map(opt => (
-          <Chip
-            key={opt.value}
-            label={opt.label}
-            selected={filter === opt.value}
-            onPress={() => setFilter(opt.value)}
-          />
-        ))}
-      </View>
-      <FlatList
-        data={filteredHistory}
-        keyExtractor={(item, idx) => `${item.timestamp}_${item.data}_${idx}`}
-        scrollEnabled={false}
-        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-        renderItem={({ item }) => (
-          <View style={styles.historyItem}>
-            <Text style={styles.historyType}>{item.type}</Text>
-            <Text style={styles.historyData}>{item.data}</Text>
-            <Text style={styles.historyMsg}>{getUserMessage(item.verification, item.error, t)}</Text>
-            {item.risk ? <Text style={styles.riskText}>⚠️ {item.risk}</Text> : null}
-            <Text style={styles.historyTime}>{new Date(item.timestamp).toLocaleString()}</Text>
+  // ── Result view ───────────────────────────────────────────────────────────
+
+  const renderResult = () => {
+    const statusConfig = getStatusConfig(verification, error, t);
+    const { codeType } = parseCodeType(scanData?.data ?? '', scanData?.type ?? '');
+
+    return (
+      <View style={{ gap: spacing.lg }}>
+        {/* Status banner */}
+        {statusConfig && (
+          <View style={[styles.statusBanner, { backgroundColor: statusConfig.bg }]}>
+            <Ionicons name={statusConfig.icon} size={28} color={statusConfig.color} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.statusLabel, { color: statusConfig.color }]}>{statusConfig.label}</Text>
+              <Text style={styles.statusMessage}>{getUserMessage(verification, error, t)}</Text>
+            </View>
           </View>
         )}
-      />
-    </Card>
-  ) : null;
 
-  const renderResult = () => (
-    <Card style={styles.resultCard}>
-      <Text style={[styles.sectionTitle, { textAlign }]}>{t('scanner.scanAnalysis', 'Scan analysis')}</Text>
-      <Text style={[styles.metaText, { textAlign }]}>{t('scanner.type', 'Type')}: {scanData?.type ?? 'Unknown'}</Text>
-      <Text style={[styles.metaText, { textAlign }]}>{t('scanner.rawData', 'Raw data')}: {scanData?.data ?? '—'}</Text>
-      <Text style={[styles.userMessage, { textAlign }]}>{getUserMessage(verification, error, t)}</Text>
-      {riskWarning ? (
-        <View style={styles.riskCard}>
-          <Text style={[styles.riskTitle, { textAlign }]}>{t('scanner.medicationRisk', 'Medication risk')}</Text>
-          <Text style={[styles.riskText, { textAlign }]}>{riskWarning}</Text>
-        </View>
-      ) : null}
-      {loading ? (
-        <ActivityIndicator color={colors.primary} />
-      ) : (
-        <>
-          {verification ? (
-            <View style={{ gap: spacing.md }}>
-              <View style={styles.analysisCard}>
-                {verification.verified ? <Text style={styles.positiveText}>{t('scanner.authenticityVerified', 'Authenticity verified')}</Text> : null}
-                {verification.expired ? <Text style={styles.negativeText}>{t('scanner.expired', 'Expired — do not use')}</Text> : null}
-                {verification.recall ? (
-                  <View>
-                    <Text style={styles.negativeText}>{t('scanner.recallAlert', 'Recall alert')}</Text>
-                    <Text style={styles.metaText}>{verification.recall.reason_for_recall}</Text>
-                    <Text style={styles.metaText}>{t('scanner.status', 'Status')}: {verification.recall.status}</Text>
+        {loading && (
+          <View style={styles.loadingRow}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={styles.loadingText}>{t('scanner.verifying', 'Verifying medication...')}</Text>
+          </View>
+        )}
+
+        {/* Scan metadata */}
+        <Card style={styles.metaCard}>
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Text style={styles.metaLabel}>{t('scanner.format', 'Format')}</Text>
+              <Text style={styles.metaValue}>{codeType}</Text>
+            </View>
+            <View style={styles.metaDivider} />
+            <View style={styles.metaItem}>
+              <Text style={styles.metaLabel}>{t('scanner.code', 'Code')}</Text>
+              <Text style={styles.metaValue} numberOfLines={1}>{scanData?.data ?? '—'}</Text>
+            </View>
+          </View>
+        </Card>
+
+        {/* Risk alerts from profile cross-examination */}
+        {risks.length > 0 && (
+          <View style={styles.riskContainer}>
+            <View style={styles.riskHeader}>
+              <Ionicons name="warning" size={18} color={colors.danger} />
+              <Text style={styles.riskHeaderText}>{t('scanner.profileRisks', 'Profile Risk Alerts')}</Text>
+              <View style={styles.riskCount}>
+                <Text style={styles.riskCountText}>{risks.length}</Text>
+              </View>
+            </View>
+            {risks.map((risk, idx) => (
+              <View key={idx} style={[
+                styles.riskItem,
+                risk.type === 'allergy' && { borderLeftColor: colors.danger },
+                risk.type === 'condition' && { borderLeftColor: colors.warn },
+                risk.type === 'interaction' && { borderLeftColor: colors.secondary },
+              ]}>
+                <View style={[
+                  styles.riskTypeBadge,
+                  risk.type === 'allergy' && { backgroundColor: colors.dangerLight },
+                  risk.type === 'condition' && { backgroundColor: colors.warnLight },
+                  risk.type === 'interaction' && { backgroundColor: colors.secondary100 },
+                ]}>
+                  <Text style={[
+                    styles.riskTypeText,
+                    risk.type === 'allergy' && { color: colors.danger },
+                    risk.type === 'condition' && { color: colors.warn },
+                    risk.type === 'interaction' && { color: colors.secondary },
+                  ]}>
+                    {risk.label}
+                  </Text>
+                </View>
+                <Text style={styles.riskDetail}>{risk.detail}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Recall details */}
+        {verification?.recall && !loading && (
+          <Card style={styles.recallCard}>
+            <View style={styles.recallHeader}>
+              <Ionicons name="alert-circle" size={18} color={colors.danger} />
+              <Text style={styles.recallTitle}>{t('scanner.recallDetails', 'Recall Details')}</Text>
+            </View>
+            {verification.recall.reason_for_recall && (
+              <Text style={styles.recallText}>{verification.recall.reason_for_recall}</Text>
+            )}
+            {verification.recall.status && (
+              <View style={styles.recallStatusRow}>
+                <Text style={styles.recallStatusLabel}>{t('scanner.status', 'Status')}:</Text>
+                <Text style={styles.recallStatusValue}>{verification.recall.status}</Text>
+              </View>
+            )}
+          </Card>
+        )}
+
+        {/* Drug label info */}
+        {!loading && (verification?.labelInfo || verification?.label) && (
+          <LabelInfoView labelInfo={verification.labelInfo} label={verification.label} />
+        )}
+
+        {/* Supplemental (openFDA + scraper) */}
+        {!loading && (verification?.labelInfo || verification?.webscraperInfo) && (
+          <Card style={styles.infoCard}>
+            {verification.labelInfo && (
+              <>
+                <View style={styles.infoSectionHeader}>
+                  <MaterialCommunityIcons name="pill" size={16} color={colors.primary} />
+                  <Text style={styles.infoSectionTitle}>{t('scanner.openFdaInsights', 'openFDA Drug Data')}</Text>
+                </View>
+                {verification.labelInfo.indications ? (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>{t('scanner.indications', 'Indications')}</Text>
+                    <Text style={styles.infoValue}>{verification.labelInfo.indications}</Text>
                   </View>
                 ) : null}
-                {verification.message ? <Text style={styles.metaText}>{verification.message}</Text> : null}
-              </View>
-              {(verification.labelInfo || verification.label) ? (
-                <LabelInfoView labelInfo={verification.labelInfo} label={verification.label} />
-              ) : null}
-              {(verification.labelInfo || verification.webscraperInfo) ? (
-                <View style={styles.analysisCard}>
-                  {verification.labelInfo ? (
-                    <>
-                      <Text style={styles.sectionTitle}>{t('scanner.openFdaInsights', 'openFDA insights')}</Text>
-                      <Text style={styles.metaText}>{t('scanner.indications', 'Indications')}: {verification.labelInfo.indications || 'N/A'}</Text>
-                      <Text style={styles.metaText}>{t('scanner.dosage', 'Dosage')}: {verification.labelInfo.dosage || 'N/A'}</Text>
-                      <Text style={styles.metaText}>{t('scanner.adverseReactions', 'Adverse reactions')}: {verification.labelInfo.sideEffects || 'N/A'}</Text>
-                    </>
-                  ) : null}
-                  {verification.webscraperInfo ? (
-                    <>
-                      <Text style={styles.sectionTitle}>{t('scanner.supplementalData', 'Supplemental data')}</Text>
-                      {verification.webscraperInfo.indications ? (
-                        <Text style={styles.metaText}>{t('scanner.indications', 'Indications')}: {verification.webscraperInfo.indications}</Text>
-                      ) : null}
-                      {verification.webscraperInfo.dosage ? (
-                        <Text style={styles.metaText}>{t('scanner.dosage', 'Dosage')}: {verification.webscraperInfo.dosage}</Text>
-                      ) : null}
-                      {verification.webscraperInfo.sideEffects ? (
-                        <Text style={styles.metaText}>{t('scanner.sideEffects', 'Side effects')}: {verification.webscraperInfo.sideEffects}</Text>
-                      ) : null}
-                      {!verification.webscraperInfo.indications && !verification.webscraperInfo.dosage && !verification.webscraperInfo.sideEffects ? (
-                        <Text style={styles.metaText}>{JSON.stringify(verification.webscraperInfo, null, 2)}</Text>
-                      ) : null}
-                    </>
-                  ) : null}
+                {verification.labelInfo.dosage ? (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>{t('scanner.dosage', 'Dosage')}</Text>
+                    <Text style={styles.infoValue}>{verification.labelInfo.dosage}</Text>
+                  </View>
+                ) : null}
+                {verification.labelInfo.sideEffects ? (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>{t('scanner.sideEffects', 'Side Effects')}</Text>
+                    <Text style={styles.infoValue}>{verification.labelInfo.sideEffects}</Text>
+                  </View>
+                ) : null}
+              </>
+            )}
+            {verification.webscraperInfo && (
+              <>
+                <View style={[styles.infoSectionHeader, verification.labelInfo && { marginTop: spacing.lg, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }]}>
+                  <Ionicons name="globe-outline" size={16} color={colors.accent} />
+                  <Text style={[styles.infoSectionTitle, { color: colors.accent }]}>{t('scanner.supplementalData', 'Web-Sourced Data')}</Text>
                 </View>
-              ) : null}
-              {!verification.verified && !verification.recall && !verification.expired ? (
-                <Text style={styles.metaText}>{t('scanner.noAuthenticityData', 'No authenticity data available. Please exercise caution.')}</Text>
-              ) : null}
-            </View>
-          ) : null}
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        </>
-      )}
-      <View style={styles.resultButtons}>
-        <Pressable
-          style={styles.secondaryButton}
-          onPress={() => {
-            setScanned(false);
-            setScanData(null);
-            setVerification(null);
-            setError(null);
-            setLoading(false);
-            setRiskWarning(null);
-          }}
-        >
-          <Text style={styles.secondaryText}>{t('scanner.scanAgain', 'Scan again')}</Text>
-        </Pressable>
-        {verification ? (
-          <Pressable
-            style={styles.primaryButton}
-            onPress={async () => {
-              try {
-                await saveMedication({
-                  code: scanData.data,
-                  type: scanData.type,
-                  labelInfo: verification.labelInfo,
-                  recall: verification.recall,
-                  timestamp: Date.now(),
-                });
-                // Show success feedback in a proper way
-                setVerification({ ...verification, message: t('scanner.savedToMedications', '✓ Saved to My Medications!') });
-                setTimeout(() => {
-                  setScanned(false);
-                  setScanData(null);
-                  setVerification(null);
-                }, 1500);
-              } catch (e) {
-                setError(t('scanner.failedToSave', 'Failed to save medication. Please try again.'));
-              }
-            }}
-          >
-            <Text style={styles.primaryText}>{t('scanner.saveMedication', 'Save medication')}</Text>
+                {verification.webscraperInfo.indications ? (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>{t('scanner.indications', 'Indications')}</Text>
+                    <Text style={styles.infoValue}>{verification.webscraperInfo.indications}</Text>
+                  </View>
+                ) : null}
+                {verification.webscraperInfo.dosage ? (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>{t('scanner.dosage', 'Dosage')}</Text>
+                    <Text style={styles.infoValue}>{verification.webscraperInfo.dosage}</Text>
+                  </View>
+                ) : null}
+                {verification.webscraperInfo.sideEffects ? (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>{t('scanner.sideEffects', 'Side Effects')}</Text>
+                    <Text style={styles.infoValue}>{verification.webscraperInfo.sideEffects}</Text>
+                  </View>
+                ) : null}
+              </>
+            )}
+          </Card>
+        )}
+
+        {error && !loading && (
+          <View style={styles.errorCard}>
+            <Ionicons name="close-circle-outline" size={18} color={colors.danger} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
+        {/* Action buttons */}
+        <View style={styles.actionRow}>
+          <Pressable style={styles.btnSecondary} onPress={resetScan}>
+            <Ionicons name="scan-outline" size={16} color={colors.textSecondary} />
+            <Text style={styles.btnSecondaryText}>{t('scanner.scanAgain', 'Scan Again')}</Text>
           </Pressable>
-        ) : null}
+          {verification && !loading && (
+            <Pressable
+              style={styles.btnPrimary}
+              onPress={async () => {
+                try {
+                  await saveMedication({
+                    code: scanData.data,
+                    type: scanData.type,
+                    labelInfo: verification.labelInfo,
+                    recall: verification.recall,
+                    timestamp: Date.now(),
+                  });
+                  setVerification({ ...verification, message: t('scanner.savedToMedications', 'Saved to My Medications') });
+                  setTimeout(resetScan, 1500);
+                } catch (e) {
+                  setError(t('scanner.failedToSave', 'Failed to save medication.'));
+                }
+              }}
+            >
+              <Ionicons name="bookmark-outline" size={16} color="#fff" />
+              <Text style={styles.btnPrimaryText}>{t('scanner.saveMedication', 'Save Medication')}</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
-    </Card>
+    );
+  };
+
+  // ── History list ──────────────────────────────────────────────────────────
+
+  const renderHistory = () => {
+    if (history.length === 0) return null;
+    return (
+      <Card style={styles.historyCard}>
+        <View style={styles.historyHeader}>
+          <Text style={styles.historyTitle}>{t('scanner.recentScans', 'Recent Scans')}</Text>
+          <Text style={styles.historyStat}>{history.length} {t('scanner.total', 'total')}</Text>
+        </View>
+        <View style={styles.filterRow}>
+          {filterOptions.map(opt => (
+            <Chip
+              key={opt.value}
+              label={opt.label}
+              selected={filter === opt.value}
+              onPress={() => setFilter(opt.value)}
+            />
+          ))}
+        </View>
+        {filteredHistory.map((item, idx) => {
+          const isVerified = !!(item.verification?.verified);
+          const hasRecall = !!(item.verification?.recall);
+          const hasRisk = !!(item.risk && item.risk.length > 0);
+          return (
+            <View key={`${item.timestamp}_${idx}`} style={[
+              styles.historyItem,
+              isVerified && { borderLeftColor: colors.success },
+              hasRecall && { borderLeftColor: colors.danger },
+              hasRisk && { borderLeftColor: colors.warn },
+            ]}>
+              <View style={styles.historyItemHeader}>
+                <Ionicons
+                  name={isVerified ? 'checkmark-circle' : hasRecall ? 'warning' : 'help-circle'}
+                  size={14}
+                  color={isVerified ? colors.success : hasRecall ? colors.danger : colors.textTertiary}
+                />
+                <Text style={styles.historyItemType}>{item.type.toUpperCase()}</Text>
+                <Text style={styles.historyItemTime}>{new Date(item.timestamp).toLocaleDateString()}</Text>
+              </View>
+              <Text style={styles.historyItemCode} numberOfLines={1}>{item.data}</Text>
+              <Text style={[
+                styles.historyItemMsg,
+                isVerified && { color: colors.success },
+                hasRecall && { color: colors.danger },
+              ]} numberOfLines={2}>
+                {getUserMessage(item.verification, item.error, t)}
+              </Text>
+              {hasRisk && (
+                <Text style={styles.historyItemRisk} numberOfLines={2}>
+                  ⚠ {item.risk}
+                </Text>
+              )}
+            </View>
+          );
+        })}
+      </Card>
+    );
+  };
+
+  // ── Page header ───────────────────────────────────────────────────────────
+
+  const pageHeader = (
+    <View style={styles.pageHeader}>
+      <View>
+        <Text style={styles.pageTitle}>{t('scanner.medicationScanner', 'Medication Scanner')}</Text>
+        <Text style={styles.pageSub}>{t('scanner.verifyAuthenticity', 'Verify, check safety, cross-examine with your profile')}</Text>
+      </View>
+      <View style={styles.pageStatRow}>
+        {history.length > 0 && (
+          <View style={styles.pageStat}>
+            <Text style={styles.pageStatValue}>{history.length}</Text>
+            <Text style={styles.pageStatLabel}>{t('scanner.scans', 'scans')}</Text>
+          </View>
+        )}
+        {(profile?.allergies?.length ?? 0) > 0 && (
+          <View style={[styles.pageStat, { backgroundColor: colors.dangerLight }]}>
+            <Text style={[styles.pageStatValue, { color: colors.danger }]}>{profile!.allergies!.length}</Text>
+            <Text style={[styles.pageStatLabel, { color: colors.danger }]}>{t('scanner.allergies', 'allergies')}</Text>
+          </View>
+        )}
+      </View>
+    </View>
   );
 
   return (
-    <ScreenContainer
-      scrollable
-      contentContainerStyle={styles.content}
-      header={heroHeader}
-    >
+    <ScreenContainer scrollable contentContainerStyle={styles.content}>
+      {pageHeader}
       {!scanned && !scanData ? renderIdle() : renderResult()}
-      {renderHistory}
+      {renderHistory()}
     </ScreenContainer>
   );
 };
 
+// ── Styles ────────────────────────────────────────────────────────────────────
+
+const OVERLAY_DARK = 'rgba(0,0,0,0.55)';
+
+const styles = StyleSheet.create({
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 110,
+    gap: spacing.lg,
+    paddingTop: spacing.md,
+  },
+
+  // Page header
+  pageHeader: {
+    gap: spacing.sm,
+  },
+  pageTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+    lineHeight: 28,
+  },
+  pageSub: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: colors.textTertiary,
+    lineHeight: 18,
+  },
+  pageStatRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: 4,
+  },
+  pageStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    backgroundColor: colors.primary100,
+    borderRadius: radius.pill,
+  },
+  pageStatValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  pageStatLabel: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: colors.primary,
+  },
+
+  // Camera
+  cameraCard: {
+    borderRadius: radius.xl,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+    ...shadow.card,
+  },
+  cameraShell: {
+    width: '100%',
+    aspectRatio: 1,
+    position: 'relative',
+  },
+  overlayTop: {
+    backgroundColor: OVERLAY_DARK,
+    height: '20%',
+  },
+  overlayRow: {
+    flexDirection: 'row',
+    height: '55%',
+  },
+  overlaySide: {
+    backgroundColor: OVERLAY_DARK,
+    flex: 1,
+  },
+  overlayBottom: {
+    backgroundColor: OVERLAY_DARK,
+    flex: 1,
+  },
+  scanFrame: {
+    width: '72%',
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  scanFrameActive: {},
+  scanFrameSuccess: {},
+
+  // Corner markers
+  corner: {
+    position: 'absolute',
+    width: 22,
+    height: 22,
+    borderColor: 'rgba(255,255,255,0.85)',
+  },
+  cornerTL: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 4 },
+  cornerTR: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 4 },
+  cornerBL: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 4 },
+  cornerBR: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 4 },
+  cornerActive: { borderColor: colors.success },
+  scanLine: {
+    position: 'absolute',
+    top: '45%',
+    left: 6,
+    right: 6,
+    height: 2,
+    backgroundColor: colors.primary,
+    borderRadius: 1,
+  },
+  detectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.success,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+  },
+  detectedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+
+  cameraFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+  },
+  cameraGuideText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.textTertiary,
+    flex: 1,
+  },
+
+  // Profile context
+  profileContextCard: {
+    gap: spacing.sm,
+  },
+  profileContextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  profileContextText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.primary,
+    flex: 1,
+  },
+  profileTagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  profileTag: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    backgroundColor: colors.primary100,
+    borderRadius: radius.pill,
+  },
+  profileTagText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.primary,
+  },
+
+  // Permission
+  permissionContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xxl,
+    gap: spacing.lg,
+  },
+  permissionIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primary100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  permissionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  permissionSub: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  permissionBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderRadius: radius.xl,
+    marginTop: spacing.sm,
+  },
+  permissionBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+
+  // Status banner
+  statusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+  },
+  statusLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
+  },
+  statusMessage: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+    marginTop: 2,
+  },
+
+  // Loading
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+
+  // Metadata card
+  metaCard: {
+    borderRadius: radius.lg,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaItem: {
+    flex: 1,
+    gap: 4,
+  },
+  metaLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  metaValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  metaDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: colors.line,
+    marginHorizontal: spacing.lg,
+  },
+
+  // Risks
+  riskContainer: {
+    borderRadius: radius.xl,
+    backgroundColor: colors.dangerLight,
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  riskHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  riskHeaderText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.danger,
+    flex: 1,
+  },
+  riskCount: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  riskCountText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  riskItem: {
+    backgroundColor: '#fff',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    gap: spacing.xs,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.danger,
+  },
+  riskTypeBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    backgroundColor: colors.dangerLight,
+  },
+  riskTypeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.danger,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  riskDetail: {
+    fontSize: 13,
+    color: colors.text,
+    lineHeight: 18,
+  },
+
+  // Recall card
+  recallCard: {
+    gap: spacing.sm,
+    backgroundColor: colors.dangerLight,
+    borderRadius: radius.xl,
+  },
+  recallHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  recallTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.danger,
+  },
+  recallText: {
+    fontSize: 13,
+    color: colors.text,
+    lineHeight: 20,
+  },
+  recallStatusRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  recallStatusLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  recallStatusValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.danger,
+  },
+
+  // Info sections
+  infoCard: {
+    gap: spacing.sm,
+  },
+  infoSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  infoSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  infoRow: {
+    gap: 4,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
+    marginBottom: spacing.xs,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 13,
+    color: colors.text,
+    lineHeight: 18,
+  },
+
+  // Error
+  errorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    backgroundColor: colors.dangerLight,
+    borderRadius: radius.lg,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.danger,
+    lineHeight: 18,
+  },
+
+  // Action buttons
+  actionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  btnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.bgSecondary,
+  },
+  btnSecondaryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  btnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    borderRadius: radius.xl,
+    backgroundColor: colors.primary,
+  },
+  btnPrimaryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+
+  // History
+  historyCard: {
+    gap: spacing.md,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  historyStat: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.textTertiary,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  historyItem: {
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.bgSecondary,
+    gap: spacing.xs,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.line,
+  },
+  historyItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  historyItemType: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textTertiary,
+    letterSpacing: 0.5,
+    flex: 1,
+  },
+  historyItemTime: {
+    fontSize: 11,
+    color: colors.textTertiary,
+  },
+  historyItemCode: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  historyItemMsg: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  historyItemRisk: {
+    fontSize: 12,
+    color: colors.warn,
+    lineHeight: 16,
+  },
+});
+
 export default BarcodeScanner;
-   

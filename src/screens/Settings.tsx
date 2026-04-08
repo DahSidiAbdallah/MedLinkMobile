@@ -107,34 +107,35 @@ export default function Settings({ navigation }: SettingsProps) {
     setter(value);
     try {
       await getAsyncStorage().setItem(key, value ? '1' : '0');
-      showSuccess('Settings Updated', successMessage);
+      showSuccess(t('settings.settingsUpdated', 'Settings Updated'), successMessage);
     } catch (e) {
-      showError('Error', 'Failed to save setting');
-      setter(!value); // Revert on error
+      showError(t('common.error', 'Error'), t('settings.failedToSave', 'Failed to save setting'));
+      setter(!value);
     }
   };
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
-    showSuccess('Language Changed', `Language changed to ${lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'العربية'}`);
+    const name = lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'العربية';
+    showSuccess(t('settings.languageChanged', 'Language Changed'), t('settings.languageChangedTo', 'Language changed to {{name}}', { name }));
   };
 
   const handleSignOut = () => {
     Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
+      t('settings.signOutConfirmTitle', 'Sign Out'),
+      t('settings.signOutConfirmMessage', 'Are you sure you want to sign out?'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
         {
-          text: 'Sign Out',
+          text: t('settings.signOut', 'Sign Out'),
           style: 'destructive',
           onPress: async () => {
             setLoading(true);
             try {
               await signOut(auth);
-              showSuccess('Signed Out', 'You have been signed out successfully');
+              showSuccess(t('settings.signedOutTitle', 'Signed Out'), t('settings.signedOutMessage', 'You have been signed out successfully'));
             } catch (error) {
-              showError('Error', 'Failed to sign out. Please try again.');
+              showError(t('common.error', 'Error'), t('settings.failedToSignOut', 'Failed to sign out. Please try again.'));
             } finally {
               setLoading(false);
             }
@@ -146,7 +147,7 @@ export default function Settings({ navigation }: SettingsProps) {
 
   const openURL = (url: string) => {
     Linking.openURL(url).catch(() => {
-      showError('Error', 'Could not open link');
+      showError(t('common.error', 'Error'), t('settings.linkError', 'Could not open link'));
     });
   };
 
@@ -229,21 +230,21 @@ export default function Settings({ navigation }: SettingsProps) {
             t('settings.notifications', 'Notifications'),
             t('settings.notificationsDesc', 'Receive medication reminders and alerts'),
             notifications,
-            (value) => updateSetting(NOTIFICATIONS_KEY, value, setNotifications, 'Notification preferences updated')
+            (value) => updateSetting(NOTIFICATIONS_KEY, value, setNotifications, t('settings.notificationsUpdated', 'Notification preferences updated'))
           )}
           {renderSettingRow(
             'phone-portrait',
             t('settings.haptics', 'Haptic Feedback'),
             t('settings.hapticsDesc', 'Vibrate when scans complete successfully'),
             haptics,
-            (value) => updateSetting(HAPTICS_KEY, value, setHaptics, 'Haptic feedback preferences updated')
+            (value) => updateSetting(HAPTICS_KEY, value, setHaptics, t('settings.hapticsUpdated', 'Haptic feedback preferences updated'))
           )}
           {renderSettingRow(
             'moon',
             t('settings.darkMode', 'Dark Mode'),
             t('settings.darkModeDesc', 'Use dark theme (coming soon)'),
             darkMode,
-            (value) => updateSetting(DARK_MODE_KEY, value, setDarkMode, 'Dark mode preferences updated'),
+            (value) => updateSetting(DARK_MODE_KEY, value, setDarkMode, t('settings.darkModeUpdated', 'Dark mode preferences updated')),
             true // Disabled for now
           )}
         </Card>
@@ -262,7 +263,7 @@ export default function Settings({ navigation }: SettingsProps) {
             t('settings.biometric', 'Biometric Authentication'),
             t('settings.biometricDesc', 'Use fingerprint or face ID to unlock (coming soon)'),
             biometric,
-            (value) => updateSetting(BIOMETRIC_KEY, value, setBiometric, 'Biometric authentication preferences updated'),
+            (value) => updateSetting(BIOMETRIC_KEY, value, setBiometric, t('settings.biometricUpdated', 'Biometric authentication preferences updated')),
             true // Disabled for now
           )}
           {renderSettingRow(
@@ -270,7 +271,7 @@ export default function Settings({ navigation }: SettingsProps) {
             t('settings.telemetry', 'Anonymous Analytics'),
             t('settings.telemetryDesc', 'Share usage insights to help us improve'),
             telemetry,
-            (value) => updateSetting(TELEMETRY_KEY, value, setTelemetry, 'Analytics preferences updated')
+            (value) => updateSetting(TELEMETRY_KEY, value, setTelemetry, t('settings.analyticsUpdated', 'Analytics preferences updated'))
           )}
         </Card>
       </Animated.View>
@@ -322,7 +323,7 @@ export default function Settings({ navigation }: SettingsProps) {
             'help-circle',
             t('settings.help', 'Help & FAQ'),
             t('settings.helpDesc', 'Get answers to common questions'),
-            () => showSuccess('Coming Soon', 'Help center is coming soon')
+            () => showSuccess(t('settings.helpComingSoon', 'Coming Soon'), t('settings.helpComingSoonDesc', 'Help center is coming soon'))
           )}
           {renderActionRow(
             'document-text',
@@ -364,8 +365,8 @@ export default function Settings({ navigation }: SettingsProps) {
       </Animated.View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>MedLink v1.0.0</Text>
-        <Text style={styles.footerText}>Made with ❤️ by XHARA</Text>
+        <Text style={styles.footerText}>{t('settings.version', 'MedLink v{{version}}', { version: '1.0.0' })}</Text>
+        <Text style={styles.footerText}>{t('settings.madeBy', 'Made with ❤️ by XHARA')}</Text>
       </View>
     </ScreenContainer>
   );

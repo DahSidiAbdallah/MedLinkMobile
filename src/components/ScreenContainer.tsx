@@ -25,9 +25,9 @@ type ScreenContainerProps = {
 };
 
 const basePadding: ViewStyle = {
-  paddingHorizontal: spacing.xl,
-  paddingTop: spacing.xl,
-  paddingBottom: spacing.xl,
+  // No horizontal padding — each screen manages its own horizontal layout
+  paddingTop: spacing.lg,
+  paddingBottom: spacing.lg,
 };
 
 // Extra bottom padding to account for floating tab bar (64px height + 16px margin + safe area)

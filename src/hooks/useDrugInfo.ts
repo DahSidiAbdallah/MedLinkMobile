@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { searchDrug, getDrugSuggestions, verifyDrugByQrCode, DataMedication } from '../core/drugInfo';
+import { searchDrug, getDrugSuggestions, getDrugSuggestionsAsync, verifyDrugByQrCode, DataMedication } from '../core/drugInfo';
 
 export function useDrugInfo() {
   const [loading, setLoading] = useState(false);
@@ -10,8 +10,7 @@ export function useDrugInfo() {
     setLoading(true);
     setError(null);
     try {
-      const result = await searchDrug(query);
-      return result;
+      return await searchDrug(query);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch drug information');
       return null;
@@ -20,25 +19,31 @@ export function useDrugInfo() {
     }
   };
 
+  // Instant local suggestions for responsive UI, then refresh from Firestore
   const getSuggestions = (query: string): string[] => {
-    const matches = getDrugSuggestions(query);
-    setSuggestions(matches);
-    return matches;
+    const instant = getDrugSuggestions(query);
+    setSuggestions(instant);
+    // Async refresh from Firestore in background
+    getDrugSuggestionsAsync(query).then(remote => {
+      if (remote.length > 0) setSuggestions(remote);
+    });
+    return instant;
   };
 
-  const verifyByQrCode = async (qrData: string): Promise<{ drug: DataMedication | null; verified: boolean; message: string; similarityScore?: number; imageMatch?: boolean }> => {
+  const verifyByQrCode = async (qrData: string): Promise<{
+    drug: DataMedication | null;
+    verified: boolean;
+    message: string;
+    similarityScore?: number;
+    imageMatch?: boolean;
+  }> => {
     setLoading(true);
     setError(null);
     try {
-      const result = await verifyDrugByQrCode(qrData);
-      return result;
+      return await verifyDrugByQrCode(qrData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to verify drug');
-      return {
-        drug: null,
-        verified: false,
-        message: 'Verification failed'
-      };
+      return { drug: null, verified: false, message: 'Verification failed' };
     } finally {
       setLoading(false);
     }

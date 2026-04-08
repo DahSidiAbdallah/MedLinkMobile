@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(grep -rn \"^[[:space:]]*<Text[^>]*>[A-Z][^{<]*</Text>\" src/screens/*.tsx)",
+      "Bash(wc -l src/i18n/locales/*.ts)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")"
+    ]
+  }
+}
