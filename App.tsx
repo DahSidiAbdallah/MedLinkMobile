@@ -13,7 +13,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, TouchableOpacity, ActivityIndicator, Platform, Text, Dimensions, StatusBar, Pressable } from 'react-native';
+import { View, TouchableOpacity, Platform, Text, Dimensions, StatusBar, Pressable } from 'react-native';
 import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Dashboard from './src/screens/Dashboard';
@@ -68,18 +68,16 @@ const getTabIcon = (route: { name: string }, focused: boolean, color: string, si
 import { useTranslation } from 'react-i18next';
 
 function CustomTabBar(props: Readonly<BottomTabBarProps>) {
-  const { state, navigation, descriptors } = props;
+  const { state, navigation } = props;
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const baseHeight = 72;
   const windowHeight = Platform.OS === 'web' && typeof window !== 'undefined'
     ? (window as any).innerHeight
     : Dimensions.get('window').height;
-  const ultraCompact = windowHeight < 540;
-  const compact = windowHeight < 620 && !ultraCompact;
-  const fabSize = compact ? 68 : 76;
+  const compact = windowHeight < 620;
+  const fabSize = compact ? 60 : 68;
   const iconSize = compact ? 22 : 24;
-  const labelFont = compact ? 11 : 12;
+  const labelFont = 11;
 
   return (
     <View
@@ -89,45 +87,30 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         right: 0,
         bottom: 0,
         backgroundColor: colors.card,
-        borderTopWidth: 1,
-        borderTopColor: colors.line,
-        paddingBottom: insets.bottom,
-        paddingTop: spacing.md,
-        // Modern flat design
+        borderTopWidth: 0,
+        paddingBottom: Math.max(insets.bottom, 12),
+        paddingTop: 16,
+        paddingHorizontal: 16,
         ...(Platform.OS === 'ios' && {
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: 'rgba(255,255,255,0.98)',
         }),
+        ...shadow.xl,
       }}
     >
-      <View style={{ 
-        flexDirection: 'row', 
+      <View style={{
+        flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: spacing.lg,
-        height: baseHeight - spacing.md,
+        height: compact ? 56 : 60,
       }}>
         {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          
-          // Get translated label
           let label = '';
           switch (route.name) {
-            case 'Dashboard':
-              label = t('navigation.dashboard', 'Dashboard');
-              break;
-            case 'Reminders':
-              label = t('navigation.reminders', 'Reminders');
-              break;
-            case 'Barcode':
-              label = t('navigation.scanner', 'Scanner');
-              break;
-            case 'Clinics':
-              label = t('navigation.clinics', 'Clinics');
-              break;
-            case 'UserProfile':
-              label = t('navigation.profile', 'Profile');
-              break;
-            default:
-              label = route.name;
+            case 'Dashboard': label = t('navigation.dashboard', 'Home'); break;
+            case 'Reminders': label = t('navigation.reminders', 'Schedule'); break;
+            case 'Barcode': label = t('navigation.scanner', 'Scan'); break;
+            case 'Clinics': label = t('navigation.clinics', 'Clinics'); break;
+            case 'UserProfile': label = t('navigation.profile', 'Profile'); break;
+            default: label = route.name;
           }
 
           const isFocused = state.index === index;
@@ -139,7 +122,6 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name, route.params);
             }
@@ -150,6 +132,7 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
               <View key={route.key} style={{ flex: 1, alignItems: 'center' }}>
                 <TouchableOpacity
                   onPress={onPress}
+                  activeOpacity={0.85}
                   style={{
                     width: fabSize,
                     height: fabSize,
@@ -157,13 +140,14 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                     backgroundColor: colors.primary,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    marginTop: -spacing.lg - 4,
-                    // Modern flat design
+                    marginTop: -(fabSize / 2) - 8,
                     shadowColor: colors.primary,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 8,
-                    elevation: 8,
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 16,
+                    elevation: 12,
+                    borderWidth: 4,
+                    borderColor: '#fff',
                   }}
                 >
                   {getTabIcon(route, isFocused, '#fff', iconSize + 6)}
@@ -176,27 +160,31 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
             <TouchableOpacity
               key={route.key}
               onPress={onPress}
+              activeOpacity={0.7}
               style={{
                 flex: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingVertical: spacing.sm,
+                paddingVertical: 8,
                 gap: 6,
-                borderRadius: radius.md,
-                // Modern active state
-                backgroundColor: isFocused ? `${colors.primary}15` : 'transparent',
-                marginHorizontal: 4,
               }}
             >
-              {getTabIcon(route, isFocused, isFocused ? colors.primary : colors.muted, iconSize)}
-              <Text
-                style={{
-                  fontSize: labelFont,
-                  fontWeight: isFocused ? '700' : '500',
-                  color: isFocused ? colors.primary : colors.muted,
-                  letterSpacing: 0.2,
-                }}
-              >
+              <View style={{
+                width: 48,
+                height: 32,
+                borderRadius: 16,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isFocused ? colors.primary100 : 'transparent',
+              }}>
+                {getTabIcon(route, isFocused, isFocused ? colors.primary : colors.textTertiary, iconSize)}
+              </View>
+              <Text style={{
+                fontSize: labelFont,
+                fontWeight: isFocused ? '600' : '500',
+                color: isFocused ? colors.primary : colors.textTertiary,
+                letterSpacing: 0.2,
+              }}>
                 {label}
               </Text>
             </TouchableOpacity>
@@ -367,44 +355,48 @@ function AppContent() {
 
   if (isLoading || onboardingLoading) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: colors.bg,
-        padding: spacing.xl,
-      }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ 
-          marginTop: spacing.lg, 
-          color: colors.text, 
-          fontSize: 16,
-          textAlign: 'center',
-        }}>
-          {isLoading ? 'Initializing app...' : 'Loading...'}
-        </Text>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        {/* Skeleton header */}
+        <View style={{ paddingTop: 60, paddingHorizontal: spacing.xl, gap: spacing.xl }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ gap: spacing.sm }}>
+              <View style={{ width: 120, height: 16, borderRadius: 8, backgroundColor: colors.skeleton }} />
+              <View style={{ width: 180, height: 28, borderRadius: 8, backgroundColor: colors.skeleton }} />
+            </View>
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.skeleton }} />
+          </View>
+          {/* Search bar skeleton */}
+          <View style={{ height: 52, borderRadius: radius.xxl, backgroundColor: colors.skeleton }} />
+          {/* Hero card skeleton */}
+          <View style={{ height: 160, borderRadius: radius.xxl, backgroundColor: colors.skeleton }} />
+          {/* Category strip skeleton */}
+          <View style={{ flexDirection: 'row', gap: spacing.lg, justifyContent: 'space-between' }}>
+            {[1,2,3,4,5].map(i => (
+              <View key={i} style={{ alignItems: 'center', gap: spacing.sm }}>
+                <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.skeleton }} />
+                <View style={{ width: 44, height: 12, borderRadius: 6, backgroundColor: colors.skeleton }} />
+              </View>
+            ))}
+          </View>
+          {/* Cards skeleton */}
+          <View style={{ height: 100, borderRadius: radius.xxl, backgroundColor: colors.skeleton }} />
+          <View style={{ height: 100, borderRadius: radius.xxl, backgroundColor: colors.skeleton }} />
+        </View>
         {loadingTimeout && (
-          <View style={{ marginTop: spacing.xl, alignItems: 'center' }}>
-            <Text style={{ 
-              color: colors.muted, 
-              fontSize: 14,
-              textAlign: 'center',
-              marginBottom: spacing.md,
-            }}>
+          <View style={{ position: 'absolute', bottom: 60, left: 0, right: 0, alignItems: 'center', gap: spacing.md }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 14, textAlign: 'center' }}>
               Taking longer than expected?
             </Text>
             <Pressable
               onPress={handleManualContinue}
               style={{
-                paddingHorizontal: spacing.lg,
+                paddingHorizontal: spacing.xl,
                 paddingVertical: spacing.md,
                 backgroundColor: colors.primary,
-                borderRadius: radius.md,
+                borderRadius: radius.pill,
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>
-                Continue
-              </Text>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Continue</Text>
             </Pressable>
           </View>
         )}

@@ -6,19 +6,18 @@ import {
   Pressable,
   Modal,
   Alert,
-  ActivityIndicator,
-  Platform,
-  useWindowDimensions,
   Image as RNImage,
+  Animated,
+  ImageBackground,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { signOutCompletely } from '../lib/authPersistence';
 import SkeletonImage from '../components/SkeletonImage';
+import { SkeletonHeroCard, SkeletonQuickAction } from '../components/SkeletonLoaders';
 import ScreenContainer from '../components/ScreenContainer';
-import Card from '../components/Card';
-import { ListRow } from '../components/ListRow';
 import { auth } from '../lib/firebase';
 import { fetchUserProfile, createOrUpdateUserProfile, type Profile } from '../core/userProfile';
 import { useLoading } from '../hooks/LoadingContext';
@@ -27,7 +26,7 @@ import MedicalSheet from './user-sheets/MedicalSheet';
 import InsuranceSheet from './user-sheets/InsuranceSheet';
 import EmergencySheet from './user-sheets/EmergencySheet';
 import EditProfileSheet from './user-sheets/EditProfileSheet';
-import { colors, spacing, radius, shadow } from '../theme';
+import { colors, spacing, radius, shadow, animation } from '../theme';
 import pkg from '../../package.json';
 
 type UserProfileProps = {
@@ -35,270 +34,15 @@ type UserProfileProps = {
   onLogout?: () => void;
 };
 
-type ActionTone = 'primary' | 'neutral' | 'danger';
-
-type QuickAction = {
-  key: string;
-  label: string;
-  icon: React.ComponentProps<typeof Ionicons>['name'];
-  onPress: () => void;
-  tone?: ActionTone;
-};
-
 const heroAvatar = require('../assets/avatar-placeholder.png');
-
-const styles = StyleSheet.create({
-  loader: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerSection: {
-    marginBottom: spacing.sm,
-  },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  screenSubtitle: {
-    fontSize: 15,
-    color: colors.muted,
-  },
-  profileCard: {
-    gap: spacing.lg,
-    paddingVertical: spacing.lg,
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  avatar: {
-    backgroundColor: colors.surface,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  profilePhone: {
-    fontSize: 14,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  healthStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  healthStat: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  hero: {
-    borderBottomLeftRadius: radius.xl + 6,
-    borderBottomRightRadius: radius.xl + 6,
-    paddingTop: spacing.xxl * 1.4,
-    paddingBottom: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-    gap: spacing.lg,
-  },
-  heroTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  heroName: { fontSize: 24, fontWeight: '700', color: '#fff' },
-  heroMeta: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
-  heroStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  statPill: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: radius.pill,
-  },
-  statText: { fontSize: 13, fontWeight: '600', color: '#fff' },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  quickButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    minWidth: 150,
-  },
-  quickButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  quickButtonDanger: {
-    backgroundColor: 'rgba(239,68,68,0.18)',
-  },
-  content: {
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  sectionCard: {
-    gap: spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    letterSpacing: -0.3,
-  },
-  sectionHint: {
-    color: colors.muted,
-    marginBottom: spacing.sm,
-  },
-  listSpacer: {
-    height: 1,
-    backgroundColor: 'rgba(15,23,42,0.08)',
-    marginVertical: spacing.xs,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-  },
-  actionLabel: {
-    color: colors.text,
-    fontWeight: '600',
-  },
-  actionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    backgroundColor: colors.chipBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  version: {
-    textAlign: 'center',
-    color: colors.muted,
-    marginTop: spacing.md,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.4)',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  modalCard: {
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-    gap: spacing.md,
-  },
-  modalLangRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(248,250,255,0.7)',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  modalClose: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.line,
-  },
-  modalCloseText: {
-    color: colors.muted,
-    fontWeight: '600',
-  },
-  modalConfirm: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    ...shadow.soft,
-  },
-  modalConfirmText: {
-    color: colors.card,
-    fontWeight: '700',
-  },
-});
-
-const modalStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  content: {
-    borderRadius: radius.xl,
-    overflow: 'hidden',
-    ...shadow.card,
-  },
-});
+const { width: SCREEN_W } = Dimensions.get('window');
+// Exact width so two cards + one gap fit within horizontal padding
+const CARD_W = (SCREEN_W - spacing.xl * 2 - spacing.lg) / 2;
 
 export default function UserProfile({ navigation, onLogout }: Readonly<UserProfileProps>) {
   const { t, i18n } = useTranslation();
   const { startLoading, finishLoading } = useLoading();
-  const { width } = useWindowDimensions();
   const _prefetched = useRef(new Set<string>());
-  const avatarSize = width > 700 ? 120 : 88;
 
   const [langModal, setLangModal] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -310,6 +54,34 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
   const [medicationsModal, setMedicationsModal] = useState(false);
   const [insuranceModal, setInsuranceModal] = useState(false);
   const [emergencyModal, setEmergencyModal] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const scaleAnim = useRef(new Animated.Value(0.96)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 7,
+        delay: 50,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 7,
+        delay: 100,
+      }),
+    ]).start();
+  }, []);
 
   const languages = [
     { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
@@ -376,7 +148,6 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
             await RNImage.prefetch(uri);
             _prefetched.current.add(uri);
           } catch (e) {
-            // eslint-disable-next-line no-console
             console.debug('Profile image prefetch failed', e);
           } finally {
             finishLoading(imgKey);
@@ -394,9 +165,17 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
 
   if (loadingProfile) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+      <ScreenContainer scrollable contentContainerStyle={{ gap: spacing.xxxl, paddingBottom: 140 }}>
+        <SkeletonHeroCard />
+        <View style={{ flexDirection: 'row', gap: spacing.lg, paddingHorizontal: spacing.xl }}>
+          <SkeletonQuickAction />
+          <SkeletonQuickAction />
+        </View>
+        <View style={{ flexDirection: 'row', gap: spacing.lg, paddingHorizontal: spacing.xl }}>
+          <SkeletonQuickAction />
+          <SkeletonQuickAction />
+        </View>
+      </ScreenContainer>
     );
   }
 
@@ -408,167 +187,230 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
     );
   }
 
-  const quickActions: QuickAction[] = [
-    {
-      key: 'edit',
-      label: t('common.editProfile', 'Edit Profile'),
-      icon: 'create-outline',
-      onPress: openEdit,
-      tone: 'primary',
-    },
-    {
-      key: 'meds',
-      label: t('profile.myMedications', 'My Medications'),
-      icon: 'medkit-outline',
-      onPress: () => setMedicationsModal(true),
-      tone: 'primary',
-    },
-    {
-      key: 'privacy',
-      label: t('common.privacy', 'Privacy'),
-      icon: 'shield-checkmark-outline',
-      onPress: () => {
-        Alert.alert(
-          t('common.privacy', 'Privacy'),
-          t('privacy.message', 'Your data is stored securely and encrypted. We never share your personal health information with third parties without your explicit consent.'),
-          [{ text: t('common.ok', 'OK'), style: 'default' }]
-        );
-      },
-      tone: 'neutral',
-    },
-    {
-      key: 'logout',
-      label: t('auth.signOut', 'Logout'),
-      icon: 'log-out-outline',
-      onPress: handleLogout,
-      tone: 'danger',
-    },
-  ];
-
-  const renderActionButton = (action: QuickAction) => (
-    <Pressable
-      key={action.key}
-      onPress={action.onPress}
-      style={[
-        styles.quickButton,
-        action.tone === 'danger' && styles.quickButtonDanger,
-      ]}
-    >
-      <Ionicons
-        name={action.icon}
-        size={18}
-        color={action.tone === 'danger' ? '#FEE2E2' : '#F8FAFF'}
-      />
-      <Text style={styles.quickButtonText}>{action.label}</Text>
-    </Pressable>
-  );
-
   return (
     <>
-      <ScreenContainer
-        scrollable
-        contentContainerStyle={styles.content}
-      >
-        <View style={styles.headerSection}>
-          <Text style={styles.screenTitle}>{t('profile.title', 'Profile')}</Text>
-          <Text style={styles.screenSubtitle}>{t('profile.manageHealthInfo', 'Manage your health information')}</Text>
-        </View>
-
-        <Card style={styles.profileCard}>
-          <View style={styles.profileHeader}>
-            <SkeletonImage
-              source={heroAvatar}
-              style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]}
-              resizeMode="cover"
-            />
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{profile.name}</Text>
-              <Text style={styles.profileEmail}>{profile.email}</Text>
-              {profile.phone ? <Text style={styles.profilePhone}>{profile.phone}</Text> : null}
-            </View>
-          </View>
-          
-          <View style={styles.healthStats}>
-            <View style={styles.healthStat}>
-              <View style={[styles.statIcon, { backgroundColor: colors.primary100 }]}>
-                <Ionicons name="water-outline" size={18} color={colors.primary} />
-              </View>
-              <View>
-                <Text style={styles.statValue}>{profile.blood_type || 'Not set'}</Text>
-                <Text style={styles.statLabel}>{t('auth.bloodType', 'Blood Type')}</Text>
-              </View>
-            </View>
-            <View style={styles.healthStat}>
-              <View style={[styles.statIcon, { backgroundColor: colors.warn100 }]}>
-                <Ionicons name="flask-outline" size={18} color={colors.warn} />
-              </View>
-              <View>
-                <Text style={styles.statValue}>{(profile.allergies || []).length}</Text>
-                <Text style={styles.statLabel}>{t('auth.allergies', 'Allergies')}</Text>
-              </View>
-            </View>
-            <View style={styles.healthStat}>
-              <View style={[styles.statIcon, { backgroundColor: colors.success100 }]}>
-                <Ionicons name="bandage-outline" size={18} color={colors.success} />
-              </View>
-              <View>
-                <Text style={styles.statValue}>{(profile.medical_conditions || []).length}</Text>
-                <Text style={styles.statLabel}>{t('auth.medicalConditions', 'Medical Conditions')}</Text>
-              </View>
-            </View>
-          </View>
-        </Card>
-        <Card style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t('profile.healthSummary', 'Health summary')}</Text>
-          <Text style={styles.sectionHint}>{t('profile.healthSummaryHint', 'Review and keep your medical data up to date.')}</Text>
-          <ListRow
-            title={t('profile.medicalId', 'Medical ID')}
-            subtitle={profile.blood_type ? `${t('auth.bloodType', 'Blood Type')}: ${profile.blood_type}` : undefined}
-            right={<Ionicons name="chevron-forward" size={18} color={colors.muted} />}
-            onPress={() => setMedicalModal(true)}
-          />
-          <View style={styles.listSpacer} />
-          <ListRow
-            title={t('profile.insurance', 'Insurance')}
-            subtitle={profile.insurance_info?.provider ? t('profile.providerWithValue', { provider: profile.insurance_info.provider }) : undefined}
-            right={<Ionicons name="chevron-forward" size={18} color={colors.muted} />}
-            onPress={() => setInsuranceModal(true)}
-          />
-          <View style={styles.listSpacer} />
-          <ListRow
-            title={t('profile.emergencyContacts', 'Emergency Contacts')}
-            subtitle={profile.emergency_contacts && profile.emergency_contacts.length > 0 ? profile.emergency_contacts[0].name : t('common.none', 'None')}
-            right={<Ionicons name="chevron-forward" size={18} color={colors.muted} />}
-            onPress={() => setEmergencyModal(true)}
-          />
-        </Card>
-
-        <Card style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t('profile.preferences', 'Preferences')}</Text>
-          <Pressable
-            onPress={() => setLangModal(true)}
-            style={styles.actionRow}
+      <ScreenContainer scrollable contentContainerStyle={styles.content}>
+        {/* Hero Header with Image */}
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+          <ImageBackground
+            source={{ uri: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800' }}
+            style={styles.hero}
+            imageStyle={styles.heroImageStyle}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-              <View style={styles.actionIcon}>
-                <Ionicons name="language-outline" size={18} color={colors.primary} />
+            <LinearGradient
+              colors={['rgba(38,201,168,0.88)', 'rgba(27,168,140,0.97)']}
+              style={styles.heroOverlay}
+            >
+              <View style={styles.heroTop}>
+                <View style={styles.heroAvatarWrap}>
+                  <SkeletonImage
+                    source={heroAvatar}
+                    style={styles.heroAvatar}
+                    resizeMode="cover"
+                  />
+                </View>
+                <View style={styles.heroInfo}>
+                  <Text style={styles.heroName} numberOfLines={1}>{profile.name}</Text>
+                  <Text style={styles.heroEmail} numberOfLines={1}>{profile.email}</Text>
+                  {profile.phone && <Text style={styles.heroPhone}>{profile.phone}</Text>}
+                </View>
+                <Pressable 
+                  onPress={openEdit} 
+                  style={({ pressed }) => [
+                    styles.heroEditBtn,
+                    pressed && { transform: [{ scale: 0.9 }], opacity: 0.8 }
+                  ]}
+                >
+                  <Ionicons name="create-outline" size={20} color="#fff" />
+                </Pressable>
               </View>
-              <View>
-                <Text style={styles.actionLabel}>{t('common.language', 'Language')}</Text>
-                <Text style={{ color: colors.muted }}>{currentLang.label}</Text>
+
+              <View style={styles.heroStats}>
+                <View style={styles.statCard}>
+                  <Ionicons name="water" size={18} color="rgba(255,255,255,0.95)" />
+                  <Text style={styles.statValue}>{profile.blood_type || '—'}</Text>
+                  <Text style={styles.statLabel}>{t('auth.bloodType', 'Blood Type')}</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Ionicons name="flask" size={18} color="rgba(255,255,255,0.95)" />
+                  <Text style={styles.statValue}>{(profile.allergies || []).length}</Text>
+                  <Text style={styles.statLabel}>{t('auth.allergies', 'Allergies')}</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Ionicons name="bandage" size={18} color="rgba(255,255,255,0.95)" />
+                  <Text style={styles.statValue}>{(profile.medical_conditions || []).length}</Text>
+                  <Text style={styles.statLabel}>{t('auth.conditions', 'Conditions')}</Text>
+                </View>
               </View>
+            </LinearGradient>
+          </ImageBackground>
+        </Animated.View>
+
+        {/* Quick Actions */}
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+          <View style={styles.quickActions}>
+            {([
+              { key: 'meds', icon: 'medkit' as const, label: t('profile.myMedications', 'Medications'), color: colors.primary, bg: colors.primary50, onPress: () => setMedicationsModal(true) },
+              { key: 'medical', icon: 'pulse' as const, label: t('profile.medicalId', 'Medical ID'), color: '#8B5CF6', bg: '#F3E8FF', onPress: () => setMedicalModal(true) },
+              { key: 'insurance', icon: 'shield-checkmark' as const, label: t('profile.insurance', 'Insurance'), color: colors.accent, bg: '#D1FAE5', onPress: () => setInsuranceModal(true) },
+              { key: 'emergency', icon: 'call' as const, label: t('profile.emergencyContacts', 'Emergency'), color: colors.danger, bg: colors.danger100, onPress: () => setEmergencyModal(true) },
+            ] as const).map((action, index) => (
+              <Animated.View
+                key={action.key}
+                style={{
+                  opacity: fadeAnim,
+                  transform: [
+                    { 
+                      translateY: slideAnim.interpolate({
+                        inputRange: [0, 20],
+                        outputRange: [0, 20 + (index * 5)],
+                      })
+                    }
+                  ]
+                }}
+              >
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.quickActionCard,
+                    { backgroundColor: action.bg },
+                    pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+                  ]}
+                  onPress={action.onPress}
+                >
+                  <View style={[styles.quickActionIcon, { backgroundColor: '#fff' }]}>
+                    <Ionicons name={action.icon} size={28} color={action.color} />
+                  </View>
+                  <Text style={styles.quickActionLabel}>{action.label}</Text>
+                </Pressable>
+              </Animated.View>
+            ))}
+          </View>
+        </Animated.View>
+
+        {/* Health Summary */}
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('profile.healthSummary', 'Health Summary')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-          </Pressable>
-        </Card>
+
+            <View style={styles.healthCards}>
+              {[
+                {
+                  title: t('profile.medicalId', 'Medical ID'),
+                  subtitle: profile.blood_type ? `${t('auth.bloodType', 'Blood Type')}: ${profile.blood_type}` : t('common.tapToAdd', 'Tap to add'),
+                  icon: 'id-card' as const,
+                  color: colors.primary,
+                  bg: colors.primary50,
+                  onPress: () => setMedicalModal(true),
+                },
+                {
+                  title: t('profile.insurance', 'Insurance'),
+                  subtitle: profile.insurance_info?.provider ?? t('common.tapToAdd', 'Tap to add'),
+                  icon: 'shield' as const,
+                  color: '#8B5CF6',
+                  bg: '#F3E8FF',
+                  onPress: () => setInsuranceModal(true),
+                },
+                {
+                  title: t('profile.emergencyContacts', 'Emergency'),
+                  subtitle: profile.emergency_contacts?.[0]?.name ?? t('common.tapToAdd', 'Tap to add'),
+                  icon: 'call' as const,
+                  color: colors.danger,
+                  bg: colors.danger100,
+                  onPress: () => setEmergencyModal(true),
+                },
+              ].map((card, index) => (
+                <Animated.View
+                  key={card.title}
+                  style={{
+                    opacity: fadeAnim,
+                    transform: [
+                      { 
+                        translateY: slideAnim.interpolate({
+                          inputRange: [0, 20],
+                          outputRange: [0, 20 + (index * 10)],
+                        })
+                      }
+                    ]
+                  }}
+                >
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.healthCard,
+                      pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+                    ]}
+                    onPress={card.onPress}
+                  >
+                    <View style={[styles.healthCardIcon, { backgroundColor: card.bg }]}>
+                      <Ionicons name={card.icon} size={24} color={card.color} />
+                    </View>
+                    <View style={styles.healthCardContent}>
+                      <Text style={styles.healthCardTitle}>{card.title}</Text>
+                      <Text style={styles.healthCardSubtitle} numberOfLines={1}>{card.subtitle}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+                  </Pressable>
+                </Animated.View>
+              ))}
+            </View>
+          </View>
+        </Animated.View>
+
+        {/* Settings */}
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('profile.preferences', 'Settings')}</Text>
+            </View>
+
+            <View style={styles.settingsCards}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.settingCard,
+                  pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+                ]}
+                onPress={() => setLangModal(true)}
+              >
+                <View style={[styles.settingIcon, { backgroundColor: colors.primary50 }]}>
+                  <Ionicons name="language" size={24} color={colors.primary} />
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={styles.settingTitle}>{t('common.language', 'Language')}</Text>
+                  <Text style={styles.settingValue}>{currentLang.label}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [
+                  styles.settingCard,
+                  pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+                ]}
+                onPress={handleLogout}
+              >
+                <View style={[styles.settingIcon, { backgroundColor: colors.danger100 }]}>
+                  <Ionicons name="log-out" size={24} color={colors.danger} />
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, { color: colors.danger }]}>{t('auth.signOut', 'Sign Out')}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+              </Pressable>
+            </View>
+          </View>
+        </Animated.View>
 
         <Text style={styles.version}>v{pkg.version}</Text>
       </ScreenContainer>
 
-      <Modal visible={langModal} animationType="fade" transparent onRequestClose={() => setLangModal(false)}>
-        <View style={modalStyles.overlay}>
-          <Card style={styles.modalCard}>
-            <Text style={{ fontSize: 22, fontWeight: '600', color: '#1A1A1A', letterSpacing: -0.3, textAlign: 'center' }}>{t('common.languageSettings', 'Language Settings')}</Text>
+      {/* Language Modal */}
+      <Modal visible={langModal} animationType="slide" transparent onRequestClose={() => setLangModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>{t('common.languageSettings', 'Language Settings')}</Text>
+            
             {languages.map(lang => (
               <Pressable
                 key={lang.code}
@@ -576,24 +418,19 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                   await i18n.changeLanguage(lang.code);
                   setLangModal(false);
                 }}
-                style={styles.modalLangRow}
+                style={({ pressed }) => [
+                  styles.langOption,
+                  pressed && { opacity: 0.8 }
+                ]}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                  <RNImage source={lang.flag} style={{ width: 32, height: 20, borderRadius: 4 }} resizeMode="contain" />
-                  <Text style={{ color: colors.text, fontWeight: '600' }}>{lang.label}</Text>
+                <View style={styles.langOptionLeft}>
+                  <RNImage source={lang.flag} style={styles.langFlag} resizeMode="contain" />
+                  <Text style={styles.langLabel}>{lang.label}</Text>
                 </View>
-                {i18n.language === lang.code ? <Ionicons name="checkmark-circle" size={20} color={colors.primary} /> : null}
+                {i18n.language === lang.code && <Ionicons name="checkmark-circle" size={24} color={colors.primary} />}
               </Pressable>
             ))}
-            <View style={styles.modalButtons}>
-              <Pressable style={styles.modalClose} onPress={() => setLangModal(false)}>
-                <Text style={styles.modalCloseText}>{t('common.close', 'Close')}</Text>
-              </Pressable>
-              <Pressable style={styles.modalConfirm} onPress={() => setLangModal(false)}>
-                <Text style={styles.modalConfirmText}>{t('common.save', 'Save')}</Text>
-              </Pressable>
-            </View>
-          </Card>
+          </View>
         </View>
       </Modal>
 
@@ -624,3 +461,288 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    gap: spacing.xxxl,
+    paddingBottom: 140,
+    paddingTop: 0,
+  },
+
+  // Hero
+  hero: {
+    height: 360,
+  },
+  heroImageStyle: {
+    borderBottomLeftRadius: radius.xxxl,
+    borderBottomRightRadius: radius.xxxl,
+  },
+  heroOverlay: {
+    flex: 1,
+    paddingTop: spacing.xxxl * 1.5,
+    paddingBottom: spacing.xxxl,
+    paddingHorizontal: spacing.xl,
+    gap: spacing.xxl,
+    borderBottomLeftRadius: radius.xxxl,
+    borderBottomRightRadius: radius.xxxl,
+  },
+  heroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  heroAvatarWrap: {
+    borderRadius: 999,
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.4)',
+    overflow: 'hidden',
+    ...shadow.xl,
+  },
+  heroAvatar: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+  },
+  heroInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  heroName: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#fff',
+    letterSpacing: -0.5,
+  },
+  heroEmail: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.85)',
+  },
+  heroPhone: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.85)',
+  },
+  heroEditBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.soft,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: spacing.lg,
+    borderRadius: radius.xl,
+    ...shadow.soft,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+  },
+
+  // Quick Actions
+  quickActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  quickActionCard: {
+    width: CARD_W,
+    padding: spacing.xl,
+    borderRadius: radius.xxl,
+    gap: spacing.lg,
+    minHeight: 140,
+    ...shadow.card,
+  },
+  quickActionIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.soft,
+  },
+  quickActionLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 'auto',
+    letterSpacing: -0.2,
+  },
+
+  // Section
+  section: {
+    gap: spacing.xl,
+  },
+  sectionHeader: {
+    paddingHorizontal: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
+
+  // Health Cards
+  healthCards: {
+    gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  healthCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    padding: spacing.xl,
+    borderRadius: radius.xl,
+    gap: spacing.lg,
+    ...shadow.card,
+  },
+  healthCardIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  healthCardContent: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  healthCardTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: -0.2,
+  },
+  healthCardSubtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+
+  // Settings
+  settingsCards: {
+    gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  settingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    padding: spacing.xl,
+    borderRadius: radius.xl,
+    gap: spacing.lg,
+    ...shadow.card,
+  },
+  settingIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingContent: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  settingTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: -0.2,
+  },
+  settingValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+
+  version: {
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.textTertiary,
+    marginTop: spacing.lg,
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xxxl,
+    borderTopRightRadius: radius.xxxl,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxxl * 2,
+    gap: spacing.lg,
+    ...shadow.xl,
+  },
+  modalHandle: {
+    width: 48,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: colors.line,
+    alignSelf: 'center',
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    marginBottom: spacing.md,
+  },
+  langOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.bgSecondary,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+  },
+  langOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  langFlag: {
+    width: 36,
+    height: 24,
+    borderRadius: 6,
+  },
+  langLabel: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text,
+  },
+});

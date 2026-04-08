@@ -1,23 +1,19 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { View, Text, TextInput, Pressable, Modal, Animated, Easing, Dimensions, useWindowDimensions, Image as RNImage, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, TextInput, Pressable, Modal, Animated, ScrollView, Image as RNImage, StyleSheet, ImageBackground } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
-import { SkeletonFacilityCard, Skeleton } from '../components/Skeleton';
+import { SkeletonFacilityCardLarge } from '../components/SkeletonLoaders';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useRTL } from '../hooks/useRTL';
 import type { Facility } from '../types';
-import { colors, spacing, radius, shadow } from '../theme';
-import Card from '../components/Card';
-import { ListRow } from '../components/ListRow';
-import { Pill } from '../components/Pill';
+import { colors, spacing, radius, shadow, animation } from '../theme';
 import { useFacilities } from '../hooks/useFacilitiesFirestore';
 import { useLoading } from '../hooks/LoadingContext';
 import { SegmentedControl } from '../components/SegmentedControl';
 import Chip from '../components/Chip';
 import ClinicsHospitalsPharmaciesMap from './ClinicsHospitalsPharmaciesMap';
 import ScreenContainer from '../components/ScreenContainer';
-import CachedImage from '../components/CachedImage';
 
 export default function FacilitiesScreen({ navigation }: any) {
   const { t } = useTranslation();
@@ -25,8 +21,6 @@ export default function FacilitiesScreen({ navigation }: any) {
   const { facilities, loading, error } = useFacilities();
   const { startLoading, finishLoading } = useLoading();
   const _prefetched = useRef(new Set<string>());
-  const { width } = useWindowDimensions();
-  const listImageWidth = Math.min(140, Math.max(100, Math.floor(width * 0.32)));
   
   const FILTERS = [
     t('facilities.all', 'All'),
@@ -34,7 +28,35 @@ export default function FacilitiesScreen({ navigation }: any) {
     t('facilities.hospital', 'Hospital'),
     t('facilities.pharmacy', 'Pharmacy')
   ];
-  // Prefetch images for list when facilities update
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const scaleAnim = useRef(new Animated.Value(0.96)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 7,
+        delay: 50,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 7,
+        delay: 100,
+      }),
+    ]).start();
+  }, []);
+
   useEffect(() => {
     if (!facilities || facilities.length === 0) return;
     const uris = Array.from(new Set(facilities.map(f => f.image).filter(Boolean)));
@@ -50,18 +72,17 @@ export default function FacilitiesScreen({ navigation }: any) {
       })
     ).finally(() => finishLoading(key));
   }, [facilities]);
+
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState(FILTERS[0]);
   const [openNow, setOpenNow] = useState(false);
   const [hasDelivery, setHasDelivery] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [sheetAnim] = useState(new Animated.Value(0));
 
-  // Filter facilities by type, search, open now, and has delivery
   const filtered = useMemo(() => {
     let f = facilities;
-    if (filter !== FILTERS[0]) { // Not "All"
+    if (filter !== FILTERS[0]) {
       const filterType = filter.toLowerCase();
       f = f.filter(fac => {
         const facType = fac.type.toLowerCase();
@@ -71,12 +92,8 @@ export default function FacilitiesScreen({ navigation }: any) {
                (filter === t('facilities.pharmacy', 'Pharmacy') && facType === 'pharmacy');
       });
     }
-    if (openNow) {
-      f = f.filter(fac => fac.isOpen);
-    }
-    if (hasDelivery) {
-      f = f.filter(fac => fac.hasDelivery);
-    }
+    if (openNow) f = f.filter(fac => fac.isOpen);
+    if (hasDelivery) f = f.filter(fac => fac.hasDelivery);
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       f = f.filter(fac =>
@@ -88,23 +105,9 @@ export default function FacilitiesScreen({ navigation }: any) {
     return f;
   }, [facilities, filter, search, openNow, hasDelivery, t, FILTERS]);
 
-  // Map handler (center map or show details)
-  const handleMap = (lat: number, lng: number, name: string) => {
-    // Optionally scroll to card or show details
-  };
-
-  // Show modal with animation
   const openFacilityModal = (fac: any) => {
     setSelectedFacility(fac);
     setModalVisible(true);
-    sheetAnim.setValue(0);
-    Animated.timing(sheetAnim, {
-      toValue: 1,
-      duration: 350,
-      easing: Easing.out(Easing.exp),
-      useNativeDriver: true,
-    }).start();
-    // Ensure the selected facility image is prefetched (if not already)
     const uri = fac?.image;
     if (uri && !_prefetched.current.has(uri)) {
       const key = `clinic-image-${fac.id}`;
@@ -115,189 +118,250 @@ export default function FacilitiesScreen({ navigation }: any) {
         .finally(() => finishLoading(key));
     }
   };
-  const closeFacilityModal = () => {
-    Animated.timing(sheetAnim, {
-      toValue: 0,
-      duration: 200,
-      easing: Easing.in(Easing.exp),
-      useNativeDriver: true,
-    }).start(() => {
-      setModalVisible(false);
-      setSelectedFacility(null);
-    });
-  };
 
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
-      <View style={styles.headerSection}>
-        <Text style={[styles.screenTitle, { textAlign }]}>{t('facilities.title', 'Facilities')}</Text>
-        <Text style={[styles.screenSubtitle, { textAlign }]}>{t('facilities.findFacilities', 'Find clinics, hospitals & pharmacies')}</Text>
-      </View>
+      {/* Hero Header */}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t('facilities.title', 'Facilities')}</Text>
+          <Text style={styles.headerSubtitle}>{t('facilities.findFacilities', 'Find clinics, hospitals & pharmacies')}</Text>
+        </View>
+      </Animated.View>
 
-      <Card style={styles.filterCard}>
-        <View style={styles.searchWrapper}>
-          <Ionicons name="search" size={18} color={colors.muted} />
+      {/* Search Bar */}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+        <Pressable 
+          style={({ pressed }) => [
+            styles.searchBar,
+            pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+          ]}
+        >
+          <Ionicons name="search" size={22} color={colors.textTertiary} />
           <TextInput
             placeholder={t('facilities.searchFacilities', 'Search facilities...')}
             value={search}
             onChangeText={setSearch}
-            style={[styles.searchInput, { textAlign }]}
-            placeholderTextColor={colors.muted}
+            style={styles.searchInput}
+            placeholderTextColor={colors.placeholder}
           />
-        </View>
-        <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
-        <View style={styles.chipRow}>
-          <Chip 
-            label={openNow ? `${t('facilities.openNow', 'Open Now')} ✓` : t('facilities.openNow', 'Open Now')} 
-            selected={openNow} 
-            onPress={() => setOpenNow(v => !v)} 
-          />
-          <Chip 
-            label={hasDelivery ? `${t('facilities.delivery', 'Delivery')} ✓` : t('facilities.delivery', 'Delivery')} 
-            selected={hasDelivery} 
-            onPress={() => setHasDelivery(v => !v)} 
-          />
-        </View>
-      </Card>
+        </Pressable>
+      </Animated.View>
 
-      <Card style={styles.mapCard}>
-        <ClinicsHospitalsPharmaciesMap filtered={filtered} handleMap={handleMap} />
-      </Card>
-
-      <View style={styles.list}>
-        {filtered.map(fac => (
-          <Card key={fac.id} style={styles.facilityCard}>
-            <ListRow
-              title={fac.name}
-              subtitle={fac.address || fac.location}
-              imageUri={fac.image}
-              right={fac.specialty ? <Pill tone="primary">{fac.specialty}</Pill> : undefined}
-              onPress={() => openFacilityModal(fac)}
+      {/* Filters */}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+        <View style={styles.filterCard}>
+          <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
+          <View style={styles.chipRow}>
+            <Chip 
+              label={openNow ? `${t('facilities.openNow', 'Open Now')} ✓` : t('facilities.openNow', 'Open Now')} 
+              selected={openNow} 
+              onPress={() => setOpenNow(v => !v)} 
             />
-            {/* Details section */}
-            <View style={{ marginTop: 8 }}>
-              {/* Info badges */}
-              <View style={styles.facilityBadges}>
-                <View style={[styles.facilityBadge, { backgroundColor: 'rgba(37,99,235,0.1)' }]}>
-                  <Text style={[styles.facilityBadgeText, { color: colors.primary }]}>
-                    {fac.type.charAt(0).toUpperCase() + fac.type.slice(1)}
-                  </Text>
-                </View>
-                {fac.rating && (
-                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(245,158,11,0.1)' }]}>
-                    <Ionicons name="star" size={12} color="#F59E0B" />
-                    <Text style={[styles.facilityBadgeText, { color: '#F59E0B' }]}>{fac.rating}</Text>
-                  </View>
-                )}
-                {fac.isOpen ? (
-                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
-                    <View style={styles.openDot} />
-                    <Text style={[styles.facilityBadgeText, { color: colors.success }]}>{t('facilities.open', 'Open')}</Text>
-                  </View>
-                ) : (
-                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
-                    <Text style={[styles.facilityBadgeText, { color: colors.danger }]}>{t('facilities.closed', 'Closed')}</Text>
-                  </View>
-                )}
-                {fac.hasDelivery && (
-                  <View style={[styles.facilityBadge, { backgroundColor: 'rgba(139,92,246,0.1)' }]}>
-                    <Ionicons name="bicycle" size={12} color="#8B5CF6" />
-                    <Text style={[styles.facilityBadgeText, { color: '#8B5CF6' }]}>{t('facilities.delivery', 'Delivery')}</Text>
-                  </View>
-                )}
-              </View>
-              {/* Hours */}
-              {fac.hours && (
-                <Text style={[{ color: colors.text, fontSize: 13, marginTop: 2 }, { textAlign }]}>
-                  {t('facilities.hours', 'Hours')}: {fac.hours}
-                </Text>
-              )}
+            <Chip 
+              label={hasDelivery ? `${t('facilities.delivery', 'Delivery')} ✓` : t('facilities.delivery', 'Delivery')} 
+              selected={hasDelivery} 
+              onPress={() => setHasDelivery(v => !v)} 
+            />
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Map */}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+        <View style={styles.mapCard}>
+          <ClinicsHospitalsPharmaciesMap filtered={filtered} handleMap={() => {}} onFacilityPress={openFacilityModal} />
+        </View>
+      </Animated.View>
+
+      {/* Facilities List */}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('facilities.nearbyFacilities', 'Nearby Facilities')}</Text>
+            <Text style={styles.sectionCount}>{filtered.length} {t('facilities.found', 'found')}</Text>
+          </View>
+
+          {loading ? (
+            <View style={styles.list}>
+              <SkeletonFacilityCardLarge />
+              <SkeletonFacilityCardLarge />
+              <SkeletonFacilityCardLarge />
             </View>
-          </Card>
-        ))}
-      </View>
+          ) : filtered.length === 0 ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <Ionicons name="business-outline" size={48} color={colors.primary} />
+              </View>
+              <Text style={styles.emptyTitle}>{t('facilities.noFacilities', 'No facilities found')}</Text>
+              <Text style={styles.emptyText}>{t('facilities.adjustFilters', 'Try adjusting your filters or search')}</Text>
+            </View>
+          ) : (
+            <View style={styles.list}>
+              {filtered.map((fac, index) => (
+                <Animated.View
+                  key={fac.id}
+                  style={{
+                    opacity: fadeAnim,
+                    transform: [
+                      { 
+                        translateY: slideAnim.interpolate({
+                          inputRange: [0, 20],
+                          outputRange: [0, 20 + (index * 10)],
+                        })
+                      }
+                    ]
+                  }}
+                >
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.facilityCard,
+                      pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+                    ]}
+                    onPress={() => openFacilityModal(fac)}
+                  >
+                    <ImageBackground
+                      source={{ uri: fac.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400' }}
+                      style={styles.facilityImage}
+                      imageStyle={styles.facilityImageStyle}
+                    >
+                      <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.8)']}
+                        style={styles.facilityGradient}
+                      >
+                        <View style={styles.facilityBadges}>
+                          {fac.isOpen ? (
+                            <View style={styles.openBadge}>
+                              <View style={styles.openDot} />
+                              <Text style={styles.openBadgeText}>{t('facilities.open', 'Open')}</Text>
+                            </View>
+                          ) : (
+                            <View style={styles.closedBadge}>
+                              <Text style={styles.closedBadgeText}>{t('facilities.closed', 'Closed')}</Text>
+                            </View>
+                          )}
+                          {fac.hasDelivery && (
+                            <View style={styles.deliveryBadge}>
+                              <Ionicons name="bicycle" size={12} color="#fff" />
+                            </View>
+                          )}
+                        </View>
+                      </LinearGradient>
+                    </ImageBackground>
 
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <SkeletonFacilityCard />
-          <SkeletonFacilityCard />
-          <SkeletonFacilityCard />
+                    <View style={styles.facilityInfo}>
+                      <Text style={styles.facilityName} numberOfLines={1}>{fac.name}</Text>
+                      <Text style={styles.facilitySpecialty} numberOfLines={1}>{fac.specialty || fac.type}</Text>
+                      
+                      <View style={styles.facilityMeta}>
+                        <View style={styles.facilityMetaItem}>
+                          <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
+                          <Text style={styles.facilityMetaText} numberOfLines={1}>{fac.distance || 'N/A'}</Text>
+                        </View>
+                        {fac.rating && (
+                          <View style={styles.facilityMetaItem}>
+                            <Ionicons name="star" size={14} color="#F59E0B" />
+                            <Text style={styles.facilityMetaText}>{fac.rating.toFixed(1)}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  </Pressable>
+                </Animated.View>
+              ))}
+            </View>
+          )}
         </View>
-      )}
-      {error && (
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={40} color={colors.danger} />
-          <Text style={[styles.stateText, { color: colors.danger, marginTop: spacing.sm }]}>{error}</Text>
-        </View>
-      )}
-      {filtered.length === 0 && !loading && !error && (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="business-outline" size={48} color={colors.mutedLight} />
-          <Text style={[styles.emptyTitle, { textAlign: 'center' }]}>{t('facilities.noFacilities', 'No facilities found')}</Text>
-          <Text style={[styles.emptyHint, { textAlign: 'center' }]}>{t('facilities.adjustFilters', 'Try adjusting your filters or search')}</Text>
-        </View>
-      )}
+      </Animated.View>
 
+      {/* Modal */}
       <Modal
         visible={modalVisible}
-        animationType="none"
+        animationType="slide"
         transparent
-        onRequestClose={closeFacilityModal}
+        onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <Animated.View
-            style={[
-              styles.modalSheet,
-              {
-                transform: [
-                  {
-                    translateY: sheetAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [Dimensions.get('window').height, 0],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+            
             {selectedFacility && (
-              <>
+              <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.modalHeader}>
-                  <Text style={[styles.modalTitle, { textAlign }]}>{t('facilities.summary', 'Summary')}</Text>
-                  <Pressable onPress={closeFacilityModal} hitSlop={10}>
-                    <Text style={styles.modalClose}>{t('common.close', 'Close')}</Text>
+                  <Text style={styles.modalTitle}>{selectedFacility.name}</Text>
+                  <Pressable onPress={() => setModalVisible(false)}>
+                    <Ionicons name="close" size={28} color={colors.text} />
                   </Pressable>
                 </View>
-                <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
-                  {selectedFacility.image ? (
-                    <SkeletonImage source={{ uri: selectedFacility.image }} style={styles.modalAvatar} resizeMode="cover" />
-                  ) : null}
-                  <Text style={[styles.modalName, { textAlign: 'center' }]}>{selectedFacility.name}</Text>
-                  <Text style={[styles.modalSubtitle, { textAlign: 'center' }]}>{selectedFacility.specialty}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: spacing.lg }}>
-                  <Pill tone="primary">{selectedFacility.type.charAt(0).toUpperCase() + selectedFacility.type.slice(1)}</Pill>
-                  {selectedFacility.isOpen && <Pill tone="neutral">{t('facilities.openNow', 'Open Now')}</Pill>}
-                  {selectedFacility.hasDelivery && <Pill tone="neutral">{t('facilities.delivery', 'Delivery')}</Pill>}
-                </View>
-                <View style={{ gap: 6 }}>
-                  {selectedFacility.address && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.address', 'Address')}: {selectedFacility.address}</Text>}
-                  {selectedFacility.phoneNumber && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.phone', 'Phone')}: {selectedFacility.phoneNumber}</Text>}
-                  {selectedFacility.hours && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.hours', 'Hours')}: {selectedFacility.hours}</Text>}
-                  {selectedFacility.rating && <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.rating', 'Rating')}: {selectedFacility.rating.toFixed(1)}</Text>}
+
+                {selectedFacility.image && (
+                  <ImageBackground
+                    source={{ uri: selectedFacility.image }}
+                    style={styles.modalImage}
+                    imageStyle={styles.modalImageStyle}
+                  >
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.6)']}
+                      style={styles.modalImageGradient}
+                    >
+                      <View style={styles.modalImageBadges}>
+                        {selectedFacility.isOpen && (
+                          <View style={styles.openBadge}>
+                            <View style={styles.openDot} />
+                            <Text style={styles.openBadgeText}>{t('facilities.open', 'Open')}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </LinearGradient>
+                  </ImageBackground>
+                )}
+
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalSpecialty}>{selectedFacility.specialty || selectedFacility.type}</Text>
+                  
+                  {selectedFacility.address && (
+                    <View style={styles.modalRow}>
+                      <View style={styles.modalRowIcon}>
+                        <Ionicons name="location" size={20} color={colors.primary} />
+                      </View>
+                      <Text style={styles.modalRowText}>{selectedFacility.address}</Text>
+                    </View>
+                  )}
+
+                  {selectedFacility.phoneNumber && (
+                    <View style={styles.modalRow}>
+                      <View style={styles.modalRowIcon}>
+                        <Ionicons name="call" size={20} color={colors.primary} />
+                      </View>
+                      <Text style={styles.modalRowText}>{selectedFacility.phoneNumber}</Text>
+                    </View>
+                  )}
+
+                  {selectedFacility.hours && (
+                    <View style={styles.modalRow}>
+                      <View style={styles.modalRowIcon}>
+                        <Ionicons name="time" size={20} color={colors.primary} />
+                      </View>
+                      <Text style={styles.modalRowText}>{selectedFacility.hours}</Text>
+                    </View>
+                  )}
+
                   {selectedFacility.services && selectedFacility.services.length > 0 && (
-                    <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.services', 'Services')}: {selectedFacility.services.join(', ')}</Text>
-                  )}
-                  {selectedFacility.languages && selectedFacility.languages.length > 0 && (
-                    <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.languages', 'Languages')}: {selectedFacility.languages.join(', ')}</Text>
-                  )}
-                  {selectedFacility.acceptedInsurance && selectedFacility.acceptedInsurance.length > 0 && (
-                    <Text style={[styles.modalDetail, { textAlign }]}>{t('facilities.insurance', 'Insurance')}: {selectedFacility.acceptedInsurance.join(', ')}</Text>
+                    <View style={styles.modalSection}>
+                      <Text style={styles.modalSectionTitle}>{t('facilities.services', 'Services')}</Text>
+                      <View style={styles.modalTags}>
+                        {selectedFacility.services.map((service, idx) => (
+                          <View key={idx} style={styles.modalTag}>
+                            <Text style={styles.modalTagText}>{service}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
                   )}
                 </View>
-              </>
+              </ScrollView>
             )}
-          </Animated.View>
+          </View>
         </View>
       </Modal>
     </ScreenContainer>
@@ -306,135 +370,331 @@ export default function FacilitiesScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   content: {
-    gap: spacing.xl,
-    paddingBottom: spacing.xxl,
+    gap: spacing.xxxl,
+    paddingBottom: 140,
   },
-  headerSection: {
-    marginBottom: spacing.sm,
+
+  // Header
+  header: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    gap: spacing.xs,
   },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+  headerTitle: {
+    fontSize: 34,
+    fontWeight: '800',
     color: colors.text,
-    marginBottom: 4,
+    letterSpacing: -0.8,
   },
-  screenSubtitle: {
-    fontSize: 15,
-    color: colors.muted,
+  headerSubtitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.textSecondary,
   },
-  filterCard: {
-    gap: spacing.md,
-  },
-  searchWrapper: {
+
+  // Search
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.line,
+    backgroundColor: colors.bgSecondary,
+    marginHorizontal: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xl,
+    borderRadius: radius.xxl,
+    gap: spacing.lg,
+    ...shadow.sm,
   },
   searchInput: {
     flex: 1,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 12,
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: '400',
     color: colors.text,
+  },
+
+  // Filters
+  filterCard: {
+    backgroundColor: colors.card,
+    marginHorizontal: spacing.xl,
+    padding: spacing.xl,
+    borderRadius: radius.xxl,
+    gap: spacing.lg,
+    ...shadow.card,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: spacing.md,
   },
+
+  // Map
   mapCard: {
-    padding: 0,
+    marginHorizontal: spacing.xl,
+    borderRadius: radius.xxl,
     overflow: 'hidden',
-    minHeight: 220,
-    borderRadius: radius.lg,
+    height: 320,
+    ...shadow.card,
   },
+
+  // Section
+  section: {
+    gap: spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
+  sectionCount: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+
+  // List
   list: {
     gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
+
+  // Facility Card
   facilityCard: {
-    gap: spacing.sm,
+    backgroundColor: colors.card,
+    borderRadius: radius.xxl,
+    overflow: 'hidden',
+    ...shadow.card,
+  },
+  facilityImage: {
+    height: 180,
+  },
+  facilityImageStyle: {
+    borderTopLeftRadius: radius.xxl,
+    borderTopRightRadius: radius.xxl,
+  },
+  facilityGradient: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: spacing.lg,
   },
   facilityBadges: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 8,
+    gap: spacing.sm,
   },
-  facilityBadge: {
+  openBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: radius.pill,
-  },
-  facilityBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...shadow.sm,
   },
   openDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: colors.success,
   },
-  loadingContainer: {
-    alignItems: 'center',
-    padding: spacing.xl,
+  openBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.text,
   },
-  errorContainer: {
-    alignItems: 'center',
-    padding: spacing.xl,
+  closedBadge: {
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    ...shadow.sm,
   },
-  stateText: {
+  closedBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.danger,
+  },
+  deliveryBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.sm,
+  },
+  facilityInfo: {
+    padding: spacing.xl,
+    gap: spacing.sm,
+  },
+  facilityName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: -0.3,
+  },
+  facilitySpecialty: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  facilityMeta: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    marginTop: spacing.xs,
+  },
+  facilityMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  facilityMetaText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxxl * 2,
+    paddingHorizontal: spacing.xl,
+    gap: spacing.xl,
+  },
+  emptyIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.primary50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
     textAlign: 'center',
-    color: colors.muted,
-    marginTop: spacing.md,
+    letterSpacing: -0.3,
   },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+
+  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
-  modalSheet: {
+  modalContent: {
     backgroundColor: colors.card,
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
-    padding: spacing.xl,
-    paddingBottom: 48,
-    maxHeight: '85%',
-    ...shadow.card,
+    borderTopLeftRadius: radius.xxxl,
+    borderTopRightRadius: radius.xxxl,
+    maxHeight: '90%',
+    ...shadow.xl,
+  },
+  modalHandle: {
+    width: 48,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: colors.line,
+    alignSelf: 'center',
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 18,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
   },
-  modalTitle: { fontWeight: 'bold', fontSize: 22, color: colors.text },
-  modalClose: { color: colors.muted, fontWeight: '600', fontSize: 16 },
-  modalAvatar: { width: 64, height: 64, borderRadius: 32, marginBottom: 8 },
-  modalName: { fontSize: 20, fontWeight: '700', color: colors.text },
-  modalSubtitle: { color: colors.muted, marginTop: 4 },
-  modalDetail: { color: colors.text, fontSize: 15 },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl,
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    flex: 1,
+    letterSpacing: -0.5,
+  },
+  modalImage: {
+    height: 200,
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.xl,
+  },
+  modalImageStyle: {
+    borderRadius: radius.xxl,
+  },
+  modalImageGradient: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: spacing.lg,
+    borderRadius: radius.xxl,
+  },
+  modalImageBadges: {
+    flexDirection: 'row',
     gap: spacing.sm,
   },
-  emptyTitle: {
+  modalBody: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xxxl,
+    gap: spacing.lg,
+  },
+  modalSpecialty: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
-    marginTop: spacing.sm,
+    color: colors.primary,
   },
-  emptyHint: {
+  modalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  modalRowIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.lg,
+    backgroundColor: colors.primary50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalRowText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  modalSection: {
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
+  modalSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  modalTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  modalTag: {
+    backgroundColor: colors.primary50,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: radius.pill,
+  },
+  modalTagText: {
     fontSize: 14,
-    color: colors.muted,
-    textAlign: 'center',
+    fontWeight: '600',
+    color: colors.primary,
   },
 });

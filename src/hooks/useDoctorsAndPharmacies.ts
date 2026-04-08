@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { facilities as localFacilities } from '../data';
+import { db } from '../lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import type { Facility } from '../types';
 
 export function useFacilities() {
@@ -8,14 +9,27 @@ export function useFacilities() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // For now, use local data. Replace with Firestore fetch if needed.
-    setFacilities(localFacilities);
-    setLoading(false);
+    async function fetchFacilities() {
+      setLoading(true);
+      try {
+        const querySnapshot = await getDocs(collection(db, 'facilities'));
+        const data: Facility[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Facility[];
+        setFacilities(data);
+      } catch (e: any) {
+        console.error('Error fetching facilities:', e);
+        setError(e.message || 'Failed to load facilities.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFacilities();
   }, []);
 
-  // Helper filters
-  const clinics = facilities.filter(f => f.type === 'clinic');
-  const hospitals = facilities.filter(f => f.type === 'hospital');
+  const clinics    = facilities.filter(f => f.type === 'clinic');
+  const hospitals  = facilities.filter(f => f.type === 'hospital');
   const pharmacies = facilities.filter(f => f.type === 'pharmacy');
 
   return { facilities, clinics, hospitals, pharmacies, loading, error };

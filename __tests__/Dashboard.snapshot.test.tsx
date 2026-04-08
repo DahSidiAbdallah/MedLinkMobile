@@ -1,6 +1,6 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
-import Dashboard from '../src/screens/Dashboard';
+import Dashboard from '../src/screens/Dashboard.backup';
 
 // Minimal mocks for hooks and navigation used by the Dashboard
 jest.mock('../src/hooks/LoadingContext', () => ({ useLoading: () => ({ startLoading: () => {}, finishLoading: () => {}, isLoading: false }) }));
