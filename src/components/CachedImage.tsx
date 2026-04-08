@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, View, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../theme';
 
 interface CachedImageProps {
@@ -17,10 +18,12 @@ export default React.memo(function CachedImage({
   resizeMode = 'cover',
   fallback 
 }: CachedImageProps) {
+  const { t } = useTranslation();
+  
   if (!uri) {
     return fallback || (
       <View style={[style, { backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={{ color: colors.muted, fontSize: 12 }}>No Image</Text>
+        <Text style={{ color: colors.muted, fontSize: 12 }}>{t('common.noImage', 'No Image')}</Text>
       </View>
     );
   }

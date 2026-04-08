@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../theme';
 
@@ -10,16 +11,18 @@ interface Props {
 }
 
 export default function LocationSplash({ onRequest, loading, error }: Props) {
+  const { t } = useTranslation();
+  
   return (
     <View style={styles.container}>
       <Ionicons name="location" size={64} color={colors.primary} style={{ marginBottom: spacing.xl }} />
-      <Text style={styles.title}>Enable Location</Text>
+      <Text style={styles.title}>{t('location.enableTitle', 'Enable Location')}</Text>
       <Text style={styles.subtitle}>
-        To show nearby clinics, hospitals, and pharmacies, we need your location.
+        {t('location.enableSubtitle', 'To show nearby clinics, hospitals, and pharmacies, we need your location.')}
       </Text>
       {error && <Text style={styles.error}>{error}</Text>}
       <Pressable style={styles.button} onPress={onRequest} disabled={loading}>
-        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.buttonText}>Allow Location</Text>}
+        {loading ? <ActivityIndicator color={colors.card} /> : <Text style={styles.buttonText}>{t('location.allowButton', 'Allow Location')}</Text>}
       </Pressable>
     </View>
   );

@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated, Easing, View, Image, Text, StyleSheet, AccessibilityInfo } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from './src/theme';
 
 export default function SplashScreen({ onFinish }: { readonly onFinish: () => void }) {
+  const { t } = useTranslation();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
@@ -56,7 +58,7 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
         resizeMode="contain"
       />
       <View style={styles.bottom} pointerEvents="none">
-        <Text style={styles.fromText}>from</Text>
+        <Text style={styles.fromText}>{t('common.from', 'from')}</Text>
         <Image source={require('./src/assets/xahara.png')} style={styles.xaharaLogo} resizeMode="contain" />
       </View>
     </Animated.View>

@@ -1,10 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated, Easing, View, Image, Text, StyleSheet, Dimensions, AccessibilityInfo } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../theme';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
 export default function SplashScreen({ onFinish }: { readonly onFinish: () => void }) {
+  const { t } = useTranslation();
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.82)).current;
   const slideAnim = useRef(new Animated.Value(28)).current;
@@ -84,7 +86,7 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
         {/* App name */}
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], alignItems: 'center', gap: 4 }}>
           <Text style={styles.appName}>MedLink</Text>
-          <Text style={styles.tagline}>Your Health Companion</Text>
+          <Text style={styles.tagline}>{t('common.tagline', 'Your Health Companion')}</Text>
         </Animated.View>
       </View>
 
@@ -93,7 +95,7 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
         style={[styles.footer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
         pointerEvents="none"
       >
-        <Text style={styles.fromText}>from</Text>
+        <Text style={styles.fromText}>{t('common.from', 'from')}</Text>
         <Image
           source={require('../assets/xahara.png')}
           style={styles.xaharaLogo}

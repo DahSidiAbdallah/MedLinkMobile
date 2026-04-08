@@ -3,6 +3,11 @@ export default {
     common: {
       search: 'بحث',
       call: 'اتصال',
+      tapToAdd: 'اضغط للإضافة',
+      readMore: 'اقرأ المزيد',
+      from: 'من',
+      tagline: 'رفيقك الصحي',
+      noImage: 'لا توجد صورة',
       doctors: 'الأطباء',
       pharmacies: 'الصيدليات',
       reminders: 'التذكيرات',
@@ -66,6 +71,7 @@ export default {
       signIn: 'تسجيل الدخول إلى حسابك',
       signUp: 'إنشاء حساب جديد',
       email: 'البريد الإلكتروني',
+      emailAddress: 'البريد الإلكتروني',
       password: 'كلمة المرور',
       passwordRequirements: 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل وتتكون من أحرف وأرقام فقط',
           insurance: 'التأمين',
@@ -97,7 +103,7 @@ export default {
       invalidEmail: 'يرجى إدخال بريد إلكتروني صحيح',
       passwordRequired: 'كلمة المرور مطلوبة',
       invalidPassword: 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل وتتكون من أحرف وأرقام فقط',
-      incorrectCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+      invalidCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
       accountExists: 'يوجد حساب بهذا البريد الإلكتروني بالفعل. يرجى تسجيل الدخول.',
       genericError: 'حدث خطأ. يرجى المحاولة مرة أخرى.',
       name: 'الاسم الكامل',
@@ -381,7 +387,9 @@ export default {
       providerWithValue: 'المزود: {{provider}}',
       noInsuranceInfo: 'لا توجد معلومات تأمين.',
       preferences: 'التفضيلات',
-      myMedications: 'أدويتي'
+      myMedications: 'أدويتي',
+      noMedications: 'لم يتم حفظ أي أدوية.',
+      loadingMedications: 'جاري تحميل الأدوية...'
     },
     doctors: {
       cardiologist: 'طبيب قلب',
@@ -401,6 +409,7 @@ export default {
       bookingError: 'فشل حجز الموعد. يرجى المحاولة مرة أخرى.',
       cancelError: 'فشل إلغاء الموعد',
       cancelled: 'تم إلغاء الموعد بنجاح',
+      booking: 'جاري الحجز...',
       title: 'موعد في',
       confirmBooking: 'تأكيد الحجز',
       status: {
@@ -504,7 +513,9 @@ export default {
       services: 'الخدمات',
       languages: 'اللغات',
       insurance: 'التأمين',
-      phone: 'الهاتف'
+      phone: 'الهاتف',
+      notFound: 'لم يتم العثور على المنشأة.',
+      address: 'العنوان'
     },
     drugs: {
       title: 'معلومات الدواء',
@@ -554,6 +565,12 @@ export default {
       medicationEncyclopedia: 'موسوعة الأدوية',
       suggestedMatches: 'الاقتراحات المطابقة',
       noDrugSelected: 'لم يتم تحديد دواء',
+      heroSubtitle: 'ابحث في مصادر موثوقة للحصول على معلومات عن الأدوية وإرشادات الجرعات وتنبيهات المخاطر.',
+      tapToViewDetails: 'اضغط لعرض التفاصيل',
+      emptyText: 'ابحث لعرض نشرات FDA والتفاعلات وأدلة الجرعات.',
+      indicationsUsage: 'الاستطبابات والاستخدام',
+      dosageAdministration: 'الجرعة والإدارة',
+      code: 'الرمز'
     },
     scanner: {
       title: 'ماسح الرموز الشريطية',
@@ -663,12 +680,56 @@ export default {
       serverError: 'خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقًا.',
       fullNameRequired: 'الاسم الكامل مطلوب.',
       phoneInvalid: 'يجب أن تتكون أرقام موريتانيا من 8 أرقام وتبدأ بـ 2 أو 3 أو 4.',
+      somethingWrong: 'عذراً! حدث خطأ ما',
       bloodTypeInvalid: 'يجب أن تكون فصيلة الدم A+ أو A- أو B+ أو B- أو AB+ أو AB- أو O+ أو O-.',
       providerShort: 'اسم المزود قصير جدًا.',
       policyShort: 'رقم البوليصة قصير جدًا.',
       saveError: 'فشل حفظ الملف الشخصي.',
       logoutError: 'فشل تسجيل الخروج.',
       userIdMissing: 'معرّف المستخدم مفقود.'
+    },
+    loading: {
+      default: 'جاري التحميل...',
+      pleaseWait: 'يرجى الانتظار...',
+      loadingProfile: 'جاري تحميل الملف الشخصي...',
+      loadingData: 'جاري تحميل البيانات...',
+      saving: 'جاري الحفظ...',
+      processing: 'جاري المعالجة...',
+      verifying: 'جاري التحقق...',
+      authenticating: 'جاري المصادقة...'
+    },
+    empty: {
+      noData: 'لا توجد بيانات متاحة',
+      noResults: 'لم يتم العثور على نتائج',
+      tryAgain: 'حاول مرة أخرى',
+      refresh: 'تحديث'
+    },
+    actions: {
+      retry: 'إعادة المحاولة',
+      refresh: 'تحديث',
+      goBack: 'رجوع',
+      continue: 'متابعة',
+      submit: 'إرسال',
+      done: 'تم',
+      apply: 'تطبيق',
+      reset: 'إعادة تعيين',
+      clear: 'مسح',
+      delete: 'حذف',
+      edit: 'تعديل',
+      view: 'عرض',
+      share: 'مشاركة',
+      copy: 'نسخ',
+      download: 'تنزيل'
+    },
+    time: {
+      today: 'اليوم',
+      yesterday: 'أمس',
+      daysAgo: 'منذ {{count}} أيام'
+    },
+    location: {
+      enableTitle: 'تفعيل الموقع',
+      enableSubtitle: 'لإظهار العيادات والمستشفيات والصيدليات القريبة، نحتاج إلى موقعك.',
+      allowButton: 'السماح بالموقع'
     },
     privacy: {
       message: 'يتم تخزين بياناتك بشكل آمن ومشفر. نحن لا نشارك معلوماتك الصحية الشخصية مع أطراف ثالثة دون موافقتك الصريحة.'
