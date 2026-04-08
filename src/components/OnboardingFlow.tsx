@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, shadow, animation } from '../theme';
 import Button from './Button';
+import { useTranslation } from 'react-i18next';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -23,46 +24,61 @@ type OnboardingStep = {
   gradient: readonly [string, string, ...string[]];
 };
 
-const onboardingSteps: OnboardingStep[] = [
-  {
-    id: 'welcome',
-    title: 'Welcome to MedLink',
-    subtitle: 'Your Personal Health Companion',
-    description: 'Manage medications, track reminders, and access healthcare facilities all in one place.',
-    icon: 'medical',
-    gradient: colors.primaryGradient,
-  },
-  {
-    id: 'scan',
-    title: 'Scan & Verify',
-    subtitle: 'Smart Medication Scanner',
-    description: 'Scan barcodes to verify medications, check for recalls, and detect potential interactions.',
-    icon: 'camera',
-    gradient: colors.accentGradient,
-  },
-  {
-    id: 'reminders',
-    title: 'Never Miss a Dose',
-    subtitle: 'Smart Reminders',
-    description: 'Set up personalized medication reminders and track your daily progress.',
-    icon: 'notifications',
-    gradient: colors.successGradient,
-  },
-  {
-    id: 'facilities',
-    title: 'Find Care Nearby',
-    subtitle: 'Healthcare Facilities',
-    description: 'Locate nearby clinics, hospitals, and pharmacies with real-time availability.',
-    icon: 'location',
-    gradient: colors.warmGradient,
-  },
-];
+const STEP_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
+  welcome: 'medical',
+  scan: 'camera',
+  reminders: 'notifications',
+  facilities: 'location',
+};
+const STEP_GRADIENTS: Record<string, readonly [string, string, ...string[]]> = {
+  welcome: colors.primaryGradient,
+  scan: colors.accentGradient,
+  reminders: colors.successGradient,
+  facilities: colors.warmGradient,
+};
 
 type OnboardingFlowProps = {
   onComplete: () => void;
 };
 
 export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+  const { t } = useTranslation();
+
+  const onboardingSteps: OnboardingStep[] = [
+    {
+      id: 'welcome',
+      title: t('onboarding.steps.welcome.title', 'Welcome to MedLink'),
+      subtitle: t('onboarding.steps.welcome.subtitle', 'Your Personal Health Companion'),
+      description: t('onboarding.steps.welcome.description', 'Manage medications, track reminders, and access healthcare facilities all in one place.'),
+      icon: STEP_ICONS.welcome,
+      gradient: STEP_GRADIENTS.welcome,
+    },
+    {
+      id: 'scan',
+      title: t('onboarding.steps.scan.title', 'Scan & Verify'),
+      subtitle: t('onboarding.steps.scan.subtitle', 'Smart Medication Scanner'),
+      description: t('onboarding.steps.scan.description', 'Scan barcodes to verify medications, check for recalls, and detect potential interactions.'),
+      icon: STEP_ICONS.scan,
+      gradient: STEP_GRADIENTS.scan,
+    },
+    {
+      id: 'reminders',
+      title: t('onboarding.steps.reminders.title', 'Never Miss a Dose'),
+      subtitle: t('onboarding.steps.reminders.subtitle', 'Smart Reminders'),
+      description: t('onboarding.steps.reminders.description', 'Set up personalized medication reminders and track your daily progress.'),
+      icon: STEP_ICONS.reminders,
+      gradient: STEP_GRADIENTS.reminders,
+    },
+    {
+      id: 'facilities',
+      title: t('onboarding.steps.facilities.title', 'Find Care Nearby'),
+      subtitle: t('onboarding.steps.facilities.subtitle', 'Healthcare Facilities'),
+      description: t('onboarding.steps.facilities.description', 'Locate nearby clinics, hospitals, and pharmacies with real-time availability.'),
+      icon: STEP_ICONS.facilities,
+      gradient: STEP_GRADIENTS.facilities,
+    },
+  ];
+
   const [currentStep, setCurrentStep] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -139,7 +155,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         {/* Skip button */}
         <View style={styles.header}>
           <Pressable onPress={handleSkip} style={styles.skipButton}>
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={styles.skipText}>{t('onboarding.skip', 'Skip')}</Text>
           </Pressable>
         </View>
 
@@ -172,14 +188,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           {currentStep > 0 && (
             <Pressable onPress={handlePrevious} style={styles.navButton}>
               <Ionicons name="chevron-back" size={24} color="#fff" />
-              <Text style={styles.navText}>Back</Text>
+              <Text style={styles.navText}>{t('onboarding.back', 'Back')}</Text>
             </Pressable>
           )}
           
           <View style={{ flex: 1 }} />
           
           <Button
-            title={isLastStep ? 'Get Started' : 'Next'}
+            title={isLastStep ? t('onboarding.getStarted', 'Get Started') : t('onboarding.next', 'Next')}
             onPress={handleNext}
             variant="ghost"
             style={styles.nextButton}

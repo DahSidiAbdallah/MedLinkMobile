@@ -1,267 +1,204 @@
 export const colors = {
-  // Primary - Ultra modern blue system
-  primary: '#0066FF',
-  primary700: '#0052CC',
-  primary600: '#0066FF',
-  primary500: '#1A7FFF',
-  primary400: '#4D9FFF',
-  primary300: '#80BFFF',
-  primary200: '#B3DFFF',
-  primary100: '#E6F3FF',
-  primary50: '#F0F7FF',
-  
-  // Accent colors - Modern and vibrant
-  accent: '#00D9FF',
-  accentDark: '#00B8D4',
-  secondary: '#6366F1',
-  secondary100: '#E0E7FF',
-  
-  // Status colors - Flat and clear
-  warn: '#FFB800',
-  warnLight: '#FFF4CC',
-  warn100: '#FFFAEB',
-  danger: '#FF3B30',
-  dangerLight: '#FFE5E5',
-  danger100: '#FFF0F0',
-  success: '#00C896',
-  successLight: '#E6FFF9',
-  success100: '#F0FFFC',
-  info: '#007AFF',
-  infoLight: '#E3F2FD',
-  info100: '#F0F8FF',
-  
-  // Backgrounds - Ultra clean flat design
+  // Primary — Mint teal (as in the reference screenshots)
+  primary: '#26C9A8',
+  primary700: '#1BA88C',
+  primary600: '#22BA9A',
+  primary500: '#2ED4B2',
+  primary400: '#54DCC2',
+  primary300: '#82E8D6',
+  primary200: '#B4F2EA',
+  primary100: '#D8FAF4',
+  primary50:  '#EDFDF9',
+
+  // Accent — same teal family
+  accent: '#26C9A8',
+  accentDark: '#1BA88C',
+  secondary: '#7C6FE0',
+  secondary100: '#EDEBFA',
+
+  // Status
+  warn: '#F59E0B',
+  warnLight: '#FEF3C7',
+  warn100: '#FFFBEB',
+  danger: '#EF4444',
+  dangerLight: '#FEE2E2',
+  danger100: '#FFF1F1',
+  success: '#22C55E',
+  successLight: '#DCFCE7',
+  success100: '#F0FDF4',
+  info: '#26C9A8',
+  infoLight: '#D8FAF4',
+  info100: '#EDFDF9',
+
+  // Backgrounds — ultra-clean white
   bg: '#FFFFFF',
-  bgSecondary: '#F8F9FA',
-  bgTertiary: '#F0F0F0',
+  bgSecondary: '#F5F7F9',
+  bgTertiary: '#EEF0F3',
   card: '#FFFFFF',
-  surface: '#FAFAFA',
+  surface: '#F8FAF9',
   surfaceElevated: '#FFFFFF',
-  
-  // Text - Modern hierarchy
-  text: '#1A1A1A',
-  textSecondary: '#666666',
-  textTertiary: '#999999',
-  muted: '#CCCCCC',
-  mutedLight: '#E0E0E0',
-  placeholder: '#CCCCCC',
-  
-  // Lines and borders - Minimal
-  line: '#F0F0F0',
-  lineDark: '#E0E0E0',
-  border: '#F0F0F0',
-  borderFocus: '#0066FF',
-  
-  // Interactive states - Subtle
-  hover: '#F5F5F5',
-  pressed: '#EEEEEE',
-  focus: '#E6F3FF',
-  
-  // Overlays - Clean
-  overlay: 'rgba(0, 0, 0, 0.4)',
-  overlayLight: 'rgba(0, 0, 0, 0.1)',
-  glass: 'rgba(255, 255, 255, 0.95)',
-  glassLight: 'rgba(255, 255, 255, 0.8)',
-  glassDark: 'rgba(0, 0, 0, 0.05)',
-  
-  // Chips - Clean flat design
-  chipBg: '#F5F5F5',
-  chipText: '#333333',
-  chipBgActive: '#E6F3FF',
-  chipTextActive: '#0066FF',
-  chipBorder: '#F0F0F0',
-  
-  // Progress - Flat
-  progressTrack: '#F0F0F0',
-  progressFill: '#0066FF',
-  
-  // Skeleton - Subtle
-  skeleton: '#F5F5F5',
+
+  // Text — precise hierarchy
+  text: '#111827',
+  textSecondary: '#4B5563',
+  textTertiary: '#9CA3AF',
+  muted: '#C4C9D4',
+  mutedLight: '#E5E7EB',
+  placeholder: '#B0B7C3',
+
+  // Lines & borders
+  line: '#EAECF0',
+  lineDark: '#D1D5DB',
+  border: '#EAECF0',
+  borderFocus: '#26C9A8',
+
+  // Interactive
+  hover: '#F5FBF9',
+  pressed: '#EDFDF9',
+  focus: '#D8FAF4',
+
+  // Overlays
+  overlay: 'rgba(0, 0, 0, 0.45)',
+  overlayLight: 'rgba(0, 0, 0, 0.08)',
+  glass: 'rgba(255, 255, 255, 0.96)',
+  glassLight: 'rgba(255, 255, 255, 0.82)',
+  glassDark: 'rgba(0, 0, 0, 0.04)',
+
+  // Chips
+  chipBg: '#F5F7F9',
+  chipText: '#374151',
+  chipBgActive: '#D8FAF4',
+  chipTextActive: '#26C9A8',
+  chipBorder: '#EAECF0',
+
+  // Progress
+  progressTrack: '#EAECF0',
+  progressFill: '#26C9A8',
+
+  // Skeleton
+  skeleton: '#F2F4F7',
   skeletonHighlight: '#FFFFFF',
-  
-  // Modern gradients - Subtle and sophisticated
-  primaryGradient: ['#0066FF', '#0052CC'] as const,
-  accentGradient: ['#00D9FF', '#00B8D4'] as const,
-  cardGradient: ['#FFFFFF', '#FAFAFA'] as const,
-  subtleGradient: ['#FAFAFA', '#F5F5F5'] as const,
-  warmGradient: ['#FFB800', '#FF9500'] as const,
-  coolGradient: ['#00C896', '#0066FF'] as const,
-  heroGradient: ['#0066FF', '#00D9FF'] as const,
-  dangerGradient: ['#FF3B30', '#FF2D20'] as const,
-  successGradient: ['#00C896', '#00B386'] as const,
+
+  // Gradients
+  primaryGradient: ['#26C9A8', '#1BA88C'] as const,
+  accentGradient:  ['#26C9A8', '#1BA88C'] as const,
+  cardGradient:    ['#FFFFFF', '#F8FAF9'] as const,
+  subtleGradient:  ['#F8FAF9', '#F2F4F7'] as const,
+  warmGradient:    ['#F59E0B', '#D97706'] as const,
+  coolGradient:    ['#26C9A8', '#7C6FE0'] as const,
+  heroGradient:    ['#26C9A8', '#1DC9A4'] as const,
+  dangerGradient:  ['#EF4444', '#DC2626'] as const,
+  successGradient: ['#22C55E', '#16A34A'] as const,
 };
 
-export const radius = { 
-  xs: 4, 
-  sm: 6, 
-  md: 8, 
-  lg: 12, 
-  xl: 16, 
-  xxl: 20,
-  pill: 999 
+export const radius = {
+  xs: 4,
+  sm: 8,
+  md: 10,
+  lg: 14,
+  xl: 18,
+  xxl: 24,
+  xxxl: 32,
+  pill: 999,
 };
 
-// compatibility: some files expect radius.xl
+// compatibility
 (radius as any).xl = radius.xl;
 
-export const spacing = { 
+export const spacing = {
   xs: 4,
-  sm: 8, 
-  md: 12, 
-  lg: 16, 
-  xl: 20, 
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
   xxl: 24,
-  xxxl: 32
+  xxxl: 32,
 };
 
 export const shadow = {
-  // Flat design - minimal shadows
   none: {
     elevation: 0,
     shadowOpacity: 0,
   },
   sm: {
     elevation: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
+    shadowColor: '#101828',
+    shadowOpacity: 0.04,
     shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
   },
+  soft: {
+    elevation: 2,
+    shadowColor: '#101828',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
   card: {
     elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  lg: {
-    elevation: 4,
-    shadowColor: '#000',
+    shadowColor: '#101828',
     shadowOpacity: 0.06,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
   },
+  lg: {
+    elevation: 4,
+    shadowColor: '#101828',
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
+  },
   xl: {
     elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
+    shadowColor: '#101828',
+    shadowOpacity: 0.10,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  primary: {
+    elevation: 4,
+    shadowColor: '#26C9A8',
+    shadowOpacity: 0.25,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
-  // Colored shadows for special elements - more subtle
-  primary: {
-    elevation: 4,
-    shadowColor: '#0066FF',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
   success: {
     elevation: 4,
-    shadowColor: '#00C896',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#22C55E',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
   },
   danger: {
     elevation: 4,
-    shadowColor: '#FF3B30',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#EF4444',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
   },
 };
 
 // Typography scale
 export const typography = {
-  // Display
-  display: {
-    fontSize: 32,
-    fontWeight: '800' as const,
-    lineHeight: 40,
-  },
-  // Headings
-  h1: {
-    fontSize: 28,
-    fontWeight: '700' as const,
-    lineHeight: 36,
-  },
-  h2: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    lineHeight: 32,
-  },
-  h3: {
-    fontSize: 20,
-    fontWeight: '600' as const,
-    lineHeight: 28,
-  },
-  h4: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    lineHeight: 24,
-  },
-  // Body text
-  body: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-    lineHeight: 24,
-  },
-  bodyMedium: {
-    fontSize: 16,
-    fontWeight: '500' as const,
-    lineHeight: 24,
-  },
-  bodySemibold: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    lineHeight: 24,
-  },
-  // Small text
-  small: {
-    fontSize: 14,
-    fontWeight: '400' as const,
-    lineHeight: 20,
-  },
-  smallMedium: {
-    fontSize: 14,
-    fontWeight: '500' as const,
-    lineHeight: 20,
-  },
-  smallSemibold: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    lineHeight: 20,
-  },
-  // Captions
-  caption: {
-    fontSize: 12,
-    fontWeight: '400' as const,
-    lineHeight: 16,
-  },
-  captionMedium: {
-    fontSize: 12,
-    fontWeight: '500' as const,
-    lineHeight: 16,
-  },
-  captionSemibold: {
-    fontSize: 12,
-    fontWeight: '600' as const,
-    lineHeight: 16,
-  },
-  // Labels
-  label: {
-    fontSize: 11,
-    fontWeight: '500' as const,
-    lineHeight: 16,
-    letterSpacing: 0.5,
-  },
+  display: { fontSize: 36, fontWeight: '800' as const, lineHeight: 44 },
+  h1:      { fontSize: 30, fontWeight: '700' as const, lineHeight: 38 },
+  h2:      { fontSize: 24, fontWeight: '700' as const, lineHeight: 32 },
+  h3:      { fontSize: 20, fontWeight: '600' as const, lineHeight: 28 },
+  h4:      { fontSize: 18, fontWeight: '600' as const, lineHeight: 24 },
+  body:          { fontSize: 16, fontWeight: '400' as const, lineHeight: 24 },
+  bodyMedium:    { fontSize: 16, fontWeight: '500' as const, lineHeight: 24 },
+  bodySemibold:  { fontSize: 16, fontWeight: '600' as const, lineHeight: 24 },
+  small:         { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 },
+  smallMedium:   { fontSize: 14, fontWeight: '500' as const, lineHeight: 20 },
+  smallSemibold: { fontSize: 14, fontWeight: '600' as const, lineHeight: 20 },
+  caption:         { fontSize: 12, fontWeight: '400' as const, lineHeight: 16 },
+  captionMedium:   { fontSize: 12, fontWeight: '500' as const, lineHeight: 16 },
+  captionSemibold: { fontSize: 12, fontWeight: '600' as const, lineHeight: 16 },
+  label: { fontSize: 11, fontWeight: '500' as const, lineHeight: 16, letterSpacing: 0.5 },
 };
 
-// Make typography available as default export as well for compatibility
 export default typography;
 
-// Animation durations
 export const animation = {
   fast: 150,
   normal: 250,
@@ -269,7 +206,6 @@ export const animation = {
   slower: 500,
 };
 
-// Breakpoints for responsive design
 export const breakpoints = {
   sm: 480,
   md: 768,
@@ -277,14 +213,13 @@ export const breakpoints = {
   xl: 1280,
 };
 
-// Legacy type export for backward compatibility
 export const type = {
-  h1: { fontSize: 28, fontWeight: '700', color: '#1A1A1A', letterSpacing: -0.5 } as const,
-  h2: { fontSize: 22, fontWeight: '600', color: '#1A1A1A', letterSpacing: -0.3 } as const,
-  h3: { fontSize: 18, fontWeight: '600', color: '#1A1A1A' } as const,
-  body: { fontSize: 16, color: '#1A1A1A', lineHeight: 24 } as const,
-  bodySmall: { fontSize: 14, color: '#666666', lineHeight: 20 } as const,
-  meta: { fontSize: 12, fontWeight: '500', color: '#CCCCCC' } as const,
-  label: { fontSize: 14, fontWeight: '600', color: '#1A1A1A' } as const,
-  caption: { fontSize: 11, fontWeight: '500', color: '#E0E0E0', letterSpacing: 0.3 } as const,
+  h1: { fontSize: 30, fontWeight: '700', color: '#111827', letterSpacing: -0.5 } as const,
+  h2: { fontSize: 24, fontWeight: '600', color: '#111827', letterSpacing: -0.3 } as const,
+  h3: { fontSize: 20, fontWeight: '600', color: '#111827' } as const,
+  body: { fontSize: 16, color: '#111827', lineHeight: 24 } as const,
+  bodySmall: { fontSize: 14, color: '#4B5563', lineHeight: 20 } as const,
+  meta: { fontSize: 12, fontWeight: '500', color: '#9CA3AF' } as const,
+  label: { fontSize: 14, fontWeight: '600', color: '#111827' } as const,
+  caption: { fontSize: 11, fontWeight: '500', color: '#C4C9D4', letterSpacing: 0.3 } as const,
 };
