@@ -9,54 +9,188 @@ import {
   Modal,
   TextInput,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useRTL } from '../hooks/useRTL';
 import { SkeletonReminderCardXL } from '../components/SkeletonLoaders';
-import { colors, spacing, shadow, radius, animation } from '../theme';
-import { SegmentedControl } from '../components/SegmentedControl';
+import { colors, spacing, shadow, radius } from '../theme';
 import { useReminders } from '../hooks/useReminders';
-import CalendarStrip from '../components/CalendarStrip';
 import { setCompleted, getDayCompletion } from '../core/completion';
 import ScreenContainer from '../components/ScreenContainer';
 
+const { width: SCREEN_W } = Dimensions.get('window');
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+/* ── Inline month calendar ──────────────────────────────────────────────── */
+function MonthCalendar({
+  selectedDate,
+  onSelectDate,
+  markedDates = [],
+}: {
+  selectedDate: Date;
+  onSelectDate: (d: Date) => void;
+  markedDates?: string[]; // 'YYYY-MM-DD' strings
+}) {
+  const today = new Date();
+  const [month, setMonth] = useState(
+    new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+  );
+
+  const prevMonth = () => setMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1));
+  const nextMonth = () => setMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1));
+
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  // Monday-based: (0=Mon … 6=Sun)
+  const startDow = (new Date(month.getFullYear(), month.getMonth(), 1).getDay() + 6) % 7;
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let i = 1; i <= daysInMonth; i++) cells.push(i);
+
+  const toKey = (d: Date) => d.toISOString().slice(0, 10);
+
+  return (
+    <View style={calStyles.wrap}>
+      {/* Month navigation */}
+      <View style={calStyles.nav}>
+        <Pressable onPress={prevMonth} style={calStyles.navBtn} hitSlop={8}>
+          <Ionicons name="chevron-back" size={18} color={colors.text} />
+        </Pressable>
+        <Text style={calStyles.monthLabel}>
+          {MONTH_NAMES[month.getMonth()]} {month.getFullYear()}
+        </Text>
+        <Pressable onPress={nextMonth} style={calStyles.navBtn} hitSlop={8}>
+          <Ionicons name="chevron-forward" size={18} color={colors.text} />
+        </Pressable>
+      </View>
+
+      {/* Day-of-week headers */}
+      <View style={calStyles.dowRow}>
+        {DAY_LABELS.map(d => (
+          <View key={d} style={calStyles.dowCell}>
+            <Text style={calStyles.dowText}>{d}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Date grid */}
+      <View style={calStyles.grid}>
+        {cells.map((day, i) => {
+          if (day === null) {
+            return <View key={`e-${i}`} style={calStyles.cell} />;
+          }
+          const cellDate = new Date(month.getFullYear(), month.getMonth(), day);
+          const isToday    = toKey(cellDate) === toKey(today);
+          const isSelected = toKey(cellDate) === toKey(selectedDate);
+          const hasEvent   = markedDates.includes(toKey(cellDate));
+
+          return (
+            <Pressable
+              key={day}
+              style={calStyles.cell}
+              onPress={() => onSelectDate(cellDate)}
+            >
+              <View
+                style={[
+                  calStyles.dateCircle,
+                  isSelected && calStyles.dateCircleSelected,
+                  isToday && !isSelected && calStyles.dateCircleToday,
+                ]}
+              >
+                <Text
+                  style={[
+                    calStyles.dateText,
+                    isSelected && calStyles.dateTextSelected,
+                    isToday && !isSelected && calStyles.dateTextToday,
+                  ]}
+                >
+                  {day}
+                </Text>
+              </View>
+              {hasEvent && !isSelected && (
+                <View style={calStyles.eventDot} />
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const CELL_SIZE = Math.floor((SCREEN_W - spacing.xl * 2 - spacing.xl * 2) / 7);
+
+const calStyles = StyleSheet.create({
+  wrap:    { gap: spacing.md },
+  nav:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  navBtn:  { padding: 6, borderRadius: radius.md, backgroundColor: colors.bgSecondary },
+  monthLabel: { fontSize: 15, fontWeight: '700', color: colors.text },
+  dowRow:  { flexDirection: 'row' },
+  dowCell: { width: CELL_SIZE, alignItems: 'center', paddingBottom: 6 },
+  dowText: { fontSize: 11, fontWeight: '600', color: colors.textTertiary },
+  grid:    { flexDirection: 'row', flexWrap: 'wrap' },
+  cell:    { width: CELL_SIZE, height: CELL_SIZE, alignItems: 'center', justifyContent: 'center' },
+  dateCircle: {
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  dateCircleSelected: { backgroundColor: colors.text },
+  dateCircleToday:    { backgroundColor: colors.primary100 },
+  dateText:         { fontSize: 13, fontWeight: '400', color: colors.text },
+  dateTextSelected: { fontWeight: '700', color: '#fff' },
+  dateTextToday:    { fontWeight: '700', color: colors.primary },
+  eventDot: {
+    width: 4, height: 4, borderRadius: 2,
+    backgroundColor: colors.primary,
+    marginTop: 1,
+  },
+});
+
+/* ── Main screen ────────────────────────────────────────────────────────── */
 export default function Reminders() {
   const { t } = useTranslation();
   const { isRTL, textAlign } = useRTL();
-  const [segment, setSegment] = useState('Active');
+  const [segment, setSegment]           = useState<'Active' | 'Past'>('Active');
   const [modalVisible, setModalVisible] = useState(false);
-  const [form, setForm] = useState({ title: '', datetime: '', frequency: '', description: '' });
+  const [form, setForm]   = useState({ title: '', datetime: '', frequency: '', description: '' });
   const [formErrors, setFormErrors] = useState<any>({});
-  const [creating, setCreating] = useState(false);
-  const [toggling, setToggling] = useState<{ [id: string]: boolean }>({});
-  const [toggleMsg, setToggleMsg] = useState<{ [id: string]: string }>({});
+  const [creating, setCreating]         = useState(false);
+  const [toggling, setToggling]         = useState<Record<string, boolean>>({});
+  const [toggleMsg, setToggleMsg]       = useState<Record<string, string>>({});
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [doneMap, setDoneMap]           = useState<Record<string, boolean>>({});
+
   const { reminders, loading, error, updateReminder, createReminder, refresh } = useReminders();
 
-  const filtered = reminders.filter(r => (segment === 'Active' ? r.active : !r.active));
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [doneMap, setDoneMap] = useState<Record<string, boolean>>({});
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
-
+  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(18)).current;
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, tension: 65, friction: 8, delay: 50 }),
+      Animated.timing(fadeAnim,  { toValue: 1, duration: 380, useNativeDriver: true }),
+      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, tension: 65, friction: 8, delay: 40 }),
     ]).start();
   }, []);
 
   useEffect(() => {
     (async () => {
-      const map = await getDayCompletion(selectedDate || new Date());
+      const map = await getDayCompletion(selectedDate);
       setDoneMap(map);
     })();
   }, [selectedDate, reminders.length]);
 
+  const filtered = reminders.filter(r => segment === 'Active' ? r.active : !r.active);
+
+  // Dates that have reminders — for calendar dots
+  const markedDates = reminders
+    .map(r => r.datetime?.match(/(\d{4}-\d{2}-\d{2})/)?.[1])
+    .filter(Boolean) as string[];
+
+  /* ── Actions ─────────────────────────────────────────────────────────── */
   const toggleActive = async (reminder: any) => {
     setToggling(prev => ({ ...prev, [reminder.id]: true }));
-    setToggleMsg(prev => ({ ...prev, [reminder.id]: '' }));
     try {
       await updateReminder(reminder.id, { active: !reminder.active });
       setToggleMsg(prev => ({
@@ -73,32 +207,24 @@ export default function Reminders() {
     }
   };
 
-  const toggleDoneToday = async (reminderId: string) => {
-    const next = !doneMap[reminderId];
-    setDoneMap(m => ({ ...m, [reminderId]: next }));
-    await setCompleted(reminderId, next, selectedDate || new Date());
+  const toggleDoneToday = async (id: string) => {
+    const next = !doneMap[id];
+    setDoneMap(m => ({ ...m, [id]: next }));
+    await setCompleted(id, next, selectedDate);
   };
 
   const validateField = (field: string, value: string) => {
-    switch (field) {
-      case 'title':
-        if (!value || value.trim().length < 2) return t('reminders.titleRequired', 'Title is required.');
-        break;
-      case 'datetime':
-        if (!value) return t('reminders.dateTimeRequired', 'Date/Time is required.');
-        if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value.trim()))
-          return t('reminders.dateTimeFormat', 'Format: YYYY-MM-DD HH:mm');
-        break;
-      case 'frequency':
-        if (!value) return t('reminders.frequencyRequired', 'Frequency is required.');
-        if (!/^(Daily|Weekly|Monthly)$/i.test(value.trim()))
-          return t('reminders.frequencyOptions', 'Use: Daily, Weekly, or Monthly.');
-        break;
-    }
+    if (field === 'title'    && (!value || value.trim().length < 2)) return t('reminders.titleRequired', 'Title is required.');
+    if (field === 'datetime' && !value) return t('reminders.dateTimeRequired', 'Date/Time is required.');
+    if (field === 'datetime' && !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value.trim()))
+      return t('reminders.dateTimeFormat', 'Format: YYYY-MM-DD HH:mm');
+    if (field === 'frequency' && !value) return t('reminders.frequencyRequired', 'Frequency is required.');
+    if (field === 'frequency' && !/^(Daily|Weekly|Monthly)$/i.test(value.trim()))
+      return t('reminders.frequencyOptions', 'Use: Daily, Weekly, or Monthly.');
     return undefined;
   };
 
-  const handleCreateReminder = async () => {
+  const handleCreate = async () => {
     const errors: any = {};
     ['title', 'datetime', 'frequency'].forEach(f => {
       const err = validateField(f, form[f as keyof typeof form]);
@@ -121,115 +247,115 @@ export default function Reminders() {
   };
 
   const completedCount = Object.values(doneMap).filter(Boolean).length;
-  const pendingCount = filtered.length - completedCount;
-
+  const pendingCount   = Math.max(filtered.length - completedCount, 0);
   const getTime = (dt: string) => dt?.match(/(\d{2}:\d{2})/)?.[1] ?? '--:--';
-  const getDate = (dt: string) => {
+  const getDateShort = (dt: string) => {
+    const m = dt?.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return '';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${m[3]} ${months[parseInt(m[2], 10) - 1]}`;
+  };
+  const getDayName = (dt: string) => {
     const m = dt?.match(/(\d{4}-\d{2}-\d{2})/);
     if (!m) return '';
-    const [, d] = m[1].split('-');
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const parts = m[1].split('-');
-    return `${d} ${months[parseInt(parts[1], 10) - 1]}`;
+    return new Date(m[1]).toLocaleDateString('en', { weekday: 'short' });
   };
 
-  const TYPE_ICON: Record<string, any> = {
-    medication: 'medical-outline',
-    checkup: 'calendar-outline',
-  };
-  const TYPE_COLOR: Record<string, string> = {
-    medication: colors.primary,
-    checkup: '#7C6FE0',
-  };
-  const TYPE_BG: Record<string, string> = {
-    medication: colors.primary100,
-    checkup: '#EDEBFA',
-  };
-
+  /* ── Card renderer ───────────────────────────────────────────────────── */
   const renderCard = (r: any) => {
-    const isDone = !!doneMap[r.id];
-    const icon = isDone ? 'checkmark-circle' : (TYPE_ICON[r.type] || TYPE_ICON.medication);
-    const iconColor = isDone ? colors.success : (TYPE_COLOR[r.type] || TYPE_COLOR.medication);
-    const iconBg = isDone ? colors.success100 : (TYPE_BG[r.type] || TYPE_BG.medication);
+    const isDone     = !!doneMap[r.id];
+    const isLoading  = !!toggling[r.id];
+    const typeColor  = r.type === 'checkup' ? '#7C6FE0' : colors.primary;
+    const typeBg     = r.type === 'checkup' ? '#EDEBFA' : colors.primary100;
+    const iconName   = isDone ? 'checkmark-circle' : (r.type === 'checkup' ? 'calendar-outline' : 'medical-outline');
+    const iconColor  = isDone ? colors.success : typeColor;
+    const iconBg     = isDone ? colors.success100 : typeBg;
 
     return (
-      <Animated.View
-        key={r.id}
-        style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
-      >
-        {/* Appointment-style card inspired by the screenshot */}
+      <Animated.View key={r.id} style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
         <View style={[styles.card, isDone && styles.cardDone]}>
-          {/* Left teal strip */}
-          <View style={[styles.cardStrip, { backgroundColor: isDone ? colors.success : iconColor }]} />
+          {/* Colored left strip */}
+          <View style={[styles.cardStrip, { backgroundColor: isDone ? colors.success : typeColor }]} />
 
           <View style={styles.cardBody}>
-            {/* Icon + title + toggle row */}
-            <View style={styles.cardTop}>
-              <View style={[styles.cardIconWrap, { backgroundColor: iconBg }]}>
-                <Ionicons name={icon} size={22} color={iconColor} />
+            {/* Top row: icon + title + toggle */}
+            <View style={styles.cardTopRow}>
+              <View style={[styles.cardIcon, { backgroundColor: iconBg }]}>
+                <Ionicons name={iconName} size={20} color={iconColor} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.cardTitle, isDone && styles.cardTitleDone, { textAlign }]} numberOfLines={1}>
+                <Text style={[styles.cardTitle, isDone && styles.cardTitleDone]} numberOfLines={1}>
                   {r.title}
                 </Text>
-                <Text style={[styles.cardType, { color: iconColor }]}>
+                <Text style={[styles.cardTypeLabel, { color: iconColor }]}>
                   {r.type === 'checkup' ? t('reminders.checkup', 'Check-up') : t('reminders.medication', 'Medication')}
                 </Text>
               </View>
-              {toggling[r.id] ? (
-                <ActivityIndicator size={18} color={colors.primary} />
-              ) : (
-                <Switch
-                  value={r.active}
-                  onValueChange={() => toggleActive(r)}
-                  disabled={!!toggling[r.id]}
-                  trackColor={{ false: colors.line, true: colors.primary400 }}
-                  thumbColor={r.active ? colors.primary : colors.surface}
-                />
-              )}
+              {isLoading
+                ? <ActivityIndicator size={18} color={colors.primary} />
+                : (
+                  <Switch
+                    value={r.active}
+                    onValueChange={() => toggleActive(r)}
+                    disabled={isLoading}
+                    trackColor={{ false: colors.line, true: colors.primary300 }}
+                    thumbColor={r.active ? colors.primary : '#fff'}
+                  />
+                )}
             </View>
 
-            {/* Time + date + frequency chips */}
-            <View style={styles.cardChips}>
-              <View style={styles.timeChip}>
-                <Ionicons name="time-outline" size={13} color={isDone ? colors.success : colors.primary} />
-                <Text style={[styles.timeChipText, isDone && { color: colors.success }]}>{getTime(r.datetime)}</Text>
+            {/* Time + date + freq chips */}
+            <View style={styles.chipRow}>
+              <View style={[styles.chip, { backgroundColor: isDone ? colors.success100 : colors.primary50 }]}>
+                <Ionicons name="time-outline" size={11} color={isDone ? colors.success : colors.primary} />
+                <Text style={[styles.chipText, { color: isDone ? colors.success : colors.primary }]}>
+                  {getTime(r.datetime)}
+                </Text>
               </View>
-              {getDate(r.datetime) ? (
-                <View style={styles.dateChip}>
-                  <Ionicons name="calendar-outline" size={13} color={colors.textSecondary} />
-                  <Text style={styles.dateChipText}>{getDate(r.datetime)}</Text>
+              {getDateShort(r.datetime) ? (
+                <View style={[styles.chip, { backgroundColor: colors.bgSecondary }]}>
+                  <Ionicons name="calendar-outline" size={11} color={colors.textSecondary} />
+                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{getDateShort(r.datetime)}</Text>
+                </View>
+              ) : null}
+              {getDayName(r.datetime) ? (
+                <View style={[styles.chip, { backgroundColor: colors.bgSecondary }]}>
+                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{getDayName(r.datetime)}</Text>
                 </View>
               ) : null}
               {r.frequency ? (
-                <View style={styles.freqChip}>
-                  <Ionicons name="repeat" size={12} color={colors.textSecondary} />
-                  <Text style={styles.freqChipText}>{r.frequency}</Text>
+                <View style={[styles.chip, { backgroundColor: colors.bgSecondary }]}>
+                  <Ionicons name="repeat" size={11} color={colors.textSecondary} />
+                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{r.frequency}</Text>
                 </View>
               ) : null}
             </View>
 
             {r.description ? (
-              <Text style={[styles.cardDesc, { textAlign }]} numberOfLines={2}>{r.description}</Text>
+              <Text style={styles.cardDesc} numberOfLines={2}>{r.description}</Text>
             ) : null}
 
-            {/* Mark done CTA */}
+            {/* Mark done */}
             <Pressable
-              style={({ pressed }) => [styles.doneCTA, isDone && styles.doneCTAActive, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [
+                styles.doneCTA,
+                isDone && styles.doneCTADone,
+                pressed && { opacity: 0.85 },
+              ]}
               onPress={() => toggleDoneToday(r.id)}
             >
               <Ionicons
                 name={isDone ? 'checkmark-circle' : 'checkmark-circle-outline'}
-                size={16}
+                size={15}
                 color={isDone ? '#fff' : colors.primary}
               />
-              <Text style={[styles.doneCTAText, isDone && styles.doneCTATextActive]}>
+              <Text style={[styles.doneCTAText, isDone && { color: '#fff' }]}>
                 {isDone ? t('reminders.completed', 'Completed') : t('reminders.markAsDone', 'Mark as done')}
               </Text>
             </Pressable>
 
             {!!toggleMsg[r.id] && (
-              <Text style={[styles.statusMsg, toggleMsg[r.id].includes('Failed') && styles.statusMsgError]}>
+              <Text style={[styles.statusMsg, toggleMsg[r.id].includes('Failed') && { color: colors.danger }]}>
                 {toggleMsg[r.id]}
               </Text>
             )}
@@ -239,10 +365,11 @@ export default function Reminders() {
     );
   };
 
-  let listContent;
+  /* ── List content ────────────────────────────────────────────────────── */
+  let listContent: React.ReactNode;
   if (loading) {
     listContent = (
-      <View style={styles.listGap}>
+      <View style={styles.cardGap}>
         <SkeletonReminderCardXL />
         <SkeletonReminderCardXL />
         <SkeletonReminderCardXL />
@@ -250,9 +377,9 @@ export default function Reminders() {
     );
   } else if (error) {
     listContent = (
-      <View style={styles.empty}>
+      <View style={styles.emptyBox}>
         <View style={[styles.emptyIcon, { backgroundColor: colors.danger100 }]}>
-          <Ionicons name="alert-circle-outline" size={36} color={colors.danger} />
+          <Ionicons name="alert-circle-outline" size={28} color={colors.danger} />
         </View>
         <Text style={styles.emptyTitle}>{t('common.error', 'Error')}</Text>
         <Text style={styles.emptyHint}>{error}</Text>
@@ -260,117 +387,127 @@ export default function Reminders() {
     );
   } else if (filtered.length === 0) {
     listContent = (
-      <View style={styles.empty}>
+      <View style={styles.emptyBox}>
         <View style={styles.emptyIcon}>
-          <Ionicons name="calendar-outline" size={36} color={colors.primary} />
+          <Ionicons name="calendar-outline" size={28} color={colors.primary} />
         </View>
         <Text style={styles.emptyTitle}>{t('reminders.noReminders', 'No reminders')}</Text>
         <Text style={styles.emptyHint}>
           {segment === 'Active'
             ? t('reminders.addReminderToStart', 'Add a reminder to get started')
-            : t('reminders.noPastReminders', 'No past reminders to show')}
+            : t('reminders.noPastReminders', 'No past reminders')}
         </Text>
       </View>
     );
   } else {
-    listContent = <View style={styles.listGap}>{filtered.map(r => renderCard(r))}</View>;
+    listContent = <View style={styles.cardGap}>{filtered.map(r => renderCard(r))}</View>;
   }
 
+  /* ── Render ──────────────────────────────────────────────────────────── */
   return (
     <ScreenContainer scrollable contentContainerStyle={styles.content}>
 
-      {/* ── Header ─────────────────────────────────────── */}
-      <Animated.View
-        style={[styles.headerRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-      >
+      {/* ── Header ─────────────────────────────────────────── */}
+      <Animated.View style={[styles.headerRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.screenTitle, { textAlign }]}>{t('reminders.title', 'My')}</Text>
-          <Text style={[styles.screenTitleLine2, { textAlign }]}>{t('navigation.reminders', 'Schedule')}</Text>
+          <Text style={styles.screenSub}>{t('reminders.title', 'Calendar')}</Text>
+          <Text style={styles.screenTitle}>{t('navigation.reminders', 'Appointments')}</Text>
         </View>
-        <View style={styles.headerActions}>
-          <Pressable style={styles.headerIconBtn} onPress={refresh}>
-            <Ionicons name="refresh-outline" size={20} color={colors.text} />
+        <View style={styles.headerBtns}>
+          <Pressable style={styles.headerBtn} onPress={refresh}>
+            <Ionicons name="refresh-outline" size={18} color={colors.text} />
           </Pressable>
-          <Pressable style={[styles.headerIconBtn, { backgroundColor: colors.primary }]} onPress={() => setModalVisible(true)}>
-            <Ionicons name="add" size={20} color="#fff" />
+          <Pressable
+            style={[styles.headerBtn, { backgroundColor: colors.primary }]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Ionicons name="add" size={18} color="#fff" />
           </Pressable>
         </View>
       </Animated.View>
 
-      {/* ── Stats strip ────────────────────────────────── */}
-      <Animated.View
-        style={[styles.statsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-      >
-        {[
-          { val: filtered.length, label: t('reminders.active', 'Active'), color: colors.primary, bg: colors.primary50 },
-          { val: completedCount, label: t('dashboard.completedToday', 'Done'), color: colors.success, bg: colors.success100 },
-          { val: pendingCount, label: t('dashboard.pendingReminders', 'Pending'), color: pendingCount > 0 ? '#F59E0B' : colors.textSecondary, bg: pendingCount > 0 ? '#FEF3C7' : colors.bgSecondary },
-        ].map((s, i) => (
+      {/* ── Stats pills ────────────────────────────────────── */}
+      <Animated.View style={[styles.statsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        {([
+          { val: filtered.length, label: t('reminders.active', 'Active'),  col: colors.primary,  bg: colors.primary50 },
+          { val: completedCount,  label: t('dashboard.completedToday', 'Done'), col: colors.success, bg: colors.success100 },
+          { val: pendingCount,    label: t('dashboard.pendingReminders', 'Pending'), col: pendingCount > 0 ? '#F59E0B' : colors.textSecondary, bg: pendingCount > 0 ? '#FEF3C7' : colors.bgSecondary },
+        ]).map((s, i) => (
           <View key={i} style={[styles.statPill, { backgroundColor: s.bg }]}>
-            <Text style={[styles.statNum, { color: s.color }]}>{s.val}</Text>
+            <Text style={[styles.statNum, { color: s.col }]}>{s.val}</Text>
             <Text style={styles.statLabel}>{s.label}</Text>
           </View>
         ))}
       </Animated.View>
 
-      {/* ── Filter tabs + Calendar ──────────────────────── */}
-      <Animated.View
-        style={[styles.filterCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-      >
-        <SegmentedControl
-          options={[t('reminders.active', 'Active'), t('reminders.past', 'Past')]}
-          value={segment}
-          onChange={setSegment}
-        />
-        <CalendarStrip value={selectedDate} onChange={setSelectedDate} />
+      {/* ── Segment tabs ───────────────────────────────────── */}
+      <Animated.View style={[styles.segTabs, { opacity: fadeAnim }]}>
+        {(['Active', 'Past'] as const).map(tab => (
+          <Pressable
+            key={tab}
+            style={[styles.segTab, segment === tab && styles.segTabActive]}
+            onPress={() => setSegment(tab)}
+          >
+            <Text style={[styles.segTabText, segment === tab && styles.segTabTextActive]}>
+              {tab === 'Active' ? t('reminders.active', 'Active') : t('reminders.past', 'Past')}
+            </Text>
+          </Pressable>
+        ))}
       </Animated.View>
 
-      {/* ── Nearest appointments label ─────────────────── */}
+      {/* ── Full month calendar ─────────────────────────────── */}
+      <Animated.View style={[styles.calCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <MonthCalendar
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          markedDates={markedDates}
+        />
+      </Animated.View>
+
+      {/* ── Nearest appointments label ─────────────────────── */}
       {!loading && filtered.length > 0 && (
-        <Animated.View style={{ opacity: fadeAnim, paddingHorizontal: spacing.xl }}>
+        <Animated.View style={[styles.nearestRow, { opacity: fadeAnim }]}>
           <Text style={styles.nearestLabel}>
-            {t('reminders.upcomingCount', 'Upcoming')}
-            {'  '}
-            <Text style={styles.nearestCount}>({filtered.length})</Text>
+            {t('reminders.upcomingCount', 'Nearest appointments')}
           </Text>
+          <View style={styles.nearestBadge}>
+            <Text style={styles.nearestBadgeText}>{filtered.length}</Text>
+          </View>
         </Animated.View>
       )}
 
-      {/* ── List ───────────────────────────────────────── */}
+      {/* ── Appointments list ───────────────────────────────── */}
       {listContent}
 
-      {/* ── Add button ─────────────────────────────────── */}
+      {/* ── Add reminder button ─────────────────────────────── */}
       <Animated.View style={{ opacity: fadeAnim, paddingHorizontal: spacing.xl }}>
         <Pressable
           style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.88 }]}
           onPress={() => setModalVisible(true)}
         >
-          <View style={styles.addBtnIcon}>
-            <Ionicons name="add" size={20} color={colors.primary} />
-          </View>
+          <Ionicons name="add-circle-outline" size={18} color="#fff" />
           <Text style={styles.addBtnText}>{t('reminders.create', 'Create Reminder')}</Text>
         </Pressable>
       </Animated.View>
 
-      {/* ── Create Modal ───────────────────────────────── */}
+      {/* ── Create modal ────────────────────────────────────── */}
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
-
             <View style={styles.modalTitleRow}>
               <View style={styles.modalIconWrap}>
-                <Ionicons name="add-circle-outline" size={22} color={colors.primary} />
+                <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
               </View>
-              <Text style={styles.modalTitle}>{t('reminders.create', 'Create Reminder')}</Text>
+              <Text style={styles.modalTitle}>{t('reminders.create', 'New Reminder')}</Text>
             </View>
 
-            {[
-              { key: 'title', placeholder: t('reminders.titlePlaceholder', 'Medication name'), multi: false },
-              { key: 'datetime', placeholder: t('reminders.dateTimePlaceholder', 'Date & time (YYYY-MM-DD HH:mm)'), multi: false },
-              { key: 'frequency', placeholder: t('reminders.frequencyPlaceholder', 'Frequency (Daily, Weekly, Monthly)'), multi: false },
+            {([
+              { key: 'title',       placeholder: t('reminders.titlePlaceholder', 'Medication name'), multi: false },
+              { key: 'datetime',    placeholder: t('reminders.dateTimePlaceholder', 'Date & time  YYYY-MM-DD HH:mm'), multi: false },
+              { key: 'frequency',   placeholder: t('reminders.frequencyPlaceholder', 'Frequency: Daily, Weekly or Monthly'), multi: false },
               { key: 'description', placeholder: t('reminders.descriptionPlaceholder', 'Notes (optional)'), multi: true },
-            ].map(field => (
+            ]).map(field => (
               <View key={field.key}>
                 <TextInput
                   style={[
@@ -403,21 +540,13 @@ export default function Reminders() {
             {formErrors.general && <Text style={styles.fieldError}>{formErrors.general}</Text>}
 
             <View style={styles.modalActions}>
-              <Pressable
-                style={styles.cancelBtn}
-                onPress={() => setModalVisible(false)}
-                disabled={creating}
-              >
-                <Text style={styles.cancelBtnText}>{t('common.cancel', 'Cancel')}</Text>
+              <Pressable style={styles.cancelBtn} onPress={() => setModalVisible(false)} disabled={creating}>
+                <Text style={styles.cancelText}>{t('common.cancel', 'Cancel')}</Text>
               </Pressable>
-              <Pressable
-                style={[styles.saveBtn, creating && { opacity: 0.7 }]}
-                onPress={handleCreateReminder}
-                disabled={creating}
-              >
+              <Pressable style={[styles.saveBtn, creating && { opacity: 0.7 }]} onPress={handleCreate} disabled={creating}>
                 {creating
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.saveBtnText}>{t('common.save', 'Save')}</Text>}
+                  : <Text style={styles.saveText}>{t('common.save', 'Save')}</Text>}
               </Pressable>
             </View>
           </View>
@@ -427,41 +556,41 @@ export default function Reminders() {
   );
 }
 
+/* ── Styles ─────────────────────────────────────────────────────────────── */
 const styles = StyleSheet.create({
-  content: { paddingBottom: 100, gap: spacing.xl },
+  content: { paddingBottom: 110, gap: spacing.xl },
 
-  // Header
+  /* Header */
   headerRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
+    gap: spacing.md,
+  },
+  screenSub: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    marginBottom: 2,
   },
   screenTitle: {
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.text,
-    lineHeight: 40,
-    letterSpacing: -0.8,
+    letterSpacing: -0.7,
   },
-  screenTitleLine2: {
-    fontSize: 34,
-    fontWeight: '800',
-    color: colors.primary,
-    lineHeight: 40,
-    letterSpacing: -0.8,
-  },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingBottom: 4 },
-  headerIconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  headerBtns: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingBottom: 2 },
+  headerBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Stats
+  /* Stats */
   statsRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -474,107 +603,104 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     gap: 2,
   },
-  statNum: { fontSize: 22, fontWeight: '800', lineHeight: 28 },
-  statLabel: { fontSize: 11, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
+  statNum:   { fontSize: 20, fontWeight: '800' },
+  statLabel: { fontSize: 10, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
 
-  // Filter card
-  filterCard: {
+  /* Segment tabs */
+  segTabs: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.xl,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: radius.xl,
+    padding: 4,
+  },
+  segTab: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+  },
+  segTabActive: { backgroundColor: colors.card, ...shadow.soft },
+  segTabText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+  segTabTextActive: { color: colors.text },
+
+  /* Calendar card */
+  calCard: {
     backgroundColor: colors.card,
     marginHorizontal: spacing.xl,
-    padding: spacing.lg,
+    padding: spacing.xl,
     borderRadius: radius.xxl,
-    gap: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.line,
+    ...shadow.card,
   },
 
-  // Nearest label
-  nearestLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    letterSpacing: -0.2,
+  /* Nearest label */
+  nearestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
-  nearestCount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textSecondary,
+  nearestLabel: { fontSize: 16, fontWeight: '700', color: colors.text },
+  nearestBadge: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
   },
+  nearestBadgeText: { fontSize: 11, fontWeight: '700', color: '#fff' },
 
-  // Reminder cards — appointment style
-  listGap: { gap: spacing.md, paddingHorizontal: spacing.xl },
+  /* Appointment cards */
+  cardGap: { gap: spacing.md, paddingHorizontal: spacing.xl },
   card: {
     flexDirection: 'row',
     backgroundColor: colors.card,
-    borderRadius: radius.xxl,
+    borderRadius: radius.xl,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.line,
+    ...shadow.card,
   },
-  cardDone: { backgroundColor: colors.success100, borderColor: colors.success100 },
+  cardDone: { backgroundColor: colors.success100 },
   cardStrip: { width: 4 },
   cardBody: { flex: 1, padding: spacing.lg, gap: spacing.md },
-  cardTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  cardIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.lg,
+  cardTopRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  cardIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: colors.text, lineHeight: 22 },
+  cardTitle:     { fontSize: 15, fontWeight: '700', color: colors.text, lineHeight: 21 },
   cardTitleDone: { color: colors.textSecondary, textDecorationLine: 'line-through' },
-  cardType: { fontSize: 12, fontWeight: '600', marginTop: 2 },
-  cardChips: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  timeChip: {
+  cardTypeLabel: { fontSize: 11, fontWeight: '600', marginTop: 2 },
+
+  chipRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.primary50,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: radius.pill,
   },
-  timeChipText: { fontSize: 13, fontWeight: '700', color: colors.primary },
-  dateChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.bgSecondary,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-  },
-  dateChipText: { fontSize: 12, fontWeight: '500', color: colors.textSecondary },
-  freqChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.bgSecondary,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-  },
-  freqChipText: { fontSize: 12, fontWeight: '500', color: colors.textSecondary },
-  cardDesc: { fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
+  chipText: { fontSize: 11, fontWeight: '600' },
+  cardDesc: { fontSize: 12, color: colors.textSecondary, lineHeight: 18 },
+
   doneCTA: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 10,
+    paddingVertical: 9,
     borderRadius: radius.pill,
     borderWidth: 1.5,
     borderColor: colors.primary,
     backgroundColor: colors.primary50,
   },
-  doneCTAActive: { backgroundColor: colors.success, borderColor: colors.success },
-  doneCTAText: { fontSize: 14, fontWeight: '700', color: colors.primary },
-  doneCTATextActive: { color: '#fff' },
-  statusMsg: { fontSize: 12, color: colors.primary, textAlign: 'center' },
-  statusMsgError: { color: colors.danger },
+  doneCTADone:  { backgroundColor: colors.success, borderColor: colors.success },
+  doneCTAText:  { fontSize: 13, fontWeight: '700', color: colors.primary },
+  statusMsg:    { fontSize: 11, color: colors.primary, textAlign: 'center' },
 
-  // Add button
+  /* Add button */
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -585,81 +711,82 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     ...shadow.primary,
   },
-  addBtnIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addBtnText: { fontSize: 16, fontWeight: '700', color: '#fff', letterSpacing: 0.2 },
+  addBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 
-  // Empty state
-  empty: { alignItems: 'center', paddingVertical: spacing.xxl * 2, gap: spacing.md, paddingHorizontal: spacing.xl },
+  /* Empty */
+  emptyBox: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxxl,
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
+    backgroundColor: colors.card,
+    marginHorizontal: spacing.xl,
+    borderRadius: radius.xxl,
+    ...shadow.card,
+  },
   emptyIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: colors.primary50,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'center' },
-  emptyHint: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 21 },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  emptyHint:  { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
 
-  // Modal
+  /* Modal */
   modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   modalSheet: {
     backgroundColor: colors.card,
-    borderTopLeftRadius: radius.xxl + 4,
-    borderTopRightRadius: radius.xxl + 4,
+    borderTopLeftRadius: radius.xxxl,
+    borderTopRightRadius: radius.xxxl,
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.md,
-    paddingBottom: spacing.xxl * 2,
+    paddingBottom: spacing.xxxl * 2,
     gap: spacing.md,
     ...shadow.xl,
   },
-  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.line, alignSelf: 'center', marginBottom: spacing.md },
-  modalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm },
+  modalHandle:   { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.line, alignSelf: 'center', marginBottom: spacing.sm },
+  modalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xs },
   modalIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.lg,
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
     backgroundColor: colors.primary100,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
   input: {
     borderWidth: 1.5,
     borderColor: colors.line,
     borderRadius: radius.lg,
     padding: spacing.md,
-    backgroundColor: colors.surface,
-    fontSize: 15,
+    backgroundColor: colors.bgSecondary,
+    fontSize: 14,
     color: colors.text,
   },
   inputError: { borderColor: colors.danger },
-  inputMulti: { height: 80, textAlignVertical: 'top' },
-  fieldError: { fontSize: 12, color: colors.danger, marginTop: -spacing.xs, marginLeft: 4 },
+  inputMulti: { height: 76, textAlignVertical: 'top' },
+  fieldError: { fontSize: 11, color: colors.danger, marginTop: -spacing.xs, marginLeft: 4 },
   modalActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: radius.pill,
     alignItems: 'center',
     backgroundColor: colors.bgSecondary,
     borderWidth: 1,
     borderColor: colors.line,
   },
-  cancelBtnText: { fontSize: 15, fontWeight: '600', color: colors.textSecondary },
+  cancelText: { fontSize: 14, fontWeight: '600', color: colors.textSecondary },
   saveBtn: {
     flex: 2,
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: radius.pill,
     alignItems: 'center',
     backgroundColor: colors.primary,
   },
-  saveBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  saveText: { fontSize: 14, fontWeight: '700', color: '#fff' },
 });
