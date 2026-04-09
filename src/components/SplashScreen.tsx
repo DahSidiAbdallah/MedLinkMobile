@@ -8,89 +8,90 @@ const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 export default function SplashScreen({ onFinish }: { readonly onFinish: () => void }) {
   const { t } = useTranslation();
   const fadeAnim  = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.82)).current;
-  const slideAnim = useRef(new Animated.Value(28)).current;
-  const glowAnim  = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.86)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
+  const ringAnim  = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Entrance
     Animated.parallel([
       Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 650,
+        toValue: 1, duration: 580,
         useNativeDriver: true,
         easing: Easing.out(Easing.exp),
       }),
       Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 6,
-        tension: 80,
-        useNativeDriver: true,
+        toValue: 1, friction: 7, tension: 75, useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        delay: 80,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.exp),
+        toValue: 0, duration: 560, delay: 80,
+        useNativeDriver: true, easing: Easing.out(Easing.exp),
       }),
-      // Pulsing glow
+      // Subtle pulsing ring
       Animated.loop(
         Animated.sequence([
-          Animated.timing(glowAnim, { toValue: 1, duration: 1100, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
-          Animated.timing(glowAnim, { toValue: 0, duration: 1100, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+          Animated.timing(ringAnim, { toValue: 1, duration: 1300, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+          Animated.timing(ringAnim, { toValue: 0, duration: 1300, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
         ])
       ),
-    ]).start(() => {
-      AccessibilityInfo.announceForAccessibility('App ready');
-    });
+    ]).start(() => AccessibilityInfo.announceForAccessibility('App ready'));
 
     const timer = setTimeout(() => {
       Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 380,
-        useNativeDriver: true,
+        toValue: 0, duration: 350, useNativeDriver: true,
       }).start(() => onFinish());
-    }, 2100);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [onFinish, fadeAnim, scaleAnim, slideAnim, glowAnim]);
+  }, [onFinish, fadeAnim, scaleAnim, slideAnim, ringAnim]);
 
-  const glowScale   = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
-  const glowOpacity = glowAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.14, 0.06, 0.14] });
+  const ringScale   = ringAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.22] });
+  const ringOpacity = ringAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.18, 0.06, 0.18] });
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]} accessibilityLiveRegion="polite">
 
-      {/* Subtle decorative circles */}
-      <Animated.View style={[styles.glowRing, { transform: [{ scale: glowScale }], opacity: glowOpacity }]} />
-      <View style={styles.bgCircle1} />
-      <View style={styles.bgCircle2} />
+      {/* Soft background accent circles */}
+      <View style={styles.bgCircleTop} />
+      <View style={styles.bgCircleBottom} />
 
-      {/* Center content */}
+      {/* Center */}
       <View style={styles.center}>
-        {/* Main app logo — tinted teal */}
+        {/* Pulsing teal ring behind logo */}
+        <Animated.View
+          style={[
+            styles.pulseRing,
+            { transform: [{ scale: ringScale }], opacity: ringOpacity },
+          ]}
+        />
+
+        {/* Logo image — tinted teal */}
         <Animated.Image
           accessible
           accessibilityLabel="MedLink logo"
           source={require('../assets/logo.png')}
           style={[
             styles.logo,
-            {
-              transform: [{ scale: scaleAnim }],
-              tintColor: colors.primary,
-            },
+            { transform: [{ scale: scaleAnim }], tintColor: colors.primary },
           ]}
           resizeMode="contain"
         />
 
-        {/* App name */}
-        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], alignItems: 'center', gap: 4 }}>
+        {/* App name + tagline */}
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+            alignItems: 'center',
+            gap: 4,
+          }}
+        >
           <Text style={styles.appName}>MedLink</Text>
           <Text style={styles.tagline}>{t('common.tagline', 'Your Health Companion')}</Text>
         </Animated.View>
       </View>
 
-      {/* Footer — Xahara branding tinted teal */}
+      {/* Footer — Xahara logo tinted teal */}
       <Animated.View
         style={[styles.footer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
         pointerEvents="none"
@@ -115,74 +116,64 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Decorative background elements
-  glowRing: {
+  /* Background decorative circles — very subtle */
+  bgCircleTop: {
     position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
+    width: SCREEN_W * 1.2,
+    height: SCREEN_W * 1.2,
+    borderRadius: SCREEN_W * 0.6,
     backgroundColor: colors.primary50,
-    alignSelf: 'center',
-    top: SCREEN_H / 2 - 180,
+    top: -SCREEN_W * 0.55,
+    right: -SCREEN_W * 0.4,
+    opacity: 0.7,
   },
-  bgCircle1: {
-    position: 'absolute',
-    width: SCREEN_W * 1.3,
-    height: SCREEN_W * 1.3,
-    borderRadius: SCREEN_W * 0.65,
-    backgroundColor: colors.primary50,
-    opacity: 0.45,
-    top: -SCREEN_W * 0.7,
-    right: -SCREEN_W * 0.5,
-  },
-  bgCircle2: {
+  bgCircleBottom: {
     position: 'absolute',
     width: SCREEN_W * 0.9,
     height: SCREEN_W * 0.9,
     borderRadius: SCREEN_W * 0.45,
     backgroundColor: colors.primary100,
+    bottom: -SCREEN_W * 0.3,
+    left: -SCREEN_W * 0.2,
     opacity: 0.5,
-    bottom: -SCREEN_W * 0.35,
-    left: -SCREEN_W * 0.25,
   },
 
-  // Logo & text
-  center: {
-    alignItems: 'center',
-    gap: 20,
+  /* Center content */
+  center: { alignItems: 'center', gap: 20 },
+  pulseRing: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: colors.primary100,
+    top: -8,
   },
-  logo: {
-    width: 148,
-    height: 148,
-  },
+  logo: { width: 144, height: 144 },
   appName: {
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.8,
   },
   tagline: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     color: colors.textSecondary,
     letterSpacing: 0.1,
   },
 
-  // Footer
+  /* Footer */
   footer: {
     position: 'absolute',
-    bottom: 36,
+    bottom: 38,
     alignItems: 'center',
     gap: 4,
   },
   fromText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
     color: colors.textTertiary,
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
   },
-  xaharaLogo: {
-    width: 90,
-    height: 26,
-  },
+  xaharaLogo: { width: 88, height: 26 },
 });
