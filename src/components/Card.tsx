@@ -48,7 +48,7 @@ const getVariantStyles = (variant: CardVariant) => {
     case 'elevated':
       return {
         backgroundColor: colors.card,
-        borderRadius: radius.lg,
+        borderRadius: radius.xl, // VELO: larger rounded corners
         ...shadow.card,
       };
     case 'outlined':
@@ -56,36 +56,36 @@ const getVariantStyles = (variant: CardVariant) => {
         borderWidth: 1,
         borderColor: colors.line,
         backgroundColor: colors.card,
-        borderRadius: radius.md,
+        borderRadius: radius.xl, // VELO: larger rounded corners
       };
     case 'filled':
       return {
-        backgroundColor: colors.surface,
-        borderRadius: radius.md,
+        backgroundColor: colors.bg,
+        borderRadius: radius.xl, // VELO: larger rounded corners
       };
     case 'glass':
       return {
         backgroundColor: colors.glass,
-        borderRadius: radius.lg,
+        borderRadius: radius.xl,
         borderWidth: 1,
         borderColor: colors.line,
       };
     case 'hero':
       return {
         backgroundColor: colors.primary,
-        borderRadius: radius.lg,
+        borderRadius: radius.xl, // VELO: larger rounded corners
       };
     case 'flat':
       return {
         backgroundColor: colors.surface,
-        borderRadius: radius.md,
+        borderRadius: radius.xl, // VELO: larger rounded corners
         borderWidth: 1,
         borderColor: colors.line,
       };
     default:
       return {
         backgroundColor: colors.card,
-        borderRadius: radius.md,
+        borderRadius: radius.xl, // VELO: larger rounded corners
         borderWidth: 1,
         borderColor: colors.line,
       };
@@ -128,7 +128,7 @@ export default React.memo(function Card({
         variantStyles,
         contentStyle,
         {
-          padding: spacing.lg,
+          padding: spacing.xl, // VELO: more generous padding
         },
       ]}
     >

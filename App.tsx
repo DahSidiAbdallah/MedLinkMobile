@@ -87,14 +87,14 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
         right: 0,
         bottom: 0,
         backgroundColor: colors.card,
-        borderTopWidth: 0,
+        borderTopWidth: 1,
+        borderTopColor: colors.line,
         paddingBottom: Math.max(insets.bottom, 12),
         paddingTop: 16,
         paddingHorizontal: 16,
         ...(Platform.OS === 'ios' && {
           backgroundColor: 'rgba(255,255,255,0.98)',
         }),
-        ...shadow.xl,
       }}
     >
       <View style={{
@@ -175,7 +175,7 @@ function CustomTabBar(props: Readonly<BottomTabBarProps>) {
                 borderRadius: 16,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: isFocused ? colors.primary100 : 'transparent',
+                backgroundColor: isFocused ? colors.primary50 : 'transparent',
               }}>
                 {getTabIcon(route, isFocused, isFocused ? colors.primary : colors.textTertiary, iconSize)}
               </View>
@@ -330,11 +330,10 @@ function AppContent() {
           setUser(firebaseUser);
           await persistAuth(firebaseUser);
         } else {
-          // Firebase reports no user, but don't immediately clear our stored auth
-          // Only clear if we're sure the user actually signed out
-          console.log('Firebase reports no user, but keeping stored auth for now');
-          // Don't automatically clear stored auth or set user to null
-          // Let the user try to use the app with stored auth
+          // Firebase reports no user - clear user state to show login screen
+          console.log('Firebase reports no user, clearing user state');
+          setUser(null);
+          await clearStoredAuth();
         }
       }
     });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -37,7 +37,7 @@ type UserProfileProps = {
 const heroAvatar = require('../assets/avatar-placeholder.png');
 const { width: SCREEN_W } = Dimensions.get('window');
 // Exact width so two cards + one gap fit within horizontal padding
-const CARD_W = (SCREEN_W - spacing.xl * 2 - spacing.lg) / 2;
+const CARD_W = (SCREEN_W - spacing.xxl * 2 - spacing.xxl) / 2;
 
 export default function UserProfile({ navigation, onLogout }: Readonly<UserProfileProps>) {
   const { t, i18n } = useTranslation();
@@ -123,6 +123,28 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
     }
   }, [langModal]);
 
+  // Language selection animation
+  const [selectedLangAnim] = useState(() => ({
+    en: new Animated.Value(1),
+    fr: new Animated.Value(1),
+    ar: new Animated.Value(1),
+  }));
+
+  const animateLanguageSelection = (langCode: string) => {
+    Animated.sequence([
+      Animated.timing(selectedLangAnim[langCode as keyof typeof selectedLangAnim], {
+        toValue: 1.05,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(selectedLangAnim[langCode as keyof typeof selectedLangAnim], {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const openEdit = () => {
     if (!profile) return;
     setEdit({
@@ -153,6 +175,10 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
             (async () => {
               try {
                 await signOutCompletely();
+                // Force navigation to reset and let auth state change trigger login
+                if (navigation) {
+                  navigation.popToTop();
+                }
                 if (onLogout) onLogout();
               } catch (error: any) {
                 Alert.alert(t('common.error', 'Error'), error.message || t('errors.logoutError', 'Failed to log out.'));
@@ -231,7 +257,7 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
             imageStyle={styles.heroImageStyle}
           >
             <LinearGradient
-              colors={['rgba(38,201,168,0.88)', 'rgba(27,168,140,0.97)']}
+              colors={['rgba(0,102,204,0.88)', 'rgba(0,85,170,0.97)']}
               style={styles.heroOverlay}
             >
               <View style={styles.heroTop}>
@@ -283,10 +309,10 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }, { scale: scaleAnim }] }}>
           <View style={styles.quickActions}>
             {([
-              { key: 'meds', icon: 'medkit' as const, label: t('profile.myMedications', 'Medications'), color: colors.primary, bg: colors.primary50, onPress: () => setMedicationsModal(true) },
-              { key: 'medical', icon: 'pulse' as const, label: t('profile.medicalId', 'Medical ID'), color: '#8B5CF6', bg: '#F3E8FF', onPress: () => setMedicalModal(true) },
-              { key: 'insurance', icon: 'shield-checkmark' as const, label: t('profile.insurance', 'Insurance'), color: colors.accent, bg: '#D1FAE5', onPress: () => setInsuranceModal(true) },
-              { key: 'emergency', icon: 'call' as const, label: t('profile.emergencyContacts', 'Emergency'), color: colors.danger, bg: colors.danger100, onPress: () => setEmergencyModal(true) },
+              { key: 'meds', icon: 'medkit' as const, label: t('profile.myMedications', 'Medications'), color: colors.primary, onPress: () => setMedicationsModal(true) },
+              { key: 'medical', icon: 'pulse' as const, label: t('profile.medicalId', 'Medical ID'), color: colors.secondary, onPress: () => setMedicalModal(true) },
+              { key: 'insurance', icon: 'shield-checkmark' as const, label: t('profile.insurance', 'Insurance'), color: colors.success, onPress: () => setInsuranceModal(true) },
+              { key: 'emergency', icon: 'call' as const, label: t('profile.emergencyContacts', 'Emergency'), color: colors.danger, onPress: () => setEmergencyModal(true) },
             ] as const).map((action, index) => (
               <Animated.View
                 key={action.key}
@@ -305,13 +331,12 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                 <Pressable
                   style={({ pressed }) => [
                     styles.quickActionCard,
-                    { backgroundColor: action.bg },
-                    pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+                    pressed && { opacity: 0.88 }
                   ]}
                   onPress={action.onPress}
                 >
-                  <View style={[styles.quickActionIcon, { backgroundColor: '#fff' }]}>
-                    <Ionicons name={action.icon} size={28} color={action.color} />
+                  <View style={styles.quickActionIcon}>
+                    <Ionicons name={action.icon} size={22} color={action.color} />
                   </View>
                   <Text style={styles.quickActionLabel}>{action.label}</Text>
                 </Pressable>
@@ -334,15 +359,13 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                   subtitle: profile.blood_type ? `${t('auth.bloodType', 'Blood Type')}: ${profile.blood_type}` : t('common.tapToAdd', 'Tap to add'),
                   icon: 'id-card' as const,
                   color: colors.primary,
-                  bg: colors.primary50,
                   onPress: () => setMedicalModal(true),
                 },
                 {
                   title: t('profile.insurance', 'Insurance'),
                   subtitle: profile.insurance_info?.provider ?? t('common.tapToAdd', 'Tap to add'),
                   icon: 'shield' as const,
-                  color: '#8B5CF6',
-                  bg: '#F3E8FF',
+                  color: colors.secondary,
                   onPress: () => setInsuranceModal(true),
                 },
                 {
@@ -350,7 +373,6 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                   subtitle: profile.emergency_contacts?.[0]?.name ?? t('common.tapToAdd', 'Tap to add'),
                   icon: 'call' as const,
                   color: colors.danger,
-                  bg: colors.danger100,
                   onPress: () => setEmergencyModal(true),
                 },
               ].map((card, index) => (
@@ -375,8 +397,8 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                     ]}
                     onPress={card.onPress}
                   >
-                    <View style={[styles.healthCardIcon, { backgroundColor: card.bg }]}>
-                      <Ionicons name={card.icon} size={24} color={card.color} />
+                    <View style={styles.healthCardIcon}>
+                      <Ionicons name={card.icon} size={20} color={card.color} />
                     </View>
                     <View style={styles.healthCardContent}>
                       <Text style={styles.healthCardTitle}>{card.title}</Text>
@@ -405,8 +427,8 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                 ]}
                 onPress={() => setLangModal(true)}
               >
-                <View style={[styles.settingIcon, { backgroundColor: colors.primary50 }]}>
-                  <Ionicons name="language" size={24} color={colors.primary} />
+                <View style={styles.settingIcon}>
+                  <Ionicons name="language" size={20} color={colors.textSecondary} />
                 </View>
                 <View style={styles.settingContent}>
                   <Text style={styles.settingTitle}>{t('common.language', 'Language')}</Text>
@@ -422,8 +444,8 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                 ]}
                 onPress={handleLogout}
               >
-                <View style={[styles.settingIcon, { backgroundColor: colors.danger100 }]}>
-                  <Ionicons name="log-out" size={24} color={colors.danger} />
+                <View style={styles.settingIcon}>
+                  <Ionicons name="log-out" size={20} color={colors.danger} />
                 </View>
                 <View style={styles.settingContent}>
                   <Text style={[styles.settingTitle, { color: colors.danger }]}>{t('auth.signOut', 'Sign Out')}</Text>
@@ -479,13 +501,14 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                 >
                   <Pressable
                     onPress={async () => {
+                      animateLanguageSelection(lang.code);
                       await i18n.changeLanguage(lang.code);
-                      setTimeout(() => setLangModal(false), 300);
+                      setTimeout(() => setLangModal(false), 400);
                     }}
                     style={({ pressed }) => [
                       styles.langOption,
                       i18n.language === lang.code && styles.langOptionActive,
-                      pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+                      pressed && { opacity: 0.9 }
                     ]}
                   >
                     <View style={styles.langOptionLeft}>
@@ -543,25 +566,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    gap: spacing.xxxl,
-    paddingBottom: 140,
+    gap: spacing.xxl,
+    paddingBottom: 120,
     paddingTop: 0,
   },
 
   // Hero
-  hero: {
-    height: 360,
-  },
+  hero: { height: 340 },
   heroImageStyle: {
     borderBottomLeftRadius: radius.xxxl,
     borderBottomRightRadius: radius.xxxl,
   },
   heroOverlay: {
     flex: 1,
-    paddingTop: spacing.xxxl * 1.5,
-    paddingBottom: spacing.xxxl,
+    paddingTop: spacing.xxxl + spacing.xxl,
+    paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.xl,
-    gap: spacing.xxl,
+    gap: spacing.xl,
     borderBottomLeftRadius: radius.xxxl,
     borderBottomRightRadius: radius.xxxl,
   },
@@ -572,44 +593,42 @@ const styles = StyleSheet.create({
   },
   heroAvatarWrap: {
     borderRadius: 999,
-    borderWidth: 4,
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderWidth: 2.5,
+    borderColor: 'rgba(255,255,255,0.35)',
     overflow: 'hidden',
-    ...shadow.xl,
   },
   heroAvatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
   },
   heroInfo: {
     flex: 1,
-    gap: 4,
+    gap: 3,
   },
   heroName: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#fff',
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   heroEmail: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.85)',
+    fontSize: 13,
+    fontWeight: '400',
+    color: 'rgba(255,255,255,0.8)',
   },
   heroPhone: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.85)',
+    fontSize: 13,
+    fontWeight: '400',
+    color: 'rgba(255,255,255,0.8)',
   },
   heroEditBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.soft,
   },
   heroStats: {
     flexDirection: 'row',
@@ -618,21 +637,20 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     paddingVertical: spacing.lg,
-    borderRadius: radius.xl,
-    ...shadow.soft,
+    borderRadius: radius.lg,
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#fff',
   },
   statLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.85)',
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
   },
 
@@ -645,113 +663,115 @@ const styles = StyleSheet.create({
   },
   quickActionCard: {
     width: CARD_W,
-    padding: spacing.xl,
-    borderRadius: radius.xxl,
-    gap: spacing.lg,
-    minHeight: 140,
+    backgroundColor: colors.card,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+    gap: spacing.md,
+    minHeight: 130,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
     ...shadow.card,
   },
   quickActionIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.xl,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.soft,
+    backgroundColor: colors.bgSecondary,
   },
   quickActionLabel: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text,
     marginTop: 'auto',
-    letterSpacing: -0.2,
   },
 
   // Section
-  section: {
-    gap: spacing.xl,
-  },
-  sectionHeader: {
-    paddingHorizontal: spacing.xl,
-  },
+  section: { gap: spacing.lg },
+  sectionHeader: { paddingHorizontal: spacing.xl },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.2,
   },
 
   // Health Cards
   healthCards: {
-    gap: spacing.lg,
+    gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   healthCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
-    padding: spacing.xl,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.xl,
     gap: spacing.lg,
-    ...shadow.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
   },
   healthCardIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.lg,
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.bgSecondary,
   },
   healthCardContent: {
     flex: 1,
-    gap: spacing.xs,
+    gap: 2,
   },
   healthCardTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.text,
-    letterSpacing: -0.2,
   },
   healthCardSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '400',
     color: colors.textSecondary,
   },
 
   // Settings
   settingsCards: {
-    gap: spacing.lg,
+    gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   settingCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
-    padding: spacing.xl,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.xl,
     gap: spacing.lg,
-    ...shadow.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
   },
   settingIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.lg,
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.bgSecondary,
   },
   settingContent: {
     flex: 1,
-    gap: spacing.xs,
+    gap: 2,
   },
   settingTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.text,
-    letterSpacing: -0.2,
   },
   settingValue: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '400',
     color: colors.textSecondary,
   },
 
@@ -770,12 +790,12 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: colors.card,
-    borderTopLeftRadius: radius.xxxl,
-    borderTopRightRadius: radius.xxxl,
-    paddingHorizontal: spacing.xl,
+    borderTopLeftRadius: radius.xxxx, // VELO: larger rounded corners
+    borderTopRightRadius: radius.xxxx,
+    paddingHorizontal: spacing.xxl, // VELO: more generous padding
     paddingTop: spacing.lg,
     paddingBottom: spacing.xxxl * 2,
-    gap: spacing.lg,
+    gap: spacing.xl, // VELO: more generous spacing
     ...shadow.xl,
   },
   modalHandle: {
@@ -787,15 +807,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   modalTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
     color: colors.text,
     textAlign: 'center',
-    letterSpacing: -0.8,
+    letterSpacing: -0.3,
   },
   modalSubtitle: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '400',
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.md,
@@ -805,11 +825,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.bgSecondary,
-    padding: spacing.xl,
+    padding: spacing.lg,
     borderRadius: radius.xl,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: 'transparent',
-    ...shadow.soft,
   },
   langOptionActive: {
     backgroundColor: colors.primary50,
@@ -821,28 +840,27 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   langFlagWrap: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: radius.lg,
     backgroundColor: colors.card,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.soft,
+    ...shadow.sm,
   },
   langFlagWrapActive: {
     backgroundColor: '#fff',
     ...shadow.card,
   },
   langFlag: {
-    width: 40,
-    height: 28,
-    borderRadius: 6,
+    width: 32,
+    height: 22,
+    borderRadius: 4,
   },
   langLabel: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.text,
-    letterSpacing: -0.3,
   },
   langLabelActive: {
     color: colors.primary,
