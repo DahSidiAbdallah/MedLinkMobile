@@ -169,10 +169,13 @@ export default function Dashboard({ navigation }: any) {
               <Text style={styles.apptLabel}>{t('dashboard.nextDose', 'Next appointment')}</Text>
               <Text style={styles.apptTitle} numberOfLines={1}>{activeReminders[0].title}</Text>
               {getTime(activeReminders[0].datetime) ? (
-                <Text style={styles.apptTime}>
-                  🕐 {getTime(activeReminders[0].datetime)}
-                  {activeReminders[0].frequency ? `  ·  ${activeReminders[0].frequency}` : ''}
-                </Text>
+                <View style={styles.apptTimeRow}>
+                  <Ionicons name="time-outline" size={12} color="rgba(255,255,255,0.75)" />
+                  <Text style={styles.apptTime}>
+                    {getTime(activeReminders[0].datetime)}
+                    {activeReminders[0].frequency ? `  ·  ${activeReminders[0].frequency}` : ''}
+                  </Text>
+                </View>
               ) : null}
             </View>
             {/* Arrow */}
@@ -191,21 +194,21 @@ export default function Dashboard({ navigation }: any) {
           contentContainerStyle={styles.catRow}
         >
           {([
-            { lib: 'mci', icon: 'barcode-scan',    label: t('scanner.scan', 'Scan'),        bg: colors.primary,  nav: () => navigation.navigate('Barcode') },
-            { lib: 'ion', icon: 'alarm-outline',   label: t('navigation.reminders', 'Schedule'), bg: '#7C6FE0',  nav: () => navigation.navigate('Reminders') },
-            { lib: 'ion', icon: 'business-outline',label: t('facilities.title', 'Clinics'),  bg: '#F59E0B',       nav: () => navigation.navigate('Clinics') },
-            { lib: 'ion', icon: 'pulse-outline',   label: t('dashboard.urgentCare', 'Urgent'), bg: '#EF4444',    nav: () => navigation.navigate('Clinics') },
-            { lib: 'ion', icon: 'person-outline',  label: t('profile.title', 'Profile'),    bg: '#22C55E',        nav: () => navigation.navigate('UserProfile') },
+            { lib: 'mci', icon: 'barcode-scan',    label: t('scanner.scan', 'Scan'),             nav: () => navigation.navigate('Barcode') },
+            { lib: 'ion', icon: 'alarm-outline',   label: t('navigation.reminders', 'Schedule'), nav: () => navigation.navigate('Reminders') },
+            { lib: 'ion', icon: 'business-outline',label: t('facilities.title', 'Clinics'),       nav: () => navigation.navigate('Clinics') },
+            { lib: 'ion', icon: 'pulse-outline',   label: t('dashboard.urgentCare', 'Urgent'),    nav: () => navigation.navigate('Clinics') },
+            { lib: 'ion', icon: 'person-outline',  label: t('profile.title', 'Profile'),          nav: () => navigation.navigate('UserProfile') },
           ] as const).map((cat, i) => (
             <Pressable
               key={i}
-              style={({ pressed }) => [styles.catItem, pressed && { opacity: 0.75 }]}
+              style={({ pressed }) => [styles.catItem, pressed && { opacity: 0.7 }]}
               onPress={cat.nav}
             >
-              <View style={[styles.catCircle, { backgroundColor: cat.bg }]}>
+              <View style={styles.catCircle}>
                 {cat.lib === 'mci'
-                  ? <MaterialCommunityIcons name={cat.icon as any} size={20} color="#fff" />
-                  : <Ionicons name={cat.icon as any} size={20} color="#fff" />}
+                  ? <MaterialCommunityIcons name={cat.icon as any} size={20} color={colors.text} />
+                  : <Ionicons name={cat.icon as any} size={20} color={colors.text} />}
               </View>
               <Text style={styles.catLabel}>{cat.label}</Text>
             </Pressable>
@@ -244,10 +247,13 @@ export default function Dashboard({ navigation }: any) {
                 { num: pillsDone.total, label: t('dashboard.total', 'Total') },
                 { num: Math.max(pillsDone.total - pillsDone.done, 0), label: t('dashboard.pendingReminders', 'Pending') },
               ]).map((s, i) => (
-                <View key={i} style={styles.statItem}>
-                  <Text style={styles.statNum}>{s.num}</Text>
-                  <Text style={styles.statLabel}>{s.label}</Text>
-                </View>
+                <React.Fragment key={i}>
+                  {i > 0 && <View style={styles.statDivider} />}
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNum}>{s.num}</Text>
+                    <Text style={styles.statLabel}>{s.label}</Text>
+                  </View>
+                </React.Fragment>
               ))}
             </View>
           </View>
@@ -289,7 +295,7 @@ export default function Dashboard({ navigation }: any) {
                   onPress={() => navigation.navigate('Reminders')}
                 >
                   <View style={styles.reminderIconCircle}>
-                    <Ionicons name="medical-outline" size={18} color={colors.primary} />
+                    <Ionicons name="medical-outline" size={17} color={colors.textSecondary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.reminderName} numberOfLines={1}>{rem.title}</Text>
@@ -383,16 +389,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   welcomeText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '400',
     color: colors.textSecondary,
     marginBottom: 2,
   },
   greeting: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
     color: colors.text,
-    letterSpacing: -0.6,
+    letterSpacing: -0.3,
   },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   avatarBtn: {
@@ -400,8 +406,8 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: colors.primary,
+    borderWidth: 1.5,
+    borderColor: colors.line,
   },
   avatar: { width: 40, height: 40, borderRadius: 20 },
 
@@ -415,7 +421,8 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: radius.pill,
     gap: spacing.sm,
-    ...shadow.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
   },
   searchText: { flex: 1, fontSize: 14, color: colors.textTertiary, fontWeight: '400' },
 
@@ -424,45 +431,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: spacing.xl,
-    borderRadius: radius.xl,
+    borderRadius: radius.xxl,
     padding: spacing.lg,
     gap: spacing.md,
     overflow: 'hidden',
-    ...shadow.primary,
+    ...shadow.card,
   },
   apptIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#fff',
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.20)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  apptLabel: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.75)', letterSpacing: 0.3 },
-  apptTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginTop: 2 },
-  apptTime:  { fontSize: 12, color: 'rgba(255,255,255,0.82)', marginTop: 3 },
+  apptLabel: { fontSize: 11, fontWeight: '500', color: 'rgba(255,255,255,0.70)', letterSpacing: 0.2 },
+  apptTitle: { fontSize: 15, fontWeight: '600', color: '#fff', marginTop: 2 },
+  apptTimeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
+  apptTime:  { fontSize: 12, color: 'rgba(255,255,255,0.75)' },
   apptArrow: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fff',
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.20)',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   /* Category pills */
-  catRow:   { paddingHorizontal: spacing.xl, gap: spacing.xl },
-  catItem:  { alignItems: 'center', gap: 6, minWidth: 52 },
-  catCircle:{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  catLabel: { fontSize: 10, fontWeight: '600', color: colors.textSecondary, textAlign: 'center' },
+  catRow:   { paddingHorizontal: spacing.xl, gap: spacing.lg },
+  catItem:  { alignItems: 'center', gap: 7, minWidth: 52 },
+  catCircle:{
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+  },
+  catLabel: { fontSize: 10, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
 
   /* Progress card */
   progressCard: {
     backgroundColor: colors.card,
     marginHorizontal: spacing.xl,
-    padding: spacing.xl,
-    borderRadius: radius.xxl,
-    gap: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.line,
     ...shadow.card,
   },
   progressCardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -472,25 +491,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.primary100,
+    backgroundColor: colors.successLight,
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: radius.pill,
   },
-  allDoneText: { fontSize: 11, fontWeight: '700', color: colors.primary },
-  progressTrack: { height: 8, backgroundColor: colors.bgSecondary, borderRadius: radius.pill, overflow: 'hidden' },
+  allDoneText: { fontSize: 11, fontWeight: '600', color: colors.success },
+  progressTrack: { height: 6, backgroundColor: colors.bgSecondary, borderRadius: radius.pill, overflow: 'hidden' },
   progressFill:  { height: '100%' as any, backgroundColor: colors.primary, borderRadius: radius.pill },
-  statRow:  { flexDirection: 'row', gap: spacing.sm },
+  statRow:  { flexDirection: 'row', alignItems: 'center' },
+  statDivider: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: colors.line },
   statItem: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    backgroundColor: colors.primary50,
-    borderRadius: radius.lg,
-    gap: 2,
+    paddingVertical: spacing.sm,
+    gap: 1,
   },
-  statNum:  { fontSize: 18, fontWeight: '800', color: colors.primary },
-  statLabel:{ fontSize: 10, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
+  statNum:  { fontSize: 20, fontWeight: '700', color: colors.text },
+  statLabel:{ fontSize: 11, fontWeight: '400', color: colors.textSecondary, textAlign: 'center' },
 
   /* Section */
   section:     { gap: spacing.md },
@@ -500,8 +518,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text, letterSpacing: -0.2 },
-  sectionLink:  { fontSize: 13, fontWeight: '600', color: colors.primary },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
+  sectionLink:  { fontSize: 13, fontWeight: '500', color: colors.primary },
 
   /* Reminder cards */
   cardList: { gap: spacing.sm, paddingHorizontal: spacing.xl },
@@ -515,53 +533,55 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   reminderIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primary100,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   reminderName: { fontSize: 14, fontWeight: '600', color: colors.text },
-  reminderMeta: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  reminderMeta: { fontSize: 12, color: colors.textTertiary, marginTop: 2 },
   timePill: {
-    backgroundColor: colors.primary100,
+    backgroundColor: colors.bgSecondary,
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
   },
-  timePillText: { fontSize: 11, fontWeight: '700', color: colors.primary },
+  timePillText: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
 
   /* Empty state */
   emptyBox: {
     alignItems: 'center',
-    paddingVertical: spacing.xxxl,
+    paddingVertical: 48,
     paddingHorizontal: spacing.xl,
-    gap: spacing.md,
+    gap: spacing.sm,
     backgroundColor: colors.card,
     marginHorizontal: spacing.xl,
-    borderRadius: radius.xxl,
-    ...shadow.card,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   emptyIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary50,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.text, textAlign: 'center' },
-  emptyHint:  { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 19 },
+  emptyTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'center' },
+  emptyHint:  { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
   emptyCTA: {
     backgroundColor: colors.primary,
-    paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: 11,
+    borderRadius: radius.lg,
     marginTop: spacing.xs,
-    ...shadow.primary,
+    height: 44,
+    justifyContent: 'center',
   },
-  emptyCTAText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  emptyCTAText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 
   /* Facilities */
   facilityRow:    { paddingHorizontal: spacing.xl, gap: spacing.md },
