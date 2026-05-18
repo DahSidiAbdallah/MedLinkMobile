@@ -126,7 +126,7 @@ const CELL_SIZE = Math.floor((SCREEN_W - spacing.xl * 2 - spacing.xl * 2) / 7);
 const calStyles = StyleSheet.create({
   wrap:    { gap: spacing.md },
   nav:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  navBtn:  { padding: 6, borderRadius: radius.md, backgroundColor: colors.bgSecondary },
+  navBtn:  { padding: 6 },
   monthLabel: { fontSize: 15, fontWeight: '700', color: colors.text },
   dowRow:  { flexDirection: 'row' },
   dowCell: { width: CELL_SIZE, alignItems: 'center', paddingBottom: 6 },
@@ -265,11 +265,9 @@ export default function Reminders() {
   const renderCard = (r: any) => {
     const isDone     = !!doneMap[r.id];
     const isLoading  = !!toggling[r.id];
-    const typeColor  = r.type === 'checkup' ? '#7C6FE0' : colors.primary;
-    const typeBg     = r.type === 'checkup' ? '#EDEBFA' : colors.primary100;
+    const typeColor  = r.type === 'checkup' ? colors.secondary : colors.primary;
     const iconName   = isDone ? 'checkmark-circle' : (r.type === 'checkup' ? 'calendar-outline' : 'medical-outline');
-    const iconColor  = isDone ? colors.success : typeColor;
-    const iconBg     = isDone ? colors.success100 : typeBg;
+    const iconColor  = isDone ? colors.success : colors.textSecondary;
 
     return (
       <Animated.View key={r.id} style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
@@ -280,14 +278,14 @@ export default function Reminders() {
           <View style={styles.cardBody}>
             {/* Top row: icon + title + toggle */}
             <View style={styles.cardTopRow}>
-              <View style={[styles.cardIcon, { backgroundColor: iconBg }]}>
+              <View style={styles.cardIcon}>
                 <Ionicons name={iconName} size={20} color={iconColor} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.cardTitle, isDone && styles.cardTitleDone]} numberOfLines={1}>
                   {r.title}
                 </Text>
-                <Text style={[styles.cardTypeLabel, { color: iconColor }]}>
+                <Text style={styles.cardTypeLabel}>
                   {r.type === 'checkup' ? t('reminders.checkup', 'Check-up') : t('reminders.medication', 'Medication')}
                 </Text>
               </View>
@@ -304,29 +302,16 @@ export default function Reminders() {
                 )}
             </View>
 
-            {/* Time + date + freq chips */}
+            {/* Time + frequency */}
             <View style={styles.chipRow}>
-              <View style={[styles.chip, { backgroundColor: isDone ? colors.success100 : colors.primary50 }]}>
-                <Ionicons name="time-outline" size={11} color={isDone ? colors.success : colors.primary} />
-                <Text style={[styles.chipText, { color: isDone ? colors.success : colors.primary }]}>
-                  {getTime(r.datetime)}
-                </Text>
+              <View style={styles.chip}>
+                <Ionicons name="time-outline" size={11} color={colors.textTertiary} />
+                <Text style={styles.chipText}>{getTime(r.datetime)}</Text>
               </View>
-              {getDateShort(r.datetime) ? (
-                <View style={[styles.chip, { backgroundColor: colors.bgSecondary }]}>
-                  <Ionicons name="calendar-outline" size={11} color={colors.textSecondary} />
-                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{getDateShort(r.datetime)}</Text>
-                </View>
-              ) : null}
-              {getDayName(r.datetime) ? (
-                <View style={[styles.chip, { backgroundColor: colors.bgSecondary }]}>
-                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{getDayName(r.datetime)}</Text>
-                </View>
-              ) : null}
               {r.frequency ? (
-                <View style={[styles.chip, { backgroundColor: colors.bgSecondary }]}>
-                  <Ionicons name="repeat" size={11} color={colors.textSecondary} />
-                  <Text style={[styles.chipText, { color: colors.textSecondary }]}>{r.frequency}</Text>
+                <View style={styles.chip}>
+                  <Ionicons name="repeat" size={11} color={colors.textTertiary} />
+                  <Text style={styles.chipText}>{r.frequency}</Text>
                 </View>
               ) : null}
             </View>
@@ -350,7 +335,7 @@ export default function Reminders() {
                 color={isDone ? '#fff' : colors.primary}
               />
               <Text style={[styles.doneCTAText, isDone && { color: '#fff' }]}>
-                {isDone ? t('reminders.completed', 'Completed') : t('reminders.markAsDone', 'Mark as done')}
+                {isDone ? t('reminders.completed', 'Done') : t('reminders.markAsDone', 'Mark as done')}
               </Text>
             </Pressable>
 
@@ -429,14 +414,17 @@ export default function Reminders() {
       {/* ── Stats pills ────────────────────────────────────── */}
       <Animated.View style={[styles.statsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         {([
-          { val: filtered.length, label: t('reminders.active', 'Active'),  col: colors.primary,  bg: colors.primary50 },
-          { val: completedCount,  label: t('dashboard.completedToday', 'Done'), col: colors.success, bg: colors.success100 },
-          { val: pendingCount,    label: t('dashboard.pendingReminders', 'Pending'), col: pendingCount > 0 ? '#F59E0B' : colors.textSecondary, bg: pendingCount > 0 ? '#FEF3C7' : colors.bgSecondary },
+          { val: filtered.length, label: t('reminders.active', 'Active') },
+          { val: completedCount,  label: t('dashboard.completedToday', 'Done') },
+          { val: pendingCount,    label: t('dashboard.pendingReminders', 'Pending') },
         ]).map((s, i) => (
-          <View key={i} style={[styles.statPill, { backgroundColor: s.bg }]}>
-            <Text style={[styles.statNum, { color: s.col }]}>{s.val}</Text>
-            <Text style={styles.statLabel}>{s.label}</Text>
-          </View>
+          <React.Fragment key={i}>
+            {i > 0 && <View style={styles.statDivider} />}
+            <View style={styles.statPill}>
+              <Text style={styles.statNum}>{s.val}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </View>
+          </React.Fragment>
         ))}
       </Animated.View>
 
@@ -569,16 +557,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   screenSub: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '400',
     color: colors.textSecondary,
     marginBottom: 2,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
     color: colors.text,
-    letterSpacing: -0.7,
+    letterSpacing: -0.3,
   },
   headerBtns: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingBottom: 2 },
   headerBtn: {
@@ -593,18 +581,18 @@ const styles = StyleSheet.create({
   /* Stats */
   statsRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
     paddingHorizontal: spacing.xl,
+    gap: 0,
   },
   statPill: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: radius.xl,
-    gap: 2,
+    paddingVertical: spacing.sm,
+    gap: 1,
   },
-  statNum:   { fontSize: 20, fontWeight: '800' },
-  statLabel: { fontSize: 10, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
+  statDivider: { width: StyleSheet.hairlineWidth, backgroundColor: colors.line, alignSelf: 'stretch', marginVertical: 4 },
+  statNum:   { fontSize: 20, fontWeight: '700', color: colors.text },
+  statLabel: { fontSize: 11, fontWeight: '400', color: colors.textSecondary, textAlign: 'center' },
 
   /* Segment tabs */
   segTabs: {
@@ -613,6 +601,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSecondary,
     borderRadius: radius.xl,
     padding: 4,
+    gap: 4,
   },
   segTab: {
     flex: 1,
@@ -620,9 +609,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     alignItems: 'center',
   },
-  segTabActive: { backgroundColor: colors.card, ...shadow.soft },
-  segTabText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
-  segTabTextActive: { color: colors.text },
+  segTabActive: { backgroundColor: colors.primary },
+  segTabText: { fontSize: 13, fontWeight: '600', color: colors.textTertiary },
+  segTabTextActive: { color: '#fff' },
 
   /* Calendar card */
   calCard: {
@@ -640,14 +629,14 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
-  nearestLabel: { fontSize: 16, fontWeight: '700', color: colors.text },
+  nearestLabel: { fontSize: 15, fontWeight: '600', color: colors.text },
   nearestBadge: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.bgSecondary,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
   },
-  nearestBadgeText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+  nearestBadgeText: { fontSize: 12, fontWeight: '600', color: colors.textSecondary },
 
   /* Appointment cards */
   cardGap: { gap: spacing.md, paddingHorizontal: spacing.xl },
@@ -658,32 +647,34 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...shadow.card,
   },
-  cardDone: { backgroundColor: colors.success100 },
-  cardStrip: { width: 4 },
+  cardDone: { opacity: 0.7 },
+  cardStrip: { width: 3 },
   cardBody: { flex: 1, padding: spacing.lg, gap: spacing.md },
   cardTopRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   cardIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.md,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.bgSecondary,
   },
-  cardTitle:     { fontSize: 15, fontWeight: '700', color: colors.text, lineHeight: 21 },
-  cardTitleDone: { color: colors.textSecondary, textDecorationLine: 'line-through' },
-  cardTypeLabel: { fontSize: 11, fontWeight: '600', marginTop: 2 },
+  cardTitle:     { fontSize: 15, fontWeight: '600', color: colors.text, lineHeight: 21 },
+  cardTitleDone: { color: colors.textTertiary, textDecorationLine: 'line-through' },
+  cardTypeLabel: { fontSize: 11, fontWeight: '500', color: colors.textTertiary, marginTop: 1 },
 
-  chipRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
+  chipRow: { flexDirection: 'row', gap: spacing.xs },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
+    backgroundColor: colors.bgSecondary,
   },
-  chipText: { fontSize: 11, fontWeight: '600' },
-  cardDesc: { fontSize: 12, color: colors.textSecondary, lineHeight: 18 },
+  chipText: { fontSize: 11, fontWeight: '500', color: colors.textSecondary },
+  cardDesc: { fontSize: 12, color: colors.textTertiary, lineHeight: 18 },
 
   doneCTA: {
     flexDirection: 'row',
@@ -691,14 +682,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 9,
-    borderRadius: radius.pill,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    backgroundColor: colors.primary50,
+    borderRadius: radius.lg,
+    backgroundColor: colors.bgSecondary,
   },
-  doneCTADone:  { backgroundColor: colors.success, borderColor: colors.success },
-  doneCTAText:  { fontSize: 13, fontWeight: '700', color: colors.primary },
-  statusMsg:    { fontSize: 11, color: colors.primary, textAlign: 'center' },
+  doneCTADone:  { backgroundColor: colors.success },
+  doneCTAText:  { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+  statusMsg:    { fontSize: 11, color: colors.textTertiary, textAlign: 'center' },
 
   /* Add button */
   addBtn: {
@@ -707,32 +696,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     backgroundColor: colors.primary,
-    paddingVertical: 15,
-    borderRadius: radius.pill,
-    ...shadow.primary,
+    height: 44,
+    borderRadius: radius.lg,
   },
-  addBtnText: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  addBtnText: { fontSize: 15, fontWeight: '600', color: '#fff' },
 
   /* Empty */
   emptyBox: {
     alignItems: 'center',
-    paddingVertical: spacing.xxxl,
+    paddingVertical: 48,
     paddingHorizontal: spacing.xl,
-    gap: spacing.md,
+    gap: spacing.sm,
     backgroundColor: colors.card,
     marginHorizontal: spacing.xl,
-    borderRadius: radius.xxl,
-    ...shadow.card,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   emptyIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary50,
+    width: 52,
+    height: 52,
+    borderRadius: 13,
+    backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  emptyTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'center' },
   emptyHint:  { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
 
   /* Modal */
@@ -753,7 +743,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.md,
-    backgroundColor: colors.primary100,
+    backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -773,20 +763,22 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 13,
-    borderRadius: radius.pill,
+    height: 44,
+    borderRadius: radius.lg,
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.bgSecondary,
     borderWidth: 1,
     borderColor: colors.line,
   },
-  cancelText: { fontSize: 14, fontWeight: '600', color: colors.textSecondary },
+  cancelText: { fontSize: 14, fontWeight: '500', color: colors.textSecondary },
   saveBtn: {
     flex: 2,
-    paddingVertical: 13,
-    borderRadius: radius.pill,
+    height: 44,
+    borderRadius: radius.lg,
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.primary,
   },
-  saveText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  saveText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 });

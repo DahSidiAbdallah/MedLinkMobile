@@ -60,7 +60,9 @@ export default {
       from: 'de',
       tagline: 'Votre compagnon santé',
       noImage: 'Pas d\'image',
-      continue: 'Continuer'
+      continue: 'Continuer',
+      hello: 'Bonjour !',
+      of: 'sur'
     },
     navigation: {
       dashboard: 'Accueil',
@@ -88,18 +90,17 @@ export default {
       incorrectCredentials: 'Email ou mot de passe incorrect',
       invalidCredentials: 'Email ou mot de passe incorrect',
       accountExists: 'Un compte avec cet email existe déjà. Veuillez vous connecter.',
-        insurance: 'Assurance',
-        provider: 'Fournisseur',
-        providerWithValue: 'Fournisseur : {{provider}}',
-        policyNumberShort: 'Police #',
-        noInsuranceInfo: 'Aucune information d\'assurance.',
-        medicalId: 'Identifiant médical',
-       
-        bloodTypeWithValue: 'Groupe sanguin : {{bloodType}}',
-        none: 'Aucun',
-        privacy: 'Confidentialité',
-        version: 'v{{version}}',
-        ice: 'ICE',
+      insurance: 'Assurance',
+      provider: 'Fournisseur',
+      providerWithValue: 'Fournisseur : {{provider}}',
+      policyNumberShort: 'Police #',
+      noInsuranceInfo: 'Aucune information d\'assurance.',
+      medicalId: 'Identifiant médical',
+      bloodTypeWithValue: 'Groupe sanguin : {{bloodType}}',
+      none: 'Aucun',
+      privacy: 'Confidentialité',
+      version: 'v{{version}}',
+      ice: 'ICE',
       genericError: 'Une erreur s\'est produite. Veuillez réessayer.',
       errors: {
         fullNameRequired: 'Le nom complet est requis.',
@@ -141,7 +142,7 @@ export default {
       medications: 'Médicaments',
       createYourAccount: 'Créez votre compte',
       signInToAccount: 'Connectez-vous à votre compte',
-  noAccount: "Vous n'avez pas de compte ?",
+      noAccount: "Vous n'avez pas de compte ?",
       signInHere: 'Connectez-vous ici',
       signUpHere: 'Inscrivez-vous ici',
       forgotPassword: 'Mot de passe oublié ?',
@@ -309,13 +310,10 @@ export default {
       settings: 'Paramètres',
       basicInfo: 'Informations de base',
       allergies: 'Allergies',
-
       conditions: {
         label: 'Conditions médicales',
         other: 'Autre (saisir ci-dessous)',
       },
-
-
       medications: 'Médicaments',
       addAllergy: 'Ajouter une allergie',
       addCondition: 'Ajouter une condition',
@@ -349,7 +347,7 @@ export default {
       primary: 'Principal',
       addContact: 'Ajouter un contact',
       confirmLogoutTitle: 'Confirmer la déconnexion',
-      confirmLogoutMessage: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+      confirmLogoutMessage: 'Êtes-vous sûr de vouloir vous déconnecter ?',
       medicalId: 'ID médical',
       phoneDigitsPlaceholder: 'Téléphone (8 chiffres)',
       relationship: 'Relation',
@@ -373,14 +371,14 @@ export default {
         other: 'Autre (saisir ci-dessous)'
       },
       conditionOptions: {
-  diabetes: 'Diabète',
-  hypertension: 'Hypertension',
-  asthma: 'Asthme',
-  heartDisease: 'Maladie cardiaque',
-  kidneyDisease: 'Maladie rénale',
-  liverDisease: 'Maladie du foie',
-  epilepsy: 'Épilepsie',
-  other: 'Autre (à saisir ci-dessous)'
+        diabetes: 'Diabète',
+        hypertension: 'Hypertension',
+        asthma: 'Asthme',
+        heartDisease: 'Maladie cardiaque',
+        kidneyDisease: 'Maladie rénale',
+        liverDisease: 'Maladie du foie',
+        epilepsy: 'Épilepsie',
+        other: 'Autre (à saisir ci-dessous)'
       },
       insurance: 'Assurance',
       provider: 'Fournisseur',
@@ -392,7 +390,9 @@ export default {
       loadingMedications: 'Chargement des médicaments...',
       manageHealthInfo: 'Gérez vos informations de santé',
       healthSummary: 'Résumé de santé',
-      healthSummaryHint: 'Consultez et maintenez vos données médicales à jour.'
+      healthSummaryHint: 'Consultez et maintenez vos données médicales à jour.',
+      conditions: 'Conditions',
+      fullName: 'Nom complet'
     },
     doctors: {
       cardiologist: 'Cardiologue',
@@ -420,17 +420,18 @@ export default {
         confirmed: 'Confirmé',
         completed: 'Terminé',
         cancelled: 'Annulé'
-  },
+      },
       languages: 'Langues',
       insurance: 'Assurance',
-      availableSlots: 'Créneaux disponibles'
+      availableSlots: 'Créneaux disponibles',
+      upcomingCount: 'Rendez-vous les plus proches'
     },
     reminders: {
       title: 'Rappels de médicaments et de rendez-vous',
       create: 'Créer un rappel',
       createFirst: 'Créez votre premier rappel',
       noReminders: 'Aucun rappel trouvé',
-  noRemindersYet: "Vous n'avez pas encore de rappels",
+      noRemindersYet: "Vous n'avez pas encore de rappels",
       type: 'Type de rappel',
       reminderTitle: 'Titre',
       description: 'Description (facultatif)',
@@ -638,7 +639,19 @@ export default {
       conditionRisk: 'Risque de condition',
       interactionRisk: 'Risque d\'interaction',
       savedToMedications: '✓ Sauvegardé dans Mes médicaments !',
-      failedToSave: 'Échec de la sauvegarde du médicament. Veuillez réessayer.'
+      failedToSave: 'Échec de la sauvegarde du médicament. Veuillez réessayer.',
+      scan: 'Scanner',
+      cameraRequired: 'Accès caméra requis',
+      grantPermission: 'Autoriser l\'accès',
+      scans: 'scans',
+      total: 'total',
+      allergies: 'allergies',
+      crossCheckActive: 'Vérification croisée avec votre profil médical',
+      meds: 'médicaments',
+      conditions: 'conditions',
+      format: 'Format',
+      code: 'Code',
+      unknown: 'Pas de données'
     },
     validation: {
       required: 'Requis',
@@ -653,6 +666,10 @@ export default {
       title: 'Tableau de bord',
       welcome: 'Bon retour',
       welcomeUser: 'Bon retour, {{name}}',
+      nextDose: 'Prochain rendez-vous',
+      dosesCompleted: 'doses effectuées',
+      total: 'Total',
+      upcomingReminders: 'À venir',
       todayProgress: "Progrès d'aujourd'hui",
       activeReminders: 'Rappels actifs',
       noActiveReminders: 'Aucun rappel actif',
@@ -662,7 +679,8 @@ export default {
       addMedicationsHint: 'Scannez des médicaments pour les ajouter ici',
       quickServices: 'Services rapides',
       urgentCare: 'Soins urgents',
-      nearbyFacilities: 'Établissements à proximité',
+      nearbyFacilities: 'À proximité',
+      found: 'trouvé',
       viewAll: 'Voir tout',
       seeAll: 'Voir tout',
       healthSummary: 'Résumé de santé',

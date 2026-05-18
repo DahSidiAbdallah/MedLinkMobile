@@ -8,7 +8,8 @@ import {
   Alert, 
   Animated,
   ScrollView,
-  Linking 
+  Linking,
+  Image as RNImage
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +37,6 @@ import { colors, spacing, radius, shadow, animation } from '../theme';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
 import { useToast } from '../hooks/useToast';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const TELEMETRY_KEY = 'settings_telemetry_enabled_v1';
 const HAPTICS_KEY = 'settings_haptics_enabled_v1';
@@ -61,6 +61,11 @@ export default function Settings({ navigation }: SettingsProps) {
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const [languageAnim] = useState(() => ({
+    en: new Animated.Value(1),
+    fr: new Animated.Value(1),
+    ar: new Animated.Value(1),
+  }));
 
   useEffect(() => {
     // Entrance animations
@@ -114,7 +119,24 @@ export default function Settings({ navigation }: SettingsProps) {
     }
   };
 
+  const animateLanguageChange = (lang: string) => {
+    // Scale up animation for selected language
+    Animated.sequence([
+      Animated.timing(languageAnim[lang as keyof typeof languageAnim], {
+        toValue: 1.15,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(languageAnim[lang as keyof typeof languageAnim], {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const handleLanguageChange = (lang: string) => {
+    animateLanguageChange(lang);
     i18n.changeLanguage(lang);
     const name = lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'العربية';
     showSuccess(t('settings.languageChanged', 'Language Changed'), t('settings.languageChangedTo', 'Language changed to {{name}}', { name }));
@@ -185,7 +207,7 @@ export default function Settings({ navigation }: SettingsProps) {
     destructive = false
   ) => (
     <Pressable style={styles.actionRow} onPress={onPress}>
-      <View style={[styles.settingIcon, destructive && { backgroundColor: colors.danger100 }]}>
+      <View style={styles.settingIcon}>
         <Ionicons name={icon as any} size={20} color={destructive ? colors.danger : colors.primary} />
       </View>
       <View style={styles.settingContent}>
@@ -204,17 +226,12 @@ export default function Settings({ navigation }: SettingsProps) {
           transform: [{ translateY: slideAnim }]
         }}
       >
-        <LinearGradient
-          colors={colors.primaryGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.hero}
-        >
+        <View style={styles.hero}>
           <Text style={styles.heroTitle}>{t('settings.title', 'Settings')}</Text>
           <Text style={styles.heroSubtitle}>
             {t('settings.subtitle', 'Customize your MedLink experience')}
           </Text>
-        </LinearGradient>
+        </View>
       </Animated.View>
 
       <Animated.View
@@ -286,26 +303,44 @@ export default function Settings({ navigation }: SettingsProps) {
           <Text style={styles.sectionTitle}>{t('settings.language', 'Language')}</Text>
           <View style={styles.languageGrid}>
             {[
-              { code: 'en', name: 'English', flag: '🇺🇸' },
-              { code: 'fr', name: 'Français', flag: '🇫🇷' },
-              { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+              { code: 'en', name: 'English', flag: require('../assets/gb.svg') },
+              { code: 'fr', name: 'Français', flag: require('../assets/fr.svg') },
+              { code: 'ar', name: 'العربية', flag: require('../assets/mr.svg') },
             ].map((lang) => (
-              <Pressable
+              <Animated.View
                 key={lang.code}
-                style={[
-                  styles.languageOption,
-                  i18n.language === lang.code && styles.languageOptionActive
-                ]}
-                onPress={() => handleLanguageChange(lang.code)}
+                style={{
+                  transform: [{ scale: languageAnim[lang.code as keyof typeof languageAnim] }],
+                  flex: 1,
+                  minWidth: 100,
+                }}
               >
-                <Text style={styles.languageFlag}>{lang.flag}</Text>
-                <Text style={[
-                  styles.languageName,
-                  i18n.language === lang.code && styles.languageNameActive
-                ]}>
-                  {lang.name}
-                </Text>
-              </Pressable>
+                <Pressable
+                  style={[
+                    styles.languageOption,
+                    i18n.language === lang.code && styles.languageOptionActive
+                  ]}
+                  onPress={() => handleLanguageChange(lang.code)}
+                >
+                  <View style={[
+                    styles.flagContainer,
+                    i18n.language === lang.code && styles.flagContainerActive
+                  ]}>
+                    <RNImage source={lang.flag} style={styles.languageFlag} resizeMode="contain" />
+                  </View>
+                  <Text style={[
+                    styles.languageName,
+                    i18n.language === lang.code && styles.languageNameActive
+                  ]}>
+                    {lang.name}
+                  </Text>
+                  {i18n.language === lang.code && (
+                    <View style={styles.activeIndicator}>
+                      <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                    </View>
+                  )}
+                </Pressable>
+              </Animated.View>
             ))}
           </View>
         </Card>
@@ -378,39 +413,37 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl * 2,
   },
   hero: {
-    paddingTop: spacing.xxl * 1.2,
-    paddingBottom: spacing.xxl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.xl,
-    borderBottomLeftRadius: radius.xl + 6,
-    borderBottomRightRadius: radius.xl + 6,
-    alignItems: 'center',
-    gap: spacing.md,
-    marginHorizontal: spacing.md,
+    gap: spacing.xs,
   },
   heroTitle: {
     fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 36,
-    color: '#fff',
-    textAlign: 'center',
+    fontWeight: '800',
+    color: colors.text,
+    letterSpacing: -0.6,
   },
   heroSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
+    color: colors.textSecondary,
+    fontSize: 15,
+    lineHeight: 22,
   },
   sectionCard: {
     gap: spacing.lg,
     marginHorizontal: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 13,
     fontWeight: '600',
-    lineHeight: 28,
-    color: colors.text,
-    marginBottom: spacing.sm,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: spacing.xs,
   },
   settingRow: {
     flexDirection: 'row',
@@ -422,17 +455,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
     borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    marginVertical: spacing.xs,
   },
   settingIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.sm,
-    backgroundColor: colors.primary100,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -464,16 +495,38 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
+    backgroundColor: colors.bgSecondary,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.line,
   },
   languageOptionActive: {
-    backgroundColor: colors.primary100,
+    backgroundColor: colors.primary50,
     borderColor: colors.primary,
+    borderWidth: 1.5,
+  },
+  flagContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+    overflow: 'hidden',
+  },
+  flagContainerActive: {
+    borderColor: colors.primary,
+    borderWidth: 1,
   },
   languageFlag: {
-    fontSize: 24,
+    width: 36,
+    height: 24,
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
   },
   languageName: {
     fontSize: 14,

@@ -1,6 +1,5 @@
 import { saveMedication } from '../utils/myMedications';
-// TEMPORARILY DISABLED - Causing module load error
-// import { checkDrugSafety, type SafetyCheck } from '../utils/drugInteractionChecker';
+import { checkDrugSafety, type SafetyCheck, type InteractionSeverity } from '../utils/drugInteractionChecker';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +51,7 @@ type RiskItem = {
   type: 'allergy' | 'condition' | 'interaction';
   label: string;
   detail: string;
+  severity?: InteractionSeverity;
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -199,6 +199,7 @@ const BarcodeScanner: React.FC = () => {
   const [history, setHistory] = useState<ScanHistoryItem[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [risks, setRisks] = useState<RiskItem[]>([]);
+  const [safetyCheck, setSafetyCheck] = useState<SafetyCheck | null>(null);
   const [filter, setFilter] = useState<'all' | 'successful' | 'risk'>('all');
   const [pulse, setPulse] = useState(true);
   const [barcodeDetected, setBarcodeDetected] = useState(false);
@@ -264,6 +265,7 @@ const BarcodeScanner: React.FC = () => {
     setError(null);
     setVerification(null);
     setRisks([]);
+    setSafetyCheck(null);
     setShowScanEffect(true);
 
     let result: VerificationResult | null = null;
@@ -295,10 +297,44 @@ const BarcodeScanner: React.FC = () => {
       }
       telemetry.lookupSuccess = !!result;
 
-      // Cross-examination against user profile
+      // Cross-examination against user profile — text matching (fast, offline)
       if (profile && result && result.label) {
         riskItems = buildRiskItems(profile, result, t);
         setRisks(riskItems);
+      }
+
+      // RxNorm drug-drug interaction check (real clinical data, async)
+      if (profile && result) {
+        const drugName =
+          result.label?.openfda?.brand_name?.[0] ||
+          result.label?.openfda?.generic_name?.[0] ||
+          result.label?.brand_name ||
+          result.label?.generic_name ||
+          result.labelInfo?.indications?.split(' ').slice(0, 3).join(' ') ||
+          '';
+        if (drugName && (profile.medications?.length ?? 0) > 0) {
+          try {
+            const safety = await checkDrugSafety(drugName, profile.medications ?? []);
+            setSafetyCheck(safety);
+            // Merge RxNorm interactions into risk items (avoid duplicates)
+            if (safety.interactions.length > 0) {
+              const rxnormRisks: RiskItem[] = safety.interactions.map(inter => ({
+                type: 'interaction' as const,
+                label: t('scanner.interactionRisk', 'Drug Interaction'),
+                detail: `${t('scanner.interactsWith', 'Potential interaction with your current medication:')} "${inter.medication}". ${inter.description}`,
+                severity: inter.severity,
+              }));
+              setRisks(prev => {
+                // Remove simple text-match interactions, replace with richer RxNorm ones
+                const nonInteractionRisks = prev.filter(r => r.type !== 'interaction');
+                return [...nonInteractionRisks, ...rxnormRisks];
+              });
+              riskItems = [...riskItems.filter(r => r.type !== 'interaction'), ...rxnormRisks];
+            }
+          } catch {
+            // RxNorm check failed — keep text-match results
+          }
+        }
       }
     } catch (e: any) {
       err = e?.message || t('scanner.verificationFailed', 'Verification failed. Please try again.');
@@ -342,6 +378,7 @@ const BarcodeScanner: React.FC = () => {
     setError(null);
     setLoading(false);
     setRisks([]);
+    setSafetyCheck(null);
   };
 
   // ── Permission denied state ───────────────────────────────────────────────
@@ -526,31 +563,56 @@ const BarcodeScanner: React.FC = () => {
                 <Text style={styles.riskCountText}>{risks.length}</Text>
               </View>
             </View>
-            {risks.map((risk, idx) => (
-              <View key={idx} style={[
-                styles.riskItem,
-                risk.type === 'allergy' && { borderLeftColor: colors.danger },
-                risk.type === 'condition' && { borderLeftColor: colors.warn },
-                risk.type === 'interaction' && { borderLeftColor: colors.secondary },
-              ]}>
-                <View style={[
-                  styles.riskTypeBadge,
-                  risk.type === 'allergy' && { backgroundColor: colors.dangerLight },
-                  risk.type === 'condition' && { backgroundColor: colors.warnLight },
-                  risk.type === 'interaction' && { backgroundColor: colors.secondary100 },
-                ]}>
-                  <Text style={[
-                    styles.riskTypeText,
-                    risk.type === 'allergy' && { color: colors.danger },
-                    risk.type === 'condition' && { color: colors.warn },
-                    risk.type === 'interaction' && { color: colors.secondary },
-                  ]}>
-                    {risk.label}
-                  </Text>
-                </View>
-                <Text style={styles.riskDetail}>{risk.detail}</Text>
+            {safetyCheck?.apiAvailable && (
+              <View style={styles.rxnormBadge}>
+                <Ionicons name="shield-checkmark-outline" size={12} color={colors.success} />
+                <Text style={styles.rxnormBadgeText}>{t('scanner.rxnormVerified', 'Verified via NIH RxNorm Interaction Database')}</Text>
               </View>
-            ))}
+            )}
+            {risks.map((risk, idx) => {
+              const severityColor =
+                risk.severity === 'major' ? colors.danger :
+                risk.severity === 'moderate' ? colors.warn :
+                risk.severity === 'minor' ? colors.textSecondary :
+                undefined;
+              return (
+                <View key={idx} style={[
+                  styles.riskItem,
+                  risk.type === 'allergy' && { borderLeftColor: colors.danger },
+                  risk.type === 'condition' && { borderLeftColor: colors.warn },
+                  risk.type === 'interaction' && { borderLeftColor: severityColor ?? colors.secondary },
+                ]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <View style={[
+                      styles.riskTypeBadge,
+                      risk.type === 'allergy' && { backgroundColor: colors.dangerLight },
+                      risk.type === 'condition' && { backgroundColor: colors.warnLight },
+                      risk.type === 'interaction' && { backgroundColor: colors.secondary100 },
+                    ]}>
+                      <Text style={[
+                        styles.riskTypeText,
+                        risk.type === 'allergy' && { color: colors.danger },
+                        risk.type === 'condition' && { color: colors.warn },
+                        risk.type === 'interaction' && { color: colors.secondary },
+                      ]}>
+                        {risk.label}
+                      </Text>
+                    </View>
+                    {risk.severity && risk.severity !== 'unknown' && (
+                      <View style={[
+                        styles.severityBadge,
+                        { backgroundColor: severityColor ?? colors.textTertiary },
+                      ]}>
+                        <Text style={styles.severityText}>
+                          {risk.severity.toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.riskDetail}>{risk.detail}</Text>
+                </View>
+              );
+            })}
           </View>
         )}
 
@@ -578,63 +640,66 @@ const BarcodeScanner: React.FC = () => {
           <LabelInfoView labelInfo={verification.labelInfo} label={verification.label} />
         )}
 
-        {/* Supplemental (openFDA + scraper) */}
-        {!loading && (verification?.labelInfo || verification?.webscraperInfo) && (
-          <Card style={styles.infoCard}>
-            {verification.labelInfo && (
-              <>
-                <View style={styles.infoSectionHeader}>
-                  <MaterialCommunityIcons name="pill" size={16} color={colors.primary} />
-                  <Text style={styles.infoSectionTitle}>{t('scanner.openFdaInsights', 'openFDA Drug Data')}</Text>
+        {/* Drug Profile Card — indications, dosage, side effects */}
+        {!loading && (verification?.labelInfo || verification?.webscraperInfo) && (() => {
+          const info = verification.labelInfo || verification.webscraperInfo;
+          const hasInfo = info?.indications || info?.dosage || info?.sideEffects;
+          if (!hasInfo) return null;
+          return (
+            <Card style={styles.drugProfileCard}>
+              <View style={styles.drugProfileHeader}>
+                <View style={styles.drugProfileIcon}>
+                  <MaterialCommunityIcons name="pill" size={18} color={colors.primary} />
                 </View>
-                {verification.labelInfo.indications ? (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>{t('scanner.indications', 'Indications')}</Text>
-                    <Text style={styles.infoValue}>{verification.labelInfo.indications}</Text>
-                  </View>
-                ) : null}
-                {verification.labelInfo.dosage ? (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>{t('scanner.dosage', 'Dosage')}</Text>
-                    <Text style={styles.infoValue}>{verification.labelInfo.dosage}</Text>
-                  </View>
-                ) : null}
-                {verification.labelInfo.sideEffects ? (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>{t('scanner.sideEffects', 'Side Effects')}</Text>
-                    <Text style={styles.infoValue}>{verification.labelInfo.sideEffects}</Text>
-                  </View>
-                ) : null}
-              </>
-            )}
-            {verification.webscraperInfo && (
-              <>
-                <View style={[styles.infoSectionHeader, verification.labelInfo && { marginTop: spacing.lg, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }]}>
-                  <Ionicons name="globe-outline" size={16} color={colors.accent} />
-                  <Text style={[styles.infoSectionTitle, { color: colors.accent }]}>{t('scanner.supplementalData', 'Web-Sourced Data')}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.drugProfileTitle}>{t('scanner.drugProfile', 'Drug Profile')}</Text>
+                  <Text style={styles.drugProfileSub}>
+                    {verification?.webscraperInfo
+                      ? t('scanner.sourceOpenFdaWeb', 'openFDA + Web data')
+                      : t('scanner.sourceOpenFda', 'openFDA drug label')}
+                  </Text>
                 </View>
-                {verification.webscraperInfo.indications ? (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>{t('scanner.indications', 'Indications')}</Text>
-                    <Text style={styles.infoValue}>{verification.webscraperInfo.indications}</Text>
+              </View>
+
+              {info?.indications && (
+                <View style={styles.drugProfileSection}>
+                  <View style={styles.drugProfileSectionLabel}>
+                    <Ionicons name="checkmark-circle-outline" size={13} color={colors.success} />
+                    <Text style={[styles.infoLabel, { color: colors.success }]}>{t('scanner.indications', 'What it\'s used for')}</Text>
                   </View>
-                ) : null}
-                {verification.webscraperInfo.dosage ? (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>{t('scanner.dosage', 'Dosage')}</Text>
-                    <Text style={styles.infoValue}>{verification.webscraperInfo.dosage}</Text>
+                  <Text style={styles.drugProfileText} numberOfLines={5}>{info.indications}</Text>
+                </View>
+              )}
+
+              {info?.dosage && (
+                <View style={styles.drugProfileSection}>
+                  <View style={styles.drugProfileSectionLabel}>
+                    <Ionicons name="timer-outline" size={13} color={colors.primary} />
+                    <Text style={[styles.infoLabel, { color: colors.primary }]}>{t('scanner.dosage', 'Dosage')}</Text>
                   </View>
-                ) : null}
-                {verification.webscraperInfo.sideEffects ? (
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>{t('scanner.sideEffects', 'Side Effects')}</Text>
-                    <Text style={styles.infoValue}>{verification.webscraperInfo.sideEffects}</Text>
+                  <Text style={styles.drugProfileText} numberOfLines={5}>{info.dosage}</Text>
+                </View>
+              )}
+
+              {info?.sideEffects && (
+                <View style={[styles.drugProfileSection, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                  <View style={styles.drugProfileSectionLabel}>
+                    <Ionicons name="alert-circle-outline" size={13} color={colors.warn} />
+                    <Text style={[styles.infoLabel, { color: colors.warn }]}>{t('scanner.sideEffects', 'Side Effects')}</Text>
                   </View>
-                ) : null}
-              </>
-            )}
-          </Card>
-        )}
+                  <Text style={styles.drugProfileText} numberOfLines={5}>{info.sideEffects}</Text>
+                </View>
+              )}
+
+              {verification?.webscraperInfo && verification?.labelInfo && (
+                <View style={[styles.infoSectionHeader, { marginTop: spacing.lg, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }]}>
+                  <Ionicons name="globe-outline" size={14} color={colors.accent} />
+                  <Text style={[styles.infoSectionTitle, { color: colors.accent, fontSize: 12 }]}>{t('scanner.supplementalData', 'Additional web-sourced data available')}</Text>
+                </View>
+              )}
+            </Card>
+          );
+        })()}
 
         {error && !loading && (
           <View style={styles.errorCard}>
@@ -726,9 +791,10 @@ const BarcodeScanner: React.FC = () => {
                 {getUserMessage(item.verification, item.error, t)}
               </Text>
               {hasRisk && (
-                <Text style={styles.historyItemRisk} numberOfLines={2}>
-                  ⚠ {item.risk}
-                </Text>
+                <View style={styles.historyItemRiskRow}>
+                  <Ionicons name="warning-outline" size={12} color={colors.warn} />
+                  <Text style={styles.historyItemRisk} numberOfLines={2}>{item.risk}</Text>
+                </View>
               )}
             </View>
           );
@@ -777,7 +843,7 @@ const OVERLAY_DARK = 'rgba(0,0,0,0.55)';
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingBottom: 110,
     gap: spacing.lg,
     paddingTop: spacing.md,
@@ -810,7 +876,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
-    backgroundColor: colors.primary100,
+    backgroundColor: colors.primary50,
     borderRadius: radius.pill,
   },
   pageStatValue: {
@@ -975,9 +1041,11 @@ const styles = StyleSheet.create({
   permissionBtn: {
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.md,
-    borderRadius: radius.xl,
+    height: 44,
+    borderRadius: radius.lg,
     marginTop: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   permissionBtnText: {
     color: '#fff',
@@ -991,7 +1059,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.lg,
-    borderRadius: radius.xl,
+    borderRadius: radius.xxl,
   },
   statusLabel: {
     fontSize: 18,
@@ -1106,6 +1174,32 @@ const styles = StyleSheet.create({
     color: colors.text,
     lineHeight: 18,
   },
+  rxnormBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.successLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    alignSelf: 'flex-start',
+  },
+  rxnormBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: colors.success,
+  },
+  severityBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+  },
+  severityText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
 
   // Recall card
   recallCard: {
@@ -1141,6 +1235,52 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: colors.danger,
+  },
+
+  // Drug profile card
+  drugProfileCard: {
+    gap: spacing.md,
+  },
+  drugProfileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  drugProfileIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.primary50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  drugProfileTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  drugProfileSub: {
+    fontSize: 11,
+    color: colors.textTertiary,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  drugProfileSection: {
+    gap: spacing.xs,
+    paddingBottom: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
+  },
+  drugProfileSectionLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  drugProfileText: {
+    fontSize: 13,
+    color: colors.text,
+    lineHeight: 20,
   },
 
   // Info sections
@@ -1205,8 +1345,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.md,
-    borderRadius: radius.xl,
+    height: 44,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.bgSecondary,
@@ -1222,8 +1362,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.md,
-    borderRadius: radius.xl,
+    height: 44,
+    borderRadius: radius.lg,
     backgroundColor: colors.primary,
   },
   btnPrimaryText: {
@@ -1290,7 +1430,13 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 16,
   },
+  historyItemRiskRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
   historyItemRisk: {
+    flex: 1,
     fontSize: 12,
     color: colors.warn,
     lineHeight: 16,

@@ -60,6 +60,11 @@ export default function Input({
     outputRange: [error ? colors.danger : colors.line, error ? colors.danger : colors.primary],
   });
 
+  const backgroundColor = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [colors.card, colors.card],
+  });
+
   const shadowOpacity = focusAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 0.15],
@@ -73,10 +78,11 @@ export default function Input({
           styles.inputWrapper,
           {
             borderColor,
+            backgroundColor,
             shadowOpacity,
             shadowColor: error ? colors.danger : colors.primary,
-            shadowRadius: 12,
-            shadowOffset: { width: 0, height: 4 },
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
           },
         ]}
       >
@@ -124,16 +130,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
+    borderRadius: radius.lg, // VELO: larger rounded corners
+    borderWidth: 1, // VELO: lighter border
     paddingHorizontal: spacing.md,
-    minHeight: 52,
+    minHeight: 56, // VELO: taller inputs
   },
   input: {
     flex: 1,
@@ -150,13 +156,13 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   error: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.danger,
     marginTop: spacing.xs,
   },
   hint: {
-    fontSize: 13,
-    color: colors.muted,
+    fontSize: 12,
+    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
 });

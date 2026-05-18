@@ -29,25 +29,25 @@ type ButtonProps = {
 
 const sizeStyles = {
   sm: { 
-    paddingVertical: 8, 
-    paddingHorizontal: 16, 
+    paddingVertical: 10, 
+    paddingHorizontal: 20, 
     fontSize: 14,
     fontWeight: '600' as const,
-    minHeight: 36,
+    minHeight: 40,
   },
   md: { 
-    paddingVertical: 12, 
-    paddingHorizontal: 20, 
+    paddingVertical: 14, 
+    paddingHorizontal: 24, 
     fontSize: 16,
-    fontWeight: '600' as const,
-    minHeight: 44,
+    fontWeight: '700' as const,
+    minHeight: 52,
   },
   lg: { 
-    paddingVertical: 16, 
-    paddingHorizontal: 24, 
+    paddingVertical: 18, 
+    paddingHorizontal: 28, 
     fontSize: 18,
-    fontWeight: '600' as const,
-    minHeight: 52,
+    fontWeight: '700' as const,
+    minHeight: 56,
   },
 };
 
@@ -58,7 +58,7 @@ export default function Button({
   size = 'md',
   loading = false,
   disabled = false,
-  fullWidth = false,
+  fullWidth = true, // VELO: full-width by default
   icon,
   iconPosition = 'left',
   style,
@@ -92,7 +92,7 @@ export default function Button({
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.sm,
-      borderRadius: radius.md,
+      borderRadius: radius.xl, // VELO: larger rounded corners
       paddingVertical: sizeConfig.paddingVertical,
       paddingHorizontal: sizeConfig.paddingHorizontal,
       minHeight: sizeConfig.minHeight,
@@ -107,19 +107,19 @@ export default function Button({
       case 'secondary':
         return { 
           ...base, 
-          backgroundColor: colors.secondary,
+          backgroundColor: colors.accent, // VELO: use accent color for secondary
         };
       case 'outline':
         return { 
           ...base, 
           backgroundColor: 'transparent', 
-          borderWidth: 1, 
+          borderWidth: 1.5, 
           borderColor: colors.primary,
         };
       case 'ghost':
         return { 
           ...base, 
-          backgroundColor: colors.hover,
+          backgroundColor: colors.bg,
         };
       case 'danger':
         return { 
@@ -135,6 +135,7 @@ export default function Button({
         return {
           ...base,
           backgroundColor: colors.primary,
+          ...shadow.primary, // VELO: add shadow to primary buttons
         };
     }
   };

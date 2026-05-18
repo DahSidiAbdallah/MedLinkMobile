@@ -59,7 +59,9 @@ export default {
       from: 'from',
       tagline: 'Your Health Companion',
       noImage: 'No Image',
-      continue: 'Continue'
+      continue: 'Continue',
+      hello: 'Hello!',
+      of: 'of'
     },
     navigation: {
       dashboard: 'Home',
@@ -170,6 +172,7 @@ export default {
       conditionEmpty: 'Condition cannot be empty',
       passwordRequired: 'Password is required',
       invalidPassword: 'Password must be at least 8 characters and include both letters and numbers',
+      conditions: 'Conditions'
     },
     calendar: {
       selectDate: 'Select date',
@@ -224,7 +227,7 @@ export default {
       myMedications: 'My Medications',
       noMedications: 'No medications saved.',
       loadingMedications: 'Loading medications...',
-
+      fullName: 'Full name',
       deleteError: 'Error deleting profile',
       primary: 'Primary',
       addContact: 'Add Contact',
@@ -384,7 +387,8 @@ export default {
       reminderActivated: 'Reminder activated.',
       failedToUpdate: 'Failed to update reminder.',
       active: 'Active',
-      past: 'Past'
+      past: 'Past',
+      upcomingCount: 'Nearest appointments'
     },
     doctors: {
       cardiologist: 'Cardiologist',
@@ -502,7 +506,8 @@ export default {
       addMedicationsHint: 'Scan medications to add them here',
       quickServices: 'Quick Services',
       urgentCare: 'Urgent Care',
-      nearbyFacilities: 'Nearby Facilities',
+      nearbyFacilities: 'Nearby',
+      found: 'found',
       viewAll: 'View All',
       seeAll: 'See All',
       healthSummary: 'Health Summary',
@@ -512,7 +517,11 @@ export default {
       greatJob: 'Great job! All doses completed today!',
       accessEmergency: 'Access emergency contacts & nearby facilities',
       upcomingSchedule: 'Your upcoming medication schedule',
-      scannedMedications: 'Scanned and saved medications'
+      scannedMedications: 'Scanned and saved medications',
+      nextDose: 'Next appointment',
+      dosesCompleted: 'doses done',
+      total: 'Total',
+      upcomingReminders: 'Upcoming'
     },
     facilities: {
       title: 'Facilities',
@@ -609,7 +618,19 @@ export default {
       conditionRisk: 'Condition risk',
       interactionRisk: 'Interaction risk',
       savedToMedications: '✓ Saved to My Medications!',
-      failedToSave: 'Failed to save medication. Please try again.'
+      failedToSave: 'Failed to save medication. Please try again.',
+      scan: 'Scan',
+      cameraRequired: 'Camera Access Required',
+      grantPermission: 'Grant Access',
+      scans: 'scans',
+      total: 'total',
+      allergies: 'allergies',
+      crossCheckActive: 'Cross-checking against your medical profile',
+      meds: 'medications',
+      conditions: 'conditions',
+      format: 'Format',
+      code: 'Code',
+      unknown: 'No Data'
     },
     loading: {
       default: 'Loading...',

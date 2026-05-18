@@ -6,59 +6,42 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Animated,
-  ScrollView,
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { LinearGradient } from 'expo-linear-gradient';
 import BloodTypePicker from '../components/BloodTypePicker';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
-import Button from '../components/Button';
-import { SegmentedControl } from '../components/SegmentedControl';
 import { auth, db } from '../lib/firebase';
 import { colors, spacing, radius, animation, shadow } from '../theme';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../hooks/useToast';
 
 type LoginProps = { navigation?: any; onLogin?: () => void };
-
 type StepKey = 0 | 1;
+type RegisterErrorState = { email?: string; password?: string; confirmPassword?: string };
+type RegisterPersonalErrors = { name?: string; phone?: string; dateOfBirth?: string };
+type HealthErrors = { bloodType?: string; allergies?: string; conditions?: string };
 
-type RegisterErrorState = {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-};
-
-type RegisterPersonalErrors = {
-  name?: string;
-  phone?: string;
-  dateOfBirth?: string;
-};
-
-type HealthErrors = {
-  bloodType?: string;
-  allergies?: string;
-  conditions?: string;
-};
+const LANGS = [
+  { code: 'en', flag: '🇺🇸' },
+  { code: 'fr', flag: '🇫🇷' },
+  { code: 'ar', flag: '🇸🇦' },
+] as const;
 
 export default function Login({ onLogin }: Readonly<LoginProps>) {
   const { t, i18n } = useTranslation();
   const { showSuccess, showError } = useToast();
 
-  const STEPS: { key: StepKey; label: string }[] = [
-    { key: 0, label: t('auth.stepAccount', 'Account') },
-    { key: 1, label: t('auth.stepPersonal', 'Personal') },
-  ];
-  const loginLabel = t('auth.loginLabel', 'Login');
-  const registerLabel = t('auth.registerLabel', 'Register');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -69,13 +52,11 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const slideAnim = useRef(new Animated.Value(28)).current;
+  const scaleAnim = useRef(new Animated.Value(0.96)).current;
 
   useEffect(() => {
-    // Entrance animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -88,21 +69,28 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         tension: 100,
         friction: 8,
       }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 100,
-        friction: 8,
-      }),
     ]).start();
   }, []);
 
-  // Personal info fields
+  useEffect(() => {
+    if (showForgot) {
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 120,
+        friction: 8,
+      }).start();
+    } else {
+      scaleAnim.setValue(0.96);
+    }
+  }, [showForgot]);
+
+  // Personal info
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
 
-  // Health fields
+  // Health info
   const [bloodType, setBloodType] = useState('');
   const [customBloodType, setCustomBloodType] = useState('');
   const [allergyInput, setAllergyInput] = useState('');
@@ -116,7 +104,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
   const [registerPersonalErrors, setRegisterPersonalErrors] = useState<RegisterPersonalErrors>({});
   const [healthErrors, setHealthErrors] = useState<HealthErrors>({});
 
-  // Forgot password dialog state
+  // Forgot password
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -125,35 +113,22 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
 
   const validateLogin = () => {
     const errors: { email?: string; password?: string } = {};
-    if (!email) {
-      errors.email = t('auth.emailRequired', 'Email is required');
-    } else if (!emailRegex.test(email)) {
-      errors.email = t('auth.invalidEmail', 'Please enter a valid email address');
-    }
-    if (!password) {
-      errors.password = t('auth.passwordRequired', 'Password is required');
-    }
+    if (!email) errors.email = t('auth.emailRequired', 'Email is required');
+    else if (!emailRegex.test(email)) errors.email = t('auth.invalidEmail', 'Please enter a valid email address');
+    if (!password) errors.password = t('auth.passwordRequired', 'Password is required');
     setLoginErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const validateAccountStep = () => {
     const errors: RegisterErrorState = {};
-    if (!email) {
-      errors.email = t('auth.emailRequired', 'Email is required');
-    } else if (!emailRegex.test(email)) {
-      errors.email = t('auth.invalidEmail', 'Please enter a valid email address');
-    }
-    if (!password) {
-      errors.password = t('auth.passwordRequired', 'Password is required');
-    } else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      errors.password = t('auth.invalidPassword', 'Password must be at least 8 characters and include both letters and numbers');
-    }
-    if (!confirmPassword) {
-      errors.confirmPassword = t('auth.confirmPasswordRequired', 'Please confirm your password');
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = t('auth.passwordsDoNotMatch', 'Passwords do not match');
-    }
+    if (!email) errors.email = t('auth.emailRequired', 'Email is required');
+    else if (!emailRegex.test(email)) errors.email = t('auth.invalidEmail', 'Please enter a valid email address');
+    if (!password) errors.password = t('auth.passwordRequired', 'Password is required');
+    else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password))
+      errors.password = t('auth.invalidPassword', 'At least 8 characters with letters and numbers');
+    if (!confirmPassword) errors.confirmPassword = t('auth.confirmPasswordRequired', 'Please confirm your password');
+    else if (password !== confirmPassword) errors.confirmPassword = t('auth.passwordsDoNotMatch', 'Passwords do not match');
     setRegisterAccountErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -161,25 +136,15 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
   const validatePersonalStep = () => {
     const errors: RegisterPersonalErrors = {};
     const health: HealthErrors = {};
-    if (!name.trim()) {
-      errors.name = t('auth.nameRequired', 'Full name is required');
-    }
-    if (phone && !/^\d{7,}$/.test(phone)) {
-      errors.phone = t('auth.phoneInvalid', 'Please enter a valid phone number (at least 7 digits)');
-    }
-    if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
-      errors.dateOfBirth = t('auth.dobInvalid', 'Date of Birth must be in YYYY-MM-DD format');
-    }
+    if (!name.trim()) errors.name = t('auth.nameRequired', 'Full name is required');
+    if (phone && !/^\d{7,}$/.test(phone)) errors.phone = t('auth.phoneInvalid', 'Enter a valid phone number (min 7 digits)');
+    if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth))
+      errors.dateOfBirth = t('auth.dobInvalid', 'Use YYYY-MM-DD format');
     const bt = bloodType === 'custom' ? customBloodType.trim() : bloodType;
-    if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt)) {
-      health.bloodType = t('auth.bloodTypeFormatInvalid', 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-');
-    }
-    if (allergies.some(a => !a.trim())) {
-      health.allergies = t('auth.allergyEmpty', 'Allergy cannot be empty');
-    }
-    if (medicalConditions.some(c => !c.trim())) {
-      health.conditions = t('auth.conditionEmpty', 'Condition cannot be empty');
-    }
+    if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt))
+      health.bloodType = t('auth.bloodTypeFormatInvalid', 'Must be A+, A-, B+, B-, AB+, AB-, O+, or O-');
+    if (allergies.some(a => !a.trim())) health.allergies = t('auth.allergyEmpty', 'Allergy cannot be empty');
+    if (medicalConditions.some(c => !c.trim())) health.conditions = t('auth.conditionEmpty', 'Condition cannot be empty');
     setRegisterPersonalErrors(errors);
     setHealthErrors(health);
     return Object.keys(errors).length === 0 && Object.keys(health).length === 0;
@@ -193,22 +158,14 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       showSuccess(t('auth.signInSuccess', 'Welcome back!'), t('auth.signInSuccessMessage', 'You have successfully signed in.'));
       if (onLogin) onLogin();
     } catch (e: any) {
-      let errorMessage = t('auth.genericError', 'Login failed. Please try again.');
-      
-      if (e.code === 'auth/user-not-found') {
-        errorMessage = t('auth.userNotFound', 'No user found with this email');
-      } else if (e.code === 'auth/wrong-password') {
-        errorMessage = t('auth.wrongPassword', 'Incorrect password');
-      } else if (e.code === 'auth/invalid-email') {
-        errorMessage = t('auth.invalidEmailAddress', 'Invalid email address');
-      } else if (e.code === 'auth/invalid-credential') {
-        errorMessage = t('auth.invalidCredential', 'Invalid credentials. Please check your email and password');
-      } else if (e.code === 'auth/too-many-requests') {
-        errorMessage = t('auth.tooManyRequests', 'Too many failed attempts. Please try again later');
-      }
-
-      showError(t('auth.loginFailed', 'Login Failed'), errorMessage);
-      setLoginErrors({ email: errorMessage });
+      let msg = t('auth.genericError', 'Login failed. Please try again.');
+      if (e.code === 'auth/user-not-found') msg = t('auth.userNotFound', 'No user found with this email');
+      else if (e.code === 'auth/wrong-password') msg = t('auth.wrongPassword', 'Incorrect password');
+      else if (e.code === 'auth/invalid-email') msg = t('auth.invalidEmailAddress', 'Invalid email address');
+      else if (e.code === 'auth/invalid-credential') msg = t('auth.invalidCredential', 'Invalid credentials. Check your email and password');
+      else if (e.code === 'auth/too-many-requests') msg = t('auth.tooManyRequests', 'Too many attempts. Try again later');
+      showError(t('auth.loginFailed', 'Login Failed'), msg);
+      setLoginErrors({ email: msg });
     } finally {
       setLoading(false);
     }
@@ -232,33 +189,22 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         medical_conditions: medicalConditions.length > 0 ? medicalConditions : undefined,
       };
       await setDoc(doc(db, 'profiles', user.uid), profile);
-      showSuccess(t('auth.signUpSuccess', 'Account created successfully!'), t('auth.registerSuccessMessage', 'You can now access all features.'));
+      showSuccess(
+        t('auth.signUpSuccess', 'Account created!'),
+        t('auth.registerSuccessMessage', 'You can now access all features.'),
+      );
       setIsRegister(false);
       setRegisterStep(0);
-      // Clear form
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setName('');
-      setPhone('');
-      setDateOfBirth('');
-      setBloodType('');
-      setAllergies([]);
-      setMedicalConditions([]);
+      setEmail(''); setPassword(''); setConfirmPassword('');
+      setName(''); setPhone(''); setDateOfBirth('');
+      setBloodType(''); setAllergies([]); setMedicalConditions([]);
     } catch (e: any) {
-      let errorMessage = t('auth.createAccountFailed', 'Failed to create account. Please try again.');
-
-      if (e.code === 'auth/email-already-in-use') {
-        errorMessage = t('auth.emailAlreadyInUse', 'This email is already in use.');
-      } else if (e.code === 'auth/invalid-email') {
-        errorMessage = t('auth.invalidEmailAddress', 'Invalid email address');
-      } else if (e.code === 'auth/weak-password') {
-        errorMessage = t('auth.weakPassword', 'Password is too weak. Please use a stronger password');
-      } else if (e.code === 'auth/network-request-failed') {
-        errorMessage = t('auth.networkError', 'Please check your internet connection and try again');
-      }
-
-      showError(t('auth.registrationFailed', 'Registration Failed'), errorMessage);
+      let msg = t('auth.createAccountFailed', 'Failed to create account. Please try again.');
+      if (e.code === 'auth/email-already-in-use') msg = t('auth.emailAlreadyInUse', 'This email is already in use.');
+      else if (e.code === 'auth/invalid-email') msg = t('auth.invalidEmailAddress', 'Invalid email address');
+      else if (e.code === 'auth/weak-password') msg = t('auth.weakPassword', 'Password is too weak');
+      else if (e.code === 'auth/network-request-failed') msg = t('auth.networkError', 'Check your internet connection');
+      showError(t('auth.registrationFailed', 'Registration Failed'), msg);
     } finally {
       setLoading(false);
     }
@@ -273,24 +219,24 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       showError(t('common.error', 'Error'), t('auth.invalidEmail', 'Please enter a valid email address'));
       return;
     }
-
     setForgotLoading(true);
     try {
       await sendPasswordResetEmail(auth, forgotEmail);
-      showSuccess(t('auth.emailSentTitle', 'Email Sent'), t('auth.forgotEmailSent', 'Password reset email has been sent to your inbox'));
+      showSuccess(t('auth.emailSentTitle', 'Email Sent'), t('auth.forgotEmailSent', 'Password reset email sent to your inbox'));
       setShowForgot(false);
       setForgotEmail('');
     } catch (e: any) {
-      let errorMessage = t('auth.forgotEmailFailed', 'Failed to send reset email');
-      if (e.code === 'auth/user-not-found') {
-        errorMessage = t('auth.forgotEmailNotFound', 'No user found with this email address');
-      }
-      showError(t('common.error', 'Error'), errorMessage);
+      let msg = t('auth.forgotEmailFailed', 'Failed to send reset email');
+      if (e.code === 'auth/user-not-found') msg = t('auth.forgotEmailNotFound', 'No user found with this email');
+      showError(t('common.error', 'Error'), msg);
     } finally {
       setForgotLoading(false);
     }
   };
 
+  /* ─────────────────────────────────────────
+   * Shared input renderer
+   * ───────────────────────────────────────── */
   const renderInput = (
     props: React.ComponentProps<typeof TextInput> & {
       error?: string;
@@ -303,38 +249,36 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
     },
   ) => {
     const { error, id, icon, showPasswordToggle, isPassword, passwordVisible, onTogglePassword, ...rest } = props;
+    const focused = focusedInput === id;
     return (
       <View style={styles.inputContainer}>
         <View style={[
           styles.inputWrapper,
-          focusedInput === id && styles.inputWrapperFocused,
-          error && styles.inputWrapperError,
+          focused && styles.inputWrapperFocused,
+          !!error && styles.inputWrapperError,
         ]}>
           {icon && (
-            <Ionicons 
-              name={icon} 
-              size={20} 
-              color={focusedInput === id ? colors.primary : colors.muted} 
+            <Ionicons
+              name={icon}
+              size={18}
+              color={focused ? colors.primary : colors.muted}
               style={styles.inputIcon}
             />
           )}
           <TextInput
             {...rest}
-            style={[styles.input, icon && styles.inputWithIcon]}
+            style={styles.input}
             onFocus={() => setFocusedInput(id)}
-            onBlur={event => {
-              rest.onBlur?.(event);
-              setFocusedInput(null);
-            }}
+            onBlur={event => { rest.onBlur?.(event); setFocusedInput(null); }}
             placeholderTextColor={colors.muted}
             secureTextEntry={isPassword && !passwordVisible}
           />
           {showPasswordToggle && (
-            <Pressable onPress={onTogglePassword} style={styles.passwordToggle}>
-              <Ionicons 
-                name={passwordVisible ? 'eye-off' : 'eye'} 
-                size={20} 
-                color={colors.muted} 
+            <Pressable onPress={onTogglePassword} style={styles.passwordToggle} hitSlop={8}>
+              <Ionicons
+                name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={colors.muted}
               />
             </Pressable>
           )}
@@ -344,103 +288,65 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
     );
   };
 
-  const renderLogin = () => (
-    <View style={styles.formContainer}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>{t('auth.signInToAccount', 'Sign in to your account')}</Text>
-        <Text style={styles.subtitle}>{t('auth.loginSubtitle', 'Welcome back! Please enter your details')}</Text>
-      </View>
-
+  /* ─────────────────────────────────────────
+   * Form sections — fields only, no headers
+   * ───────────────────────────────────────── */
+  const renderLoginFields = () => (
+    <View style={styles.fieldGroup}>
       {renderInput({
         id: 'login-email',
-        placeholder: t('auth.emailPlaceholder', 'Enter your email'),
+        placeholder: t('auth.emailAddress', 'Email address'),
         autoCapitalize: 'none',
         keyboardType: 'email-address',
         value: email,
-        onChangeText: text => {
-          setEmail(text);
-          if (loginErrors.email) setLoginErrors(e => ({ ...e, email: undefined }));
-        },
+        onChangeText: text => { setEmail(text); if (loginErrors.email) setLoginErrors(e => ({ ...e, email: undefined })); },
         error: loginErrors.email,
         icon: 'mail-outline',
       })}
-
       {renderInput({
         id: 'login-password',
-        placeholder: t('auth.passwordPlaceholder', 'Enter your password'),
+        placeholder: t('auth.password', 'Password'),
         value: password,
-        onChangeText: text => {
-          setPassword(text);
-          if (loginErrors.password) setLoginErrors(e => ({ ...e, password: undefined }));
-        },
+        onChangeText: text => { setPassword(text); if (loginErrors.password) setLoginErrors(e => ({ ...e, password: undefined })); },
         error: loginErrors.password,
         icon: 'lock-closed-outline',
         isPassword: true,
         passwordVisible: showPassword,
         showPasswordToggle: true,
-        onTogglePassword: () => setShowPassword(!showPassword),
+        onTogglePassword: () => setShowPassword(v => !v),
       })}
-
-      <Pressable onPress={() => setShowForgot(true)} style={styles.forgotButton}>
+      <Pressable onPress={() => setShowForgot(true)} style={styles.forgotBtn}>
         <Text style={styles.forgotText}>{t('auth.forgotPassword', 'Forgot password?')}</Text>
       </Pressable>
-
-      <Button
-        title={loading ? t('auth.signingIn', 'Signing in...') : t('auth.signInButton', 'Sign In')}
-        onPress={handleLogin}
-        disabled={loading}
-        loading={loading}
-        fullWidth
-        style={styles.primaryButton}
-      />
-
-      <View style={styles.switchContainer}>
-        <Text style={styles.switchText}>{t('auth.noAccount', "Don't have an account?")}</Text>
-        <Pressable onPress={() => setIsRegister(true)}>
-          <Text style={styles.switchLink}>{t('auth.signUpHere', 'Sign up here')}</Text>
-        </Pressable>
-      </View>
     </View>
   );
 
-  const renderAccountStep = () => (
-    <View style={styles.formContainer}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>{t('auth.createAccountTitle', 'Create Account')}</Text>
-        <Text style={styles.subtitle}>{t('auth.createAccountSubtitle', 'Enter your email and password to get started')}</Text>
-      </View>
-
+  const renderAccountFields = () => (
+    <View style={styles.fieldGroup}>
       {renderInput({
         id: 'register-email',
-        placeholder: t('auth.emailAddress', 'Email'),
+        placeholder: t('auth.emailAddress', 'Email address'),
         autoCapitalize: 'none',
         keyboardType: 'email-address',
         value: email,
-        onChangeText: text => {
-          setEmail(text);
-          if (registerAccountErrors.email) setRegisterAccountErrors(e => ({ ...e, email: undefined }));
-        },
+        onChangeText: text => { setEmail(text); if (registerAccountErrors.email) setRegisterAccountErrors(e => ({ ...e, email: undefined })); },
         onBlur: () => {
           if (!email) setRegisterAccountErrors(e => ({ ...e, email: t('auth.emailRequired', 'Email is required.') }));
-          else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: t('auth.invalidEmail', 'Please enter a valid email address.') }));
+          else if (!emailRegex.test(email)) setRegisterAccountErrors(e => ({ ...e, email: t('auth.invalidEmail', 'Enter a valid email.') }));
           else setRegisterAccountErrors(e => ({ ...e, email: undefined }));
         },
         error: registerAccountErrors.email,
         icon: 'mail-outline',
       })}
-
       {renderInput({
         id: 'register-password',
         placeholder: t('auth.password', 'Password'),
         value: password,
-        onChangeText: text => {
-          setPassword(text);
-          if (registerAccountErrors.password) setRegisterAccountErrors(e => ({ ...e, password: undefined }));
-        },
+        onChangeText: text => { setPassword(text); if (registerAccountErrors.password) setRegisterAccountErrors(e => ({ ...e, password: undefined })); },
         onBlur: () => {
           if (!password) setRegisterAccountErrors(e => ({ ...e, password: t('auth.passwordRequired', 'Password is required.') }));
           else if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password))
-            setRegisterAccountErrors(e => ({ ...e, password: t('auth.invalidPassword', 'Password must be at least 8 characters and include both letters and numbers.') }));
+            setRegisterAccountErrors(e => ({ ...e, password: t('auth.invalidPassword', 'Min 8 chars, letters and numbers.') }));
           else setRegisterAccountErrors(e => ({ ...e, password: undefined }));
         },
         error: registerAccountErrors.password,
@@ -448,17 +354,13 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         isPassword: true,
         passwordVisible: showPassword,
         showPasswordToggle: true,
-        onTogglePassword: () => setShowPassword(!showPassword),
+        onTogglePassword: () => setShowPassword(v => !v),
       })}
-
       {renderInput({
         id: 'register-confirm',
-        placeholder: t('auth.confirmPassword', 'Confirm Password'),
+        placeholder: t('auth.confirmPassword', 'Confirm password'),
         value: confirmPassword,
-        onChangeText: text => {
-          setConfirmPassword(text);
-          if (registerAccountErrors.confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined }));
-        },
+        onChangeText: text => { setConfirmPassword(text); if (registerAccountErrors.confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: undefined })); },
         onBlur: () => {
           if (!confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: t('auth.confirmPasswordRequired', 'Please confirm your password.') }));
           else if (password !== confirmPassword) setRegisterAccountErrors(e => ({ ...e, confirmPassword: t('auth.passwordsDoNotMatch', 'Passwords do not match.') }));
@@ -469,35 +371,18 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         isPassword: true,
         passwordVisible: showConfirmPassword,
         showPasswordToggle: true,
-        onTogglePassword: () => setShowConfirmPassword(!showConfirmPassword),
+        onTogglePassword: () => setShowConfirmPassword(v => !v),
       })}
-
-      <Button
-        title={t('common.next', 'Next')}
-        onPress={() => {
-          if (validateAccountStep()) setRegisterStep(1);
-        }}
-        fullWidth
-        style={styles.primaryButton}
-      />
     </View>
   );
 
-  const renderPersonalStep = () => (
-    <View style={styles.formContainer}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>{t('auth.personalInfoTitle', 'Personal Information')}</Text>
-        <Text style={styles.subtitle}>{t('auth.personalInfoSubtitle', 'Tell us about yourself to complete your medical profile')}</Text>
-      </View>
-
+  const renderPersonalFields = () => (
+    <View style={styles.fieldGroup}>
       {renderInput({
         id: 'register-name',
-        placeholder: t('auth.fullName', 'Full Name'),
+        placeholder: t('auth.fullName', 'Full name'),
         value: name,
-        onChangeText: text => {
-          setName(text);
-          if (registerPersonalErrors.name) setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
-        },
+        onChangeText: text => { setName(text); if (registerPersonalErrors.name) setRegisterPersonalErrors(e => ({ ...e, name: undefined })); },
         onBlur: () => {
           if (!name.trim()) setRegisterPersonalErrors(e => ({ ...e, name: t('auth.nameRequired', 'Full name is required.') }));
           else setRegisterPersonalErrors(e => ({ ...e, name: undefined }));
@@ -505,74 +390,69 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
         error: registerPersonalErrors.name,
         icon: 'person-outline',
       })}
-
       {renderInput({
         id: 'register-phone',
-        placeholder: t('auth.phonePlaceholderOptional', 'Phone Number (optional)'),
+        placeholder: t('auth.phonePlaceholderOptional', 'Phone number (optional)'),
         keyboardType: 'phone-pad',
         value: phone,
-        onChangeText: text => {
-          setPhone(text);
-          if (registerPersonalErrors.phone) setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
-        },
+        onChangeText: text => { setPhone(text); if (registerPersonalErrors.phone) setRegisterPersonalErrors(e => ({ ...e, phone: undefined })); },
         onBlur: () => {
-          if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: t('auth.phoneInvalid', 'Please enter a valid phone number (at least 7 digits).') }));
+          if (phone && !/^\d{7,}$/.test(phone)) setRegisterPersonalErrors(e => ({ ...e, phone: t('auth.phoneInvalid', 'Min 7 digits.') }));
           else setRegisterPersonalErrors(e => ({ ...e, phone: undefined }));
         },
         error: registerPersonalErrors.phone,
         icon: 'call-outline',
       })}
-
       {renderInput({
         id: 'register-dob',
-        placeholder: t('auth.dobPlaceholder', 'Date of Birth (YYYY-MM-DD) - optional'),
+        placeholder: t('auth.dobPlaceholder', 'Date of birth — YYYY-MM-DD (optional)'),
         keyboardType: 'numbers-and-punctuation',
         value: dateOfBirth,
-        onChangeText: text => {
-          setDateOfBirth(text);
-          if (registerPersonalErrors.dateOfBirth) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
-        },
+        onChangeText: text => { setDateOfBirth(text); if (registerPersonalErrors.dateOfBirth) setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined })); },
         onBlur: () => {
           if (dateOfBirth && !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth))
-            setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: t('auth.dobInvalid', 'Date of Birth must be in YYYY-MM-DD format.') }));
+            setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: t('auth.dobInvalid', 'Use YYYY-MM-DD format.') }));
           else setRegisterPersonalErrors(e => ({ ...e, dateOfBirth: undefined }));
         },
         error: registerPersonalErrors.dateOfBirth,
         icon: 'calendar-outline',
       })}
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{t('auth.healthBasics', 'Health Information (Optional)')}</Text>
+      {/* Health section */}
+      <View style={styles.sectionDivider}>
+        <Text style={styles.sectionLabel}>{t('auth.healthBasics', 'Health info')}</Text>
+        <View style={styles.optionalPill}><Text style={styles.optionalText}>Optional</Text></View>
       </View>
-      
+
       {healthErrors.bloodType ? <Text style={styles.errorText}>{healthErrors.bloodType}</Text> : null}
       <BloodTypePicker value={bloodType} onChange={setBloodType} />
-      
+
       {bloodType === 'custom' && renderInput({
         id: 'register-blood-custom',
-        placeholder: t('auth.bloodCustomPlaceholder', 'Custom Blood Type (e.g., A+, B-, O+)'),
+        placeholder: t('auth.bloodCustomPlaceholder', 'Custom blood type (e.g. A+, B-)'),
         value: customBloodType,
         onChangeText: text => setCustomBloodType(text),
         onBlur: () => {
           const bt = customBloodType.trim();
           if (bt && !/^A[+-]$|^B[+-]$|^AB[+-]$|^O[+-]$/.test(bt))
-            setHealthErrors(e => ({ ...e, bloodType: t('auth.bloodTypeFormatInvalid', 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.') }));
+            setHealthErrors(e => ({ ...e, bloodType: t('auth.bloodTypeFormatInvalid', 'Must be A+, A-, B+, B-, AB+, AB-, O+, or O-') }));
           else setHealthErrors(e => ({ ...e, bloodType: undefined }));
         },
         error: healthErrors.bloodType,
         icon: 'water-outline',
       })}
 
+      {/* Allergies */}
       <View style={styles.chipRow}>
         <TextInput
           placeholder={t('auth.allergyPlaceholder', 'Add allergy (optional)')}
           value={allergyInput}
           onChangeText={setAllergyInput}
           style={[styles.inputWrapper, { flex: 1 }]}
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={colors.muted}
         />
         <Pressable
-          style={styles.addChip}
+          style={styles.addChipBtn}
           onPress={() => {
             if (!allergyInput.trim()) return;
             setAllergies(prev => [...prev, allergyInput.trim()]);
@@ -580,29 +460,34 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
             setHealthErrors(e => ({ ...e, allergies: undefined }));
           }}
         >
-          <Ionicons name="add" size={18} color={colors.primary} />
+          <Ionicons name="add" size={20} color={colors.primary} />
         </Pressable>
       </View>
       {healthErrors.allergies ? <Text style={styles.errorText}>{healthErrors.allergies}</Text> : null}
       <View style={styles.tagList}>
         {allergies.map((a, idx) => (
-          <Pressable key={`${a}-${idx}`} onPress={() => setAllergies(prev => prev.filter((_, i) => i !== idx))} style={styles.tag}>
+          <Pressable
+            key={`${a}-${idx}`}
+            onPress={() => setAllergies(prev => prev.filter((_, i) => i !== idx))}
+            style={styles.tag}
+          >
             <Text style={styles.tagText}>{a}</Text>
-            <Ionicons name="close" size={16} color={colors.primary} />
+            <Ionicons name="close" size={14} color={colors.textSecondary} />
           </Pressable>
         ))}
       </View>
 
+      {/* Conditions */}
       <View style={styles.chipRow}>
         <TextInput
           placeholder={t('auth.conditionPlaceholder', 'Add medical condition (optional)')}
           value={conditionInput}
           onChangeText={setConditionInput}
           style={[styles.inputWrapper, { flex: 1 }]}
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={colors.muted}
         />
         <Pressable
-          style={styles.addChip}
+          style={styles.addChipBtn}
           onPress={() => {
             if (!conditionInput.trim()) return;
             setMedicalConditions(prev => [...prev, conditionInput.trim()]);
@@ -610,162 +495,202 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
             setHealthErrors(e => ({ ...e, conditions: undefined }));
           }}
         >
-          <Ionicons name="add" size={18} color={colors.primary} />
+          <Ionicons name="add" size={20} color={colors.primary} />
         </Pressable>
       </View>
       {healthErrors.conditions ? <Text style={styles.errorText}>{healthErrors.conditions}</Text> : null}
       <View style={styles.tagList}>
         {medicalConditions.map((c, idx) => (
-          <Pressable key={`${c}-${idx}`} onPress={() => setMedicalConditions(prev => prev.filter((_, i) => i !== idx))} style={styles.tag}>
+          <Pressable
+            key={`${c}-${idx}`}
+            onPress={() => setMedicalConditions(prev => prev.filter((_, i) => i !== idx))}
+            style={styles.tag}
+          >
             <Text style={styles.tagText}>{c}</Text>
-            <Ionicons name="close" size={16} color={colors.primary} />
+            <Ionicons name="close" size={14} color={colors.textSecondary} />
           </Pressable>
         ))}
       </View>
-
-      <Button
-        title={loading ? t('auth.creatingAccount', 'Creating account...') : t('auth.signUpButton', 'Create Account')}
-        onPress={handleRegister}
-        disabled={loading}
-        loading={loading}
-        fullWidth
-        style={styles.primaryButton}
-      />
     </View>
   );
 
-  return (
-    <ScreenContainer
-      scrollable
-      withPadding={false}
-      contentContainerStyle={styles.container}
-    >
-      <Animated.View
-        style={{
-          opacity: fadeAnim,
-          transform: [
-            { translateY: slideAnim },
-            { scale: scaleAnim }
-          ]
-        }}
-      >
-        <LinearGradient
-          colors={colors.primaryGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.hero}
-        >
-          <Image source={require('../assets/logo.png')} style={styles.logo} />
-          <Text style={styles.heroTitle}>{isRegister ? t('auth.registerTitle', 'Create your medical ID') : t('auth.welcomeBack', 'Welcome back')}</Text>
-          <Text style={styles.heroSubtitle}>
-            {isRegister ? t('auth.registerSubtitle', 'Join MedLink to keep your medical essentials in one place.') : t('auth.welcomeSubtitle', 'Sign in to continue your connected care journey.')}
-          </Text>
-          <SegmentedControl
-            options={[loginLabel, registerLabel]}
-            value={isRegister ? registerLabel : loginLabel}
-            onChange={value => {
-              const register = value === registerLabel;
-              setIsRegister(register);
-              if (!register) setRegisterStep(0);
-            }}
-          />
-          {/* Language Switcher */}
-          <View style={styles.langSwitcher}>
-            {([{ code: 'en', flag: '🇺🇸' }, { code: 'fr', flag: '🇫🇷' }, { code: 'ar', flag: '🇸🇦' }] as const).map(lang => (
-              <Pressable
-                key={lang.code}
-                onPress={() => i18n.changeLanguage(lang.code)}
-                style={[styles.langBtn, i18n.language === lang.code && styles.langBtnActive]}
-              >
-                <Text style={styles.langFlag}>{lang.flag}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </LinearGradient>
-      </Animated.View>
+  /* ─────────────────────────────────────────
+   * Dynamic page title / subtitle
+   * ───────────────────────────────────────── */
+  const getTitle = () => {
+    if (!isRegister) return t('auth.welcomeBack', 'Welcome back.');
+    return registerStep === 0
+      ? t('auth.createAccountTitle', 'Create account.')
+      : t('auth.personalInfoTitle', 'Your details.');
+  };
 
+  const getSubtitle = () => {
+    if (!isRegister) return t('auth.loginSubtitle', 'Sign in to continue.');
+    return registerStep === 0
+      ? t('auth.createAccountSubtitle', 'Enter your email and choose a password.')
+      : t('auth.personalInfoSubtitle', 'Help us build your health profile.');
+  };
+
+  /* ─────────────────────────────────────────
+   * Render
+   * ───────────────────────────────────────── */
+  return (
+    <ScreenContainer scrollable withPadding={false} contentContainerStyle={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ width: '100%' }}
+        style={{ flex: 1 }}
       >
-        <Animated.View
-          style={[
-            styles.formWrapper,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+
+          {/* ── Centered brand hero ── */}
+          <View style={styles.brandHero}>
+            <Image
+              source={require('../assets/logo.png')}
+              style={styles.logo}
+              // @ts-ignore — tintColor works on RN Image
+              tintColor={colors.primary}
+            />
+            <Text style={styles.logoName}>MedLink</Text>
+            <Text style={styles.logoTagline}>{t('common.tagline', 'Your Health Companion')}</Text>
+
+            {/* Language switcher — centered */}
+            <View style={styles.langRow}>
+              {LANGS.map(l => (
+                <Pressable
+                  key={l.code}
+                  onPress={() => i18n.changeLanguage(l.code)}
+                  style={[styles.langPill, i18n.language === l.code && styles.langPillActive]}
+                  hitSlop={6}
+                >
+                  <Text style={styles.langFlag}>{l.flag}</Text>
+                  {i18n.language === l.code && (
+                    <Text style={styles.langLabel}>
+                      {l.code.toUpperCase()}
+                    </Text>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          {/* ── Page header ── */}
+          <View style={styles.pageHeader}>
+            <Text style={styles.pageTitle}>{getTitle()}</Text>
+            <Text style={styles.pageSubtitle}>{getSubtitle()}</Text>
+          </View>
+
+          {/* ── Register progress ── */}
+          {isRegister && (
+            <View style={styles.progressRow}>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, registerStep === 1 && styles.progressFillFull]} />
+              </View>
+              <Text style={styles.progressLabel}>
+                {t('auth.stepOf', 'Step {{current}} of {{total}}', { current: registerStep + 1, total: 2 })}
+              </Text>
+            </View>
+          )}
+
+          {/* ── Fields ── */}
+          <View style={styles.form}>
+            {isRegister
+              ? registerStep === 0 ? renderAccountFields() : renderPersonalFields()
+              : renderLoginFields()
             }
-          ]}
-        >
-          <Card variant="elevated" style={styles.cardSurface}>
+          </View>
+
+          {/* ── Primary CTA ── */}
+          <View style={styles.ctaArea}>
             {isRegister ? (
-              <>
-                <View style={styles.stepper}>
-                  {STEPS.map((step, index) => (
-                    <View key={step.key} style={styles.stepItem}>
-                      <View style={[styles.stepCircle, registerStep >= step.key && styles.stepCircleActive]}>
-                        <Text style={[styles.stepNumber, registerStep >= step.key && { color: '#fff' }]}>{index + 1}</Text>
-                      </View>
-                      <Text style={[styles.stepLabel, registerStep === step.key && styles.stepLabelActive]}>
-                        {step.label}
-                      </Text>
-                      {index < STEPS.length - 1 ? (
-                        <View style={[styles.stepDivider, registerStep > step.key && styles.stepDividerActive]} />
-                      ) : null}
-                    </View>
-                  ))}
-                </View>
-                {registerStep === 0 ? renderAccountStep() : renderPersonalStep()}
-                {registerStep === 1 ? (
-                  <Button
-                    title={t('common.back', 'Back')}
-                    onPress={() => setRegisterStep(0)}
-                    variant="secondary"
-                    fullWidth
-                    style={styles.secondaryButton}
-                  />
-                ) : null}
-              </>
+              registerStep === 0 ? (
+                <Pressable
+                  style={styles.primaryBtn}
+                  onPress={() => { if (validateAccountStep()) setRegisterStep(1); }}
+                >
+                  <Text style={styles.primaryBtnText}>{t('common.continue', 'Continue')}</Text>
+                  <Ionicons name="arrow-forward" size={17} color="#fff" />
+                </Pressable>
+              ) : (
+                <Pressable
+                  style={[styles.primaryBtn, loading && styles.primaryBtnBusy]}
+                  onPress={handleRegister}
+                  disabled={loading}
+                >
+                  {loading
+                    ? <ActivityIndicator color="#fff" size="small" />
+                    : <Text style={styles.primaryBtnText}>{t('auth.signUpButton', 'Create Account')}</Text>
+                  }
+                </Pressable>
+              )
             ) : (
-              renderLogin()
+              <Pressable
+                style={[styles.primaryBtn, loading && styles.primaryBtnBusy]}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={styles.primaryBtnText}>{t('auth.signInButton', 'Sign In')}</Text>
+                }
+              </Pressable>
             )}
-          </Card>
+
+            {/* Back button on step 2 */}
+            {isRegister && registerStep === 1 && (
+              <Pressable style={styles.backBtn} onPress={() => setRegisterStep(0)}>
+                <Ionicons name="arrow-back" size={15} color={colors.textSecondary} />
+                <Text style={styles.backBtnText}>{t('common.back', 'Back')}</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* ── Switch login / register ── */}
+          <Pressable
+            style={styles.switchRow}
+            onPress={() => { setIsRegister(v => !v); setRegisterStep(0); }}
+          >
+            <Text style={styles.switchText}>
+              {isRegister
+                ? t('auth.alreadyHaveAccount', 'Already have an account?')
+                : t('auth.noAccount', "Don't have an account?")
+              }
+              {'  '}
+              <Text style={styles.switchLink}>
+                {isRegister ? t('auth.signInHere', 'Sign in') : t('auth.signUpHere', 'Sign up')}
+              </Text>
+            </Text>
+          </Pressable>
+
+          {/* ── Footer ── */}
+          <View style={styles.footerArea}>
+            <Text style={styles.footerText}>
+              {t('auth.byContinuing', 'By continuing you agree to our')}{' '}
+              <Text style={styles.footerLink}>{t('auth.terms', 'Terms')}</Text>
+              {' '}{t('common.and', 'and')}{' '}
+              <Text style={styles.footerLink}>{t('auth.privacyPolicy', 'Privacy Policy')}</Text>.
+            </Text>
+          </View>
+
         </Animated.View>
       </KeyboardAvoidingView>
 
-      <View style={styles.footerHint}>
-        <Text style={styles.footerText}>
-          {t('auth.byContinuing', 'By continuing you agree to our')} <Text style={styles.footerLink}>{t('auth.terms', 'Terms')}</Text> {t('common.and', 'and')} <Text style={styles.footerLink}>{t('auth.privacyPolicy', 'Privacy Policy')}</Text>.
-        </Text>
-      </View>
-
+      {/* ── Forgot password overlay ── */}
       {showForgot && (
-        <Animated.View 
-          style={[
-            styles.modalOverlay,
-            {
-              opacity: fadeAnim,
-            }
-          ]}
-        >
-          <Animated.View
-            style={{
-              transform: [{ scale: scaleAnim }]
-            }}
-          >
+        <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
+          <Animated.View style={{ transform: [{ scale: scaleAnim }], width: '100%', maxWidth: 360 }}>
             <Card variant="elevated" style={styles.modalCard}>
-              <View style={{ alignItems: 'center', gap: spacing.sm }}>
+              <View style={styles.modalTop}>
                 <View style={styles.modalIconWrap}>
-                  <Ionicons name="lock-closed" size={28} color={colors.primary} />
+                  <Ionicons name="lock-closed" size={22} color={colors.primary} />
                 </View>
                 <Text style={styles.modalTitle}>{t('auth.resetPassword', 'Reset password')}</Text>
                 <Text style={styles.modalSubtitle}>
-                  {t('auth.forgotPasswordSubtitle', "Enter your email address and we'll send you a password reset link.")}
+                  {t('auth.forgotPasswordSubtitle', "Enter your email and we'll send you a reset link.")}
                 </Text>
               </View>
               {renderInput({
                 id: 'forgot-email',
-                placeholder: t('auth.emailAddress', 'Email'),
+                placeholder: t('auth.emailAddress', 'Email address'),
                 autoCapitalize: 'none',
                 keyboardType: 'email-address',
                 value: forgotEmail,
@@ -773,22 +698,22 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
                 icon: 'mail-outline',
               })}
               <View style={styles.modalActions}>
-                <Button
-                  title={t('common.cancel', 'Cancel')}
-                  onPress={() => {
-                    setShowForgot(false);
-                    setForgotEmail('');
-                  }}
-                  variant="secondary"
-                  style={styles.secondaryButton}
-                />
-                <Button
-                  title={forgotLoading ? t('auth.sending', 'Sending...') : t('auth.sendLink', 'Send link')}
+                <Pressable
+                  style={styles.modalCancelBtn}
+                  onPress={() => { setShowForgot(false); setForgotEmail(''); }}
+                >
+                  <Text style={styles.modalCancelText}>{t('common.cancel', 'Cancel')}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalSendBtn, forgotLoading && styles.primaryBtnBusy]}
                   onPress={handleForgotPassword}
                   disabled={forgotLoading}
-                  loading={forgotLoading}
-                  style={[styles.primaryButton, styles.modalPrimary]}
-                />
+                >
+                  {forgotLoading
+                    ? <ActivityIndicator color="#fff" size="small" />
+                    : <Text style={styles.primaryBtnText}>{t('auth.sendLink', 'Send link')}</Text>
+                  }
+                </Pressable>
               </View>
             </Card>
           </Animated.View>
@@ -798,203 +723,216 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
   );
 }
 
+const BTN_BLUE = colors.primary;
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingBottom: spacing.xxl,
+    backgroundColor: colors.bg,
+    paddingBottom: spacing.xxxl,
   },
-  hero: {
-    paddingTop: spacing.xxl * 1.4,
-    paddingBottom: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-    borderBottomLeftRadius: radius.xl + 6,
-    borderBottomRightRadius: radius.xl + 6,
+
+  /* ── Centered brand hero ── */
+  brandHero: {
     alignItems: 'center',
-    gap: spacing.md,
+    paddingTop: 64,
+    paddingBottom: 28,
+    paddingHorizontal: 24,
+    gap: 6,
   },
   logo: {
-    width: 96,
-    height: 96,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
+    marginBottom: 8,
   },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 36,
-    color: '#fff',
-    textAlign: 'center',
+  logoName: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.6,
   },
-  heroSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
-  },
-  formWrapper: {
-    marginTop: -spacing.xxl * 0.7,
-    paddingHorizontal: spacing.xl,
-  },
-  cardSurface: {
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-    gap: spacing.lg,
-  },
-  formContainer: {
-    gap: spacing.lg,
-  },
-  headerContainer: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 32,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
+  logoTagline: {
+    fontSize: 13,
     color: colors.textSecondary,
-    textAlign: 'center',
+    marginBottom: 8,
   },
+  langRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 4,
+  },
+  langPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  langPillActive: {
+    backgroundColor: colors.primary50,
+    borderColor: colors.primary,
+  },
+  langFlag: {
+    fontSize: 18,
+  },
+  langLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 0.5,
+  },
+
+  /* ── Page header ── */
+  pageHeader: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 28,
+    gap: 8,
+  },
+  pageTitle: {
+    fontSize: 34,
+    fontWeight: '800',
+    color: colors.text,
+    letterSpacing: -1,
+    lineHeight: 42,
+  },
+  pageSubtitle: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+
+  /* ── Register progress ── */
+  progressRow: {
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 3,
+    backgroundColor: colors.bgTertiary,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    width: '50%',
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+  },
+  progressFillFull: {
+    width: '100%',
+  },
+  progressLabel: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    fontWeight: '500',
+  },
+
+  /* ── Form area ── */
+  form: {
+    paddingHorizontal: 24,
+  },
+  fieldGroup: {
+    gap: 12,
+  },
+
+  /* ── Inputs — fill style, no border ── */
   inputContainer: {
-    gap: spacing.xs,
+    gap: 4,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingHorizontal: spacing.md,
-    paddingVertical: Platform.OS === 'ios' ? spacing.md : spacing.sm,
-    ...shadow.sm,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    minHeight: 54,
   },
   inputWrapperFocused: {
+    backgroundColor: colors.bgTertiary,
+    borderWidth: 1.5,
     borderColor: colors.primary,
-    backgroundColor: colors.bg,
-    ...shadow.primary,
   },
   inputWrapperError: {
-    borderColor: colors.danger,
-    backgroundColor: colors.dangerLight,
+    backgroundColor: colors.dangerLight ?? '#FEF2F2',
   },
   inputIcon: {
-    marginRight: spacing.sm,
+    marginRight: 10,
+    opacity: 0.55,
   },
   input: {
     flex: 1,
     color: colors.text,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '400',
-    lineHeight: 24,
-  },
-  inputWithIcon: {
-    marginLeft: 0,
+    paddingVertical: Platform.OS === 'ios' ? 0 : 14,
   },
   passwordToggle: {
-    padding: spacing.xs,
-    marginLeft: spacing.sm,
+    padding: 6,
+    marginLeft: 4,
   },
   errorText: {
     color: colors.danger,
-    marginTop: spacing.xs,
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
+    fontSize: 12,
+    marginLeft: 4,
   },
-  forgotButton: {
+  forgotBtn: {
     alignSelf: 'flex-end',
-    padding: spacing.xs,
+    paddingVertical: 2,
+    marginTop: 4,
   },
   forgotText: {
     color: colors.primary,
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    ...shadow.primary,
-  },
-  primaryButtonText: {
-    color: colors.card,
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '500',
-    lineHeight: 24,
   },
-  switchContainer: {
+
+  /* ── Section divider (health info) ── */
+  sectionDivider: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.md,
+    marginTop: 8,
+    gap: 8,
   },
-  switchText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
-  },
-  switchLink: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '500',
-    lineHeight: 24,
-  },
-  disabled: {
-    opacity: 0.7,
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
-  secondaryText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    fontWeight: '500',
-    lineHeight: 24,
-  },
-  sectionHeader: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.xs,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 18,
+  sectionLabel: {
+    fontSize: 12,
     fontWeight: '600',
-    lineHeight: 24,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
+  optionalPill: {
+    backgroundColor: colors.bgSecondary,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  optionalText: {
+    fontSize: 10,
+    color: colors.textTertiary,
+    fontWeight: '500',
+  },
+
+  /* ── Chip / tag inputs ── */
   chipRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 8,
   },
-  addChip: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.md,
-    backgroundColor: colors.chipBg,
+  addChipBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -1003,161 +941,162 @@ const styles = StyleSheet.create({
   tagList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.sm,
+    gap: 6,
   },
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.chipBg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
+    backgroundColor: colors.bgSecondary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.chipBorder,
+    borderColor: colors.line,
   },
   tagText: {
-    color: colors.chipText,
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '500',
   },
-  stepper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
+
+  /* ── CTA area ── */
+  ctaArea: {
+    paddingHorizontal: 24,
+    marginTop: 28,
+    gap: 12,
+  },
+  primaryBtn: {
+    backgroundColor: BTN_BLUE,
     borderRadius: radius.lg,
-    backgroundColor: colors.primary50,
-    marginBottom: spacing.lg,
-  },
-  stepItem: {
-    flex: 1,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  stepCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: colors.primary200,
+    height: 44,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.bg,
+    gap: 8,
   },
-  stepCircleActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+  primaryBtnBusy: {
+    opacity: 0.65,
   },
-  stepNumber: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
+  primaryBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
-  stepLabel: {
-    marginTop: spacing.xs,
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  backBtnText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  /* ── Switch row ── */
+  switchRow: {
+    paddingHorizontal: 24,
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  switchText: {
+    color: colors.textSecondary,
+    fontSize: 14,
     textAlign: 'center',
+    lineHeight: 22,
   },
-  stepLabelActive: {
+  switchLink: {
     color: colors.primary,
+    fontWeight: '700',
   },
-  stepDivider: {
-    position: 'absolute',
-    top: 18,
-    left: '50%',
-    right: -50,
-    height: 2,
-    backgroundColor: colors.primary200,
-    zIndex: -1,
-  },
-  stepDividerActive: {
-    backgroundColor: colors.primary,
-  },
-  footerHint: {
-    marginTop: spacing.xl,
-    paddingHorizontal: spacing.xl,
+
+  /* ── Footer ── */
+  footerArea: {
+    paddingHorizontal: 24,
+    marginTop: 28,
+    alignItems: 'center',
   },
   footerText: {
-    color: colors.textSecondary,
+    color: colors.textTertiary,
+    fontSize: 11,
     textAlign: 'center',
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
+    lineHeight: 17,
   },
   footerLink: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: '500',
   },
+
+  /* ── Forgot password modal ── */
   modalOverlay: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
+    top: 0, bottom: 0, left: 0, right: 0,
     backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    paddingHorizontal: 24,
   },
   modalCard: {
     width: '100%',
-    maxWidth: 380,
     gap: spacing.lg,
+    padding: spacing.xl,
+    backgroundColor: colors.card,
+    borderRadius: radius.xxl,
+    ...shadow.xl,
+  },
+  modalTop: {
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   modalIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary100,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: colors.primary50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalTitle: {
     color: colors.text,
-    textAlign: 'center',
     fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 28,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   modalSubtitle: {
     color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '400',
-    lineHeight: 24,
   },
   modalActions: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: 10,
   },
-  modalPrimary: {
+  modalCancelBtn: {
     flex: 1,
-  },
-  langSwitcher: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  langBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    height: 44,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
-  langBtnActive: {
-    backgroundColor: 'rgba(255,255,255,0.35)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.7)',
+  modalCancelText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '600',
   },
-  langFlag: {
-    fontSize: 20,
+  modalSendBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BTN_BLUE,
   },
 });
