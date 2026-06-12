@@ -3,7 +3,7 @@ import {
   View, Text, Pressable, StyleSheet, ScrollView,
   Image as RNImage, Animated, Easing, ImageBackground,
 } from 'react-native';
-import SkeletonImage from '../components/SkeletonImage';
+import InitialsAvatar from '../components/InitialsAvatar';
 import {
   SkeletonHeroCard,
   SkeletonProgressCard,
@@ -18,7 +18,6 @@ import type { Facility } from '../types';
 import { useReminders } from '../hooks/useReminders';
 import NotificationBell from '../notifications/NotificationBell';
 import NotificationsSheet from '../notifications/NotificationsSheet';
-const AVATAR_PLACEHOLDER = require('../assets/avatar-placeholder.png');
 import { LinearGradient } from 'expo-linear-gradient';
 import ScreenContainer from '../components/ScreenContainer';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -35,11 +34,11 @@ function sortByDistance(list: Facility[]): Facility[] {
   });
 }
 
-function getGreeting(): string {
+function getGreeting(t: (key: string, fallback: string) => string): string {
   const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (h < 12) return t('dashboard.goodMorning', 'Good morning');
+  if (h < 17) return t('dashboard.goodAfternoon', 'Good afternoon');
+  return t('dashboard.goodEvening', 'Good evening');
 }
 
 export default function Dashboard({ navigation }: any) {
@@ -104,6 +103,16 @@ export default function Dashboard({ navigation }: any) {
 
   const progress    = pillsDone.total ? pillsDone.done / pillsDone.total : 0;
 
+  /* Frequency values are stored in English ("Daily") — map through i18n for display */
+  const trFreq = (f?: string) => {
+    const key = f?.trim().toLowerCase();
+    if (!key) return '';
+    if (['daily', 'weekly', 'monthly', 'once'].includes(key)) {
+      return t(`reminders.frequencies.${key}`, f as string);
+    }
+    return f as string;
+  };
+
   /* Animated progress fill — eases in rather than snapping */
   const progressAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -126,10 +135,10 @@ export default function Dashboard({ navigation }: any) {
       <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.welcomeText, { textAlign }]}>
-            {t('dashboard.welcome', getGreeting())}
+            {getGreeting(t)}
           </Text>
           <Text style={[styles.greeting, { textAlign }]} numberOfLines={1}>
-            {firstName ? `Hello, ${firstName}!` : t('common.hello', 'Hello!')}
+            {firstName ? t('common.helloName', 'Hello, {{name}}!', { name: firstName }) : t('common.hello', 'Hello!')}
           </Text>
         </View>
         <View style={styles.headerRight}>
@@ -138,7 +147,11 @@ export default function Dashboard({ navigation }: any) {
             onPress={() => navigation.navigate('UserProfile')}
             style={styles.avatarBtn}
           >
-            <SkeletonImage source={AVATAR_PLACEHOLDER} style={styles.avatar} resizeMode="cover" />
+            <InitialsAvatar
+              name={profile?.name}
+              uri={(profile as any)?.image || (profile as any)?.avatar}
+              size={40}
+            />
           </Pressable>
         </View>
       </Animated.View>
@@ -158,7 +171,7 @@ export default function Dashboard({ navigation }: any) {
 
       {/* ── Next appointment banner ─────────────────────────── */}
       {remindersLoading ? (
-        <Animated.View style={{ opacity: fadeAnim, paddingHorizontal: spacing.xl }}>
+        <Animated.View style={{ opacity: fadeAnim }}>
           <SkeletonHeroCard />
         </Animated.View>
       ) : activeReminders.length > 0 ? (
@@ -191,7 +204,7 @@ export default function Dashboard({ navigation }: any) {
                     <Ionicons name="time-outline" size={13} color="rgba(255,255,255,0.80)" />
                     <Text style={styles.apptTime}>
                       {getTime(activeReminders[0].datetime)}
-                      {activeReminders[0].frequency ? `  ·  ${activeReminders[0].frequency}` : ''}
+                      {activeReminders[0].frequency ? `  ·  ${trFreq(activeReminders[0].frequency)}` : ''}
                     </Text>
                   </View>
                 ) : <View />}
@@ -330,7 +343,7 @@ export default function Dashboard({ navigation }: any) {
                     <Text style={styles.reminderName} numberOfLines={1}>{rem.title}</Text>
                     <Text style={styles.reminderMeta}>
                       {getTime(rem.datetime) || rem.datetime}
-                      {rem.frequency ? `  ·  ${rem.frequency}` : ''}
+                      {rem.frequency ? `  ·  ${trFreq(rem.frequency)}` : ''}
                     </Text>
                   </View>
                   {getTime(rem.datetime) ? (
@@ -352,7 +365,7 @@ export default function Dashboard({ navigation }: any) {
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           <View style={styles.section}>
             <View style={styles.sectionHead}>
-              <Text style={styles.sectionTitle}>{t('facilities.nearbyFacilities', 'Nearby')}</Text>
+              <Text style={styles.sectionTitle}>{t('dashboard.nearbyFacilities', 'Nearby')}</Text>
               <Pressable onPress={() => navigation.navigate('Clinics')}>
                 <Text style={styles.sectionLink}>{t('dashboard.viewAll', 'View all')}</Text>
               </Pressable>
@@ -437,8 +450,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  avatar: { width: 40, height: 40, borderRadius: 20 },
 
   /* Search */
   searchBar: {

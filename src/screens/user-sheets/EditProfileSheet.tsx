@@ -15,7 +15,7 @@ type Props = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: colors.overlay,
+    backgroundColor: 'transparent',
     justifyContent: 'flex-end',
   },
   sheet: {

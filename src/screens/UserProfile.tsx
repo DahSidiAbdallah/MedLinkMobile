@@ -14,8 +14,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { signOutCompletely } from '../lib/authPersistence';
-import SkeletonImage from '../components/SkeletonImage';
-import { SkeletonHeroCard, SkeletonQuickAction } from '../components/SkeletonLoaders';
+import InitialsAvatar from '../components/InitialsAvatar';
+import FlagGB from '../assets/gb.svg';
+import FlagFR from '../assets/fr.svg';
+import FlagMR from '../assets/mr.svg';
+import { SkeletonProfileHero, SkeletonQuickAction } from '../components/SkeletonLoaders';
 import ScreenContainer from '../components/ScreenContainer';
 import { auth } from '../lib/firebase';
 import { fetchUserProfile, createOrUpdateUserProfile, type Profile } from '../core/userProfile';
@@ -33,7 +36,6 @@ type UserProfileProps = {
   onLogout?: () => void;
 };
 
-const heroAvatar = require('../assets/avatar-placeholder.png');
 const { width: SCREEN_W } = Dimensions.get('window');
 // Exact width so two cards + one gap fit within horizontal padding
 const CARD_W = (SCREEN_W - spacing.xxl * 2 - spacing.xxl) / 2;
@@ -85,9 +87,9 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
   }, []);
 
   const languages = [
-    { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
-    { code: 'fr', label: t('languages.french', 'French'), flag: require('../assets/fr.svg') },
-    { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
+    { code: 'en', label: t('languages.english', 'English'), Flag: FlagGB },
+    { code: 'fr', label: t('languages.french', 'French'), Flag: FlagFR },
+    { code: 'ar', label: t('languages.arabic', 'Arabic'), Flag: FlagMR },
   ];
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
 
@@ -223,8 +225,8 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
 
   if (loadingProfile) {
     return (
-      <ScreenContainer scrollable contentContainerStyle={{ gap: spacing.xxxl, paddingBottom: 140 }}>
-        <SkeletonHeroCard />
+      <ScreenContainer scrollable contentContainerStyle={{ gap: spacing.xxl, paddingBottom: 120, paddingTop: 0 }}>
+        <SkeletonProfileHero />
         <View style={{ flexDirection: 'row', gap: spacing.lg, paddingHorizontal: spacing.xl }}>
           <SkeletonQuickAction />
           <SkeletonQuickAction />
@@ -259,10 +261,11 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
             >
               <View style={styles.heroTop}>
                 <View style={styles.heroAvatarWrap}>
-                  <SkeletonImage
-                    source={heroAvatar}
-                    style={styles.heroAvatar}
-                    resizeMode="cover"
+                  <InitialsAvatar
+                    name={profile.name}
+                    uri={(profile as any)?.image || (profile as any)?.avatar}
+                    size={88}
+                    variant="onPrimary"
                   />
                 </View>
                 <View style={styles.heroInfo}>
@@ -459,11 +462,10 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
       {/* Language Modal */}
       <Modal visible={langModal} animationType="none" transparent onRequestClose={() => setLangModal(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setLangModal(false)}>
-          <Animated.View 
+          <Animated.View
             style={[
               styles.modalOverlay,
               {
-                backgroundColor: colors.overlay,
                 opacity: langModalAnim,
               }
             ]}
@@ -510,7 +512,9 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                   >
                     <View style={styles.langOptionLeft}>
                       <View style={[styles.langFlagWrap, i18n.language === lang.code && styles.langFlagWrapActive]}>
-                        <RNImage source={lang.flag} style={styles.langFlag} resizeMode="contain" />
+                        <View style={styles.langFlag}>
+                          <lang.Flag width={32} height={22} />
+                        </View>
                       </View>
                       <Text style={[styles.langLabel, i18n.language === lang.code && styles.langLabelActive]}>{lang.label}</Text>
                     </View>
@@ -592,11 +596,6 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: 'rgba(255,255,255,0.35)',
     overflow: 'hidden',
-  },
-  heroAvatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
   },
   heroInfo: {
     flex: 1,
@@ -852,6 +851,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 22,
     borderRadius: 4,
+    overflow: 'hidden',
   },
   langLabel: {
     fontSize: 15,

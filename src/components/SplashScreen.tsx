@@ -22,6 +22,8 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
   const textOpacity  = useRef(new Animated.Value(0)).current;
   const textSlide    = useRef(new Animated.Value(16)).current;
   const footerOpacity = useRef(new Animated.Value(0)).current;
+  const screenOpacity = useRef(new Animated.Value(1)).current;
+  const screenScale   = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Step 1: logo pops in
@@ -68,20 +70,35 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
       AccessibilityInfo.announceForAccessibility('App ready');
     });
 
-    // Hold for 2.2 s then fade the whole screen out
+    // Hold for 2.2 s then fade the whole screen out with a gentle zoom
     const timer = setTimeout(() => {
-      Animated.timing(logoOpacity, {
-        toValue: 0,
-        duration: 320,
-        useNativeDriver: true,
-      }).start(() => onFinish());
+      Animated.parallel([
+        Animated.timing(screenOpacity, {
+          toValue: 0,
+          duration: 380,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(screenScale, {
+          toValue: 1.04,
+          duration: 380,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(() => onFinish());
     }, 2200);
 
     return () => clearTimeout(timer);
-  }, [onFinish, logoOpacity, logoScale, textOpacity, textSlide, footerOpacity]);
+  }, [onFinish, logoOpacity, logoScale, textOpacity, textSlide, footerOpacity, screenOpacity, screenScale]);
 
   return (
-    <View style={styles.container} accessibilityLiveRegion="polite">
+    <Animated.View
+      style={[
+        styles.container,
+        { opacity: screenOpacity, transform: [{ scale: screenScale }] },
+      ]}
+      accessibilityLiveRegion="polite"
+    >
 
       {/* Logo */}
       <Animated.View style={styles.center}>
@@ -130,7 +147,7 @@ export default function SplashScreen({ onFinish }: { readonly onFinish: () => vo
           tintColor="rgba(255,255,255,0.70)"
         />
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 

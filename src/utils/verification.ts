@@ -248,6 +248,62 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
     };
   }
 
+  // Check EAN-8 / UPC-A / EAN-13 / GTIN-14 — the most common retail barcodes on
+  // medication boxes. Previously these fell through to "Unrecognized code format"
+  // without any lookup.
+  if (/^\d{8}$|^\d{12,14}$/.test(data)) {
+    // US drug UPC-A embeds the NDC-10: '3' + 10-digit NDC + check digit.
+    // EAN-13 with a leading 0 wraps the same UPC ('03' + NDC + check).
+    if (/^3\d{11}$/.test(data)) {
+      return await handleNdc(data.slice(1, 11));
+    }
+    if (/^03\d{11}$/.test(data)) {
+      return await handleNdc(data.slice(2, 12));
+    }
+
+    const canonical = normalizeGtinTo14(data);
+    const localRecallG = findLocalRecall(canonical || data);
+    if (localRecallG) {
+      cacheHits['localRecall'] = true
+      return {
+        verified: false,
+        counterfeit: false,
+        expired: false,
+        recall: localRecallG,
+        label: undefined,
+        message: `Product recalled by ${localRecallG.source}`,
+        telemetry: { latencies, cacheHits },
+      };
+    }
+
+    const codeToQuery = canonical || data;
+    const recall = await timeAsync('getRecallByGTINorNDC', () => getRecallByGTINorNDC(codeToQuery));
+    // getLabelingByGTINorNDC handles GTINs via the NDC crosswalk + tail heuristics
+    const label = await timeAsync('getLabelingByGTINorNDC', () => getLabelingByGTINorNDC(codeToQuery));
+    let labelInfo: DrugLabelInfo | null = null
+    if (label) {
+      try {
+        labelInfo = {
+          indications: (label.indications_and_usage && label.indications_and_usage[0]) || undefined,
+          dosage: (label.dosage_and_administration && label.dosage_and_administration[0]) || undefined,
+          sideEffects: (label.adverse_reactions && label.adverse_reactions[0]) || undefined,
+        } as any
+      } catch {}
+    }
+    const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(data));
+    return {
+      verified: false,
+      counterfeit: false,
+      expired: false,
+      recall,
+      label,
+      labelInfo,
+      webscraperInfo,
+      message: recall ? 'Product recalled' : 'No authenticity data available',
+      telemetry: { latencies, cacheHits },
+    };
+  }
+
   return {
     verified: false,
     counterfeit: false,

@@ -51,9 +51,12 @@ export default function MyMedicationsList() {
   }, []);
 
   const deleteMedication = (idx: number) => {
-    Alert.alert('Delete Medication', 'Are you sure you want to delete this medication?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
+    Alert.alert(
+      t('profile.deleteMedicationTitle', 'Delete Medication'),
+      t('profile.deleteMedicationMessage', 'Are you sure you want to delete this medication?'),
+      [
+      { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+      { text: t('common.delete', 'Delete'), style: 'destructive', onPress: async () => {
         const updated = medications.filter((_, i) => i !== idx);
         await AsyncStorage.setItem('myMedications', JSON.stringify(updated));
         setMedications(updated);
