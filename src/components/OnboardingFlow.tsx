@@ -31,11 +31,12 @@ const STEP_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> 
   reminders: 'notifications',
   facilities: 'location',
 };
+// All steps stay within the brand-blue family for a cohesive, premium feel
 const STEP_GRADIENTS: Record<string, readonly [string, string, ...string[]]> = {
   welcome: colors.primaryGradient,
-  scan: colors.accentGradient,
-  reminders: colors.successGradient,
-  facilities: colors.warmGradient,
+  scan: ['#1A75D6', '#0066CC'] as const,
+  reminders: colors.heroGradient,
+  facilities: ['#0052A3', '#00407F'] as const,
 };
 
 type OnboardingFlowProps = {
@@ -418,9 +419,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   progressDotActive: {
-    backgroundColor: colors.accent,
-    width: 10,
+    backgroundColor: '#FFFFFF',
+    width: 24,
     height: 10,
+    borderRadius: 5,
   },
   navigation: {
     flexDirection: 'row',

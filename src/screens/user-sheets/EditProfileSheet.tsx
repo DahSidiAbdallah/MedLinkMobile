@@ -3,7 +3,6 @@ import { Modal, View, Text, Animated, Pressable, ScrollView, TextInput, Platform
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Picker } from '@react-native-picker/picker';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius } from '../../theme';
 
 type Props = {
@@ -16,16 +15,17 @@ type Props = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.4)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xxxx,
+    borderTopRightRadius: radius.xxxx,
     overflow: 'hidden',
     maxHeight: '90%',
   },
-  gradient: {
+  body: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
   },
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: colors.line,
     alignSelf: 'center',
     marginBottom: spacing.lg,
   },
@@ -44,48 +44,52 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
   },
   cancel: {
-    color: colors.muted,
-    fontWeight: '600',
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
   saveButton: {
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.md,
+    height: 36,
+    justifyContent: 'center',
+    borderRadius: radius.lg,
   },
   saveText: {
-    color: colors.card,
-    fontWeight: '700',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   scrollContent: {
     paddingBottom: spacing.xxl,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   label: {
+    fontSize: 13,
     fontWeight: '600',
     color: colors.text,
+    marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(37,99,235,0.15)',
+    backgroundColor: colors.bgSecondary,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     paddingHorizontal: spacing.lg,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: 15,
     color: colors.text,
   },
   pickerWrap: {
-    borderWidth: 1,
-    borderColor: 'rgba(37,99,235,0.15)',
-    borderRadius: radius.md,
+    borderRadius: radius.xl,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    backgroundColor: colors.bgSecondary,
   },
   actionRow: {
     flexDirection: 'row',
@@ -145,12 +149,7 @@ export default function EditProfileSheet({ visible, onClose, onSave, initial }: 
             },
           ]}
         >
-          <LinearGradient
-            colors={colors.subtleGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.gradient, { paddingBottom: (insets.bottom ?? 0) + spacing.xxl }]}
-          >
+          <View style={[styles.body, { paddingBottom: (insets.bottom ?? 0) + spacing.xxl }]}>
             <View style={styles.handle} />
             <View style={styles.headerRow}>
               <Pressable onPress={onClose} hitSlop={10}>
@@ -208,7 +207,7 @@ export default function EditProfileSheet({ visible, onClose, onSave, initial }: 
                 </View>
               </View>
             </ScrollView>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     </Modal>
