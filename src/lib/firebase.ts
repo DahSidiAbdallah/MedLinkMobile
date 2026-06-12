@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { Auth, getAuth, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC_WM7fG6nIvv-7PQimBZbNgPgdnIsv_ww",
@@ -14,26 +15,26 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize auth - for React Native, Firebase will automatically use AsyncStorage if available
+// Initialize auth with durable persistence so sessions survive app restarts.
+// On web, getAuth defaults to localStorage persistence. On native, the session
+// must be explicitly stored in AsyncStorage via getReactNativePersistence —
+// otherwise Firebase keeps it in memory only and the user is signed out on close.
 let auth: Auth;
-try {
-  // Try to initialize auth with React Native persistence if available
-  // Firebase v9+ automatically detects React Native environment and uses AsyncStorage
-  auth = initializeAuth(app, {
-    // Firebase will automatically use AsyncStorage in React Native environment
-    persistence: [] // Empty array means use default persistence for the platform
-  });
-  console.log('Firebase Auth initialized with platform-specific persistence');
-} catch (error: any) {
-  // If initializeAuth fails, fall back to getAuth
-  console.log('initializeAuth failed, using getAuth:', error.message);
+if (Platform.OS === 'web') {
+  auth = getAuth(app);
+} else {
   try {
+    // getReactNativePersistence is exposed through the react-native bundle of
+    // firebase/auth (resolved by Metro); TS types don't always declare it.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { getReactNativePersistence } = require('firebase/auth');
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+    console.log('Firebase Auth initialized with AsyncStorage persistence');
+  } catch (error: any) {
+    console.log('initializeAuth failed, using getAuth:', error?.message);
     auth = getAuth(app);
-    console.log('Firebase Auth initialized with getAuth');
-  } catch (fallbackError) {
-    console.error('Failed to initialize auth completely:', fallbackError);
-    // This should not happen, but just in case
-    throw new Error('Could not initialize Firebase Auth');
   }
 }
 

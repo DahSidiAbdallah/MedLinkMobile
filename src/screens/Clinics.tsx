@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Pressable, Modal, Animated, ScrollView, Image as RNImage, StyleSheet, ImageBackground } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
-import { SkeletonFacilityCardLarge } from '../components/SkeletonLoaders';
+import { SkeletonFacilityCardList } from '../components/SkeletonLoaders';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -184,9 +184,9 @@ export default function FacilitiesScreen({ navigation }: any) {
 
           {loading ? (
             <View style={styles.list}>
-              <SkeletonFacilityCardLarge />
-              <SkeletonFacilityCardLarge />
-              <SkeletonFacilityCardLarge />
+              <SkeletonFacilityCardList />
+              <SkeletonFacilityCardList />
+              <SkeletonFacilityCardList />
             </View>
           ) : filtered.length === 0 ? (
             <View style={styles.emptyState}>
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: colors.overlay,
+    backgroundColor: 'transparent',
     justifyContent: 'flex-end',
   },
   modalContent: {

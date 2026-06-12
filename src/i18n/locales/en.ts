@@ -61,7 +61,20 @@ export default {
       noImage: 'No Image',
       continue: 'Continue',
       hello: 'Hello!',
+      helloName: 'Hello, {{name}}!',
+      optional: 'Optional',
+      takingLonger: 'Taking longer than expected?',
+      delete: 'Delete',
       of: 'of'
+    },
+    notifications: {
+      title: 'Notifications',
+      markAllRead: 'Mark all read',
+      clear: 'Clear',
+      allCaughtUp: 'All caught up',
+      noNotifications: 'You have no notifications.',
+      fallbackTitle: 'Notification',
+      read: 'Read'
     },
     navigation: {
       dashboard: 'Home',
@@ -80,6 +93,8 @@ export default {
       phoneNumber: 'Phone Number',
       dateOfBirth: 'Date of Birth',
       bloodType: 'Blood Type',
+      bloodTypeSelect: 'Select...',
+      bloodTypeOther: 'Other (type below)',
       emailRequired: 'Email is required',
       invalidEmail: 'Invalid email address',
       passwordTooShort: 'Password must be at least {{minLength}} characters',
@@ -205,6 +220,8 @@ export default {
     },
     profile: {
       title: 'User Profile',
+      deleteMedicationTitle: 'Delete Medication',
+      deleteMedicationMessage: 'Are you sure you want to delete this medication?',
       personalInfoTab: 'Personal',
       medicalInfoTab: 'Medical',
       emergencyContactsTab: 'Emergency',
@@ -491,11 +508,18 @@ export default {
       deliveryAvailable: 'Delivery Available',
       openNow: 'Open Now',
       showFilters: 'Show Filters',
-      hideFilters: 'Hide Filters'
+      hideFilters: 'Hide Filters',
+      unexpectedError: 'An unexpected error occurred',
+      restartHint: 'Try restarting the app or contact support if the problem persists.',
+      loadRemindersFailed: 'Failed to load reminders'
     },
     dashboard: {
       title: 'Dashboard',
       welcome: 'Welcome back',
+      goodMorning: 'Good morning',
+      goodAfternoon: 'Good afternoon',
+      goodEvening: 'Good evening',
+      viewSchedule: 'View schedule',
       welcomeUser: 'Welcome back, {{name}}',
       todayProgress: "Today's Progress",
       activeReminders: 'Active Reminders',
@@ -547,6 +571,9 @@ export default {
       searchFacilities: 'Search facilities...',
       open: 'Open',
       delivery: 'Delivery',
+      nearbyFacilities: 'Nearby Facilities',
+      found: 'found',
+      hasDelivery: 'Delivery available',
       rating: 'Rating',
       services: 'Services',
       languages: 'Languages',

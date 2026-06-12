@@ -89,11 +89,18 @@ function buildRiskItems(profile: Profile, result: VerificationResult, t: any): R
   const risks: RiskItem[] = [];
   const label = result.label;
   const labelInfo = result.labelInfo;
+  const scraper = result.webscraperInfo;
+
+  const asText = (v: any): string =>
+    Array.isArray(v) ? v.join(' ') : (typeof v === 'string' ? v : '');
 
   // Build searchable text from all available drug data sources
   const brandName = (
     label?.openfda?.brand_name?.[0] ||
     label?.brand_name ||
+    scraper?.brand_name ||
+    scraper?.name ||
+    scraper?.title ||
     labelInfo?.indications ||
     ''
   ).toLowerCase();
@@ -101,30 +108,35 @@ function buildRiskItems(profile: Profile, result: VerificationResult, t: any): R
   const genericName = (
     label?.openfda?.generic_name?.[0] ||
     label?.generic_name ||
+    scraper?.generic_name ||
     ''
   ).toLowerCase();
 
   const medName = `${brandName} ${genericName}`;
 
-  // contraindications is a top-level array in openFDA label response
-  const contraindicationsRaw = Array.isArray(label?.contraindications)
-    ? label.contraindications.join(' ')
-    : (label?.contraindications || '');
-  const contraindications = contraindicationsRaw.toLowerCase();
+  // contraindications is a top-level array in openFDA label response;
+  // also fold in webscraper-sourced text when available
+  const contraindications = [
+    asText(label?.contraindications),
+    asText(scraper?.contraindications),
+  ].join(' ').toLowerCase();
 
   // drug_interactions is also a top-level array
-  const interactionsRaw = Array.isArray(label?.drug_interactions)
-    ? label.drug_interactions.join(' ')
-    : (label?.drug_interactions || '');
-  const interactions = interactionsRaw.toLowerCase();
+  const interactions = [
+    asText(label?.drug_interactions),
+    asText(scraper?.interactions),
+    asText(scraper?.drug_interactions),
+  ].join(' ').toLowerCase();
 
   // warnings also useful for condition checks
-  const warningsRaw = Array.isArray(label?.warnings_and_cautions)
-    ? label.warnings_and_cautions.join(' ')
-    : (label?.warnings_and_cautions || label?.warnings || '');
-  const warnings = warningsRaw.toLowerCase();
+  const warnings = [
+    asText(label?.warnings_and_cautions) || asText(label?.warnings),
+    asText(scraper?.warnings),
+    asText(labelInfo?.sideEffects),
+    asText(scraper?.sideEffects),
+  ].join(' ').toLowerCase();
 
-  if (!medName.trim() && !contraindications && !interactions) return risks;
+  if (!medName.trim() && !contraindications.trim() && !interactions.trim()) return risks;
 
   // ── Allergy check ─────────────────────────────────────────────
   if (profile.allergies) {
@@ -297,8 +309,10 @@ const BarcodeScanner: React.FC = () => {
       }
       telemetry.lookupSuccess = !!result;
 
-      // Cross-examination against user profile — text matching (fast, offline)
-      if (profile && result && result.label) {
+      // Cross-examination against user profile — text matching (fast, offline).
+      // Run whenever ANY drug data source returned something (openFDA label,
+      // simplified labelInfo, or the webscraper).
+      if (profile && result && (result.label || result.labelInfo || result.webscraperInfo)) {
         riskItems = buildRiskItems(profile, result, t);
         setRisks(riskItems);
       }
@@ -310,6 +324,10 @@ const BarcodeScanner: React.FC = () => {
           result.label?.openfda?.generic_name?.[0] ||
           result.label?.brand_name ||
           result.label?.generic_name ||
+          result.webscraperInfo?.brand_name ||
+          result.webscraperInfo?.generic_name ||
+          result.webscraperInfo?.name ||
+          result.webscraperInfo?.title ||
           result.labelInfo?.indications?.split(' ').slice(0, 3).join(' ') ||
           '';
         if (drugName && (profile.medications?.length ?? 0) > 0) {

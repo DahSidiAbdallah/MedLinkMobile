@@ -62,6 +62,40 @@ export function SkeletonHeroCard() {
   );
 }
 
+// Profile Hero Skeleton — matches the UserProfile gradient header
+export function SkeletonProfileHero() {
+  const shimmer = useShimmer();
+  const translateX = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-350, 350],
+  });
+
+  return (
+    <View style={styles.profileHero}>
+      <Animated.View style={[styles.shimmerOverlay, { transform: [{ translateX }] }]}>
+        <LinearGradient
+          colors={['transparent', 'rgba(255,255,255,0.3)', 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+      <View style={styles.profileHeroTop}>
+        <View style={styles.profileHeroAvatar} />
+        <View style={{ flex: 1, gap: spacing.sm }}>
+          <View style={styles.profileHeroName} />
+          <View style={styles.profileHeroLine} />
+        </View>
+      </View>
+      <View style={styles.profileHeroStats}>
+        <View style={styles.profileHeroStat} />
+        <View style={styles.profileHeroStat} />
+        <View style={styles.profileHeroStat} />
+      </View>
+    </View>
+  );
+}
+
 // Quick Action Card Skeleton
 export function SkeletonQuickAction() {
   const shimmer = useShimmer();
@@ -74,7 +108,6 @@ export function SkeletonQuickAction() {
     <Animated.View style={[styles.quickAction, { opacity }]}>
       <View style={styles.quickActionIcon} />
       <View style={styles.quickActionTitle} />
-      <View style={styles.quickActionSubtitle} />
     </Animated.View>
   );
 }
@@ -143,6 +176,35 @@ export function SkeletonFacilityCardLarge() {
       <View style={styles.facilityInfo}>
         <View style={styles.facilityName} />
         <View style={styles.facilityDistance} />
+      </View>
+    </View>
+  );
+}
+
+// Full-width Facility Card Skeleton — matches the Clinics screen list cards
+export function SkeletonFacilityCardList() {
+  const shimmer = useShimmer();
+  const translateX = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-350, 350],
+  });
+
+  return (
+    <View style={styles.facilityListCard}>
+      <View style={styles.facilityListImage}>
+        <Animated.View style={[styles.shimmerOverlay, { transform: [{ translateX }] }]}>
+          <LinearGradient
+            colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
+      </View>
+      <View style={styles.facilityListInfo}>
+        <View style={styles.facilityListName} />
+        <View style={styles.facilityListSpecialty} />
+        <View style={styles.facilityListMeta} />
       </View>
     </View>
   );
@@ -233,34 +295,74 @@ const styles = StyleSheet.create({
     backgroundColor: colors.skeletonHighlight,
   },
 
-  // Quick Action
+  // Profile Hero — full-bleed gradient header placeholder
+  profileHero: {
+    height: 330,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    backgroundColor: colors.skeleton,
+    overflow: 'hidden',
+    paddingHorizontal: spacing.xl,
+    paddingTop: 96,
+    paddingBottom: spacing.xxl,
+    justifyContent: 'space-between',
+  },
+  profileHeroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  profileHeroAvatar: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.skeletonHighlight,
+  },
+  profileHeroName: {
+    width: '60%',
+    height: 20,
+    borderRadius: radius.sm,
+    backgroundColor: colors.skeletonHighlight,
+  },
+  profileHeroLine: {
+    width: '45%',
+    height: 13,
+    borderRadius: radius.sm,
+    backgroundColor: colors.skeletonHighlight,
+  },
+  profileHeroStats: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  profileHeroStat: {
+    flex: 1,
+    height: 84,
+    borderRadius: radius.lg,
+    backgroundColor: colors.skeletonHighlight,
+  },
+
+  // Quick Action — matches the 2-up profile cards (minHeight 130, icon 48)
   quickAction: {
     flex: 1,
-    padding: spacing.xxl,
-    borderRadius: radius.xxl,
+    padding: spacing.lg,
+    borderRadius: radius.xl,
     backgroundColor: colors.skeleton,
     gap: spacing.md,
-    minHeight: 180,
+    minHeight: 130,
     ...shadow.card,
   },
   quickActionIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.xl,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     backgroundColor: colors.skeletonHighlight,
   },
   quickActionTitle: {
     width: '70%',
-    height: 20,
-    borderRadius: radius.sm,
-    backgroundColor: colors.skeletonHighlight,
-    marginTop: 'auto',
-  },
-  quickActionSubtitle: {
-    width: '50%',
     height: 16,
     borderRadius: radius.sm,
     backgroundColor: colors.skeletonHighlight,
+    marginTop: 'auto',
   },
 
   // Progress Card
@@ -322,35 +424,73 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
 
-  // Facility Card
+  // Facility Card — matches the Dashboard horizontal cards (200 wide, image 120)
   facilityCard: {
-    width: 240,
+    width: 200,
     borderRadius: radius.xl,
     backgroundColor: colors.skeleton,
     overflow: 'hidden',
     ...shadow.card,
   },
   facilityImage: {
-    height: 160,
+    height: 120,
     backgroundColor: colors.skeleton,
     position: 'relative',
     overflow: 'hidden',
   },
   facilityInfo: {
-    padding: spacing.lg,
-    gap: spacing.sm,
+    padding: spacing.md,
+    gap: spacing.xs,
   },
   facilityName: {
     width: '80%',
-    height: 18,
+    height: 14,
     borderRadius: radius.sm,
     backgroundColor: colors.skeletonHighlight,
   },
   facilityDistance: {
-    width: '50%',
+    width: '40%',
+    height: 11,
+    borderRadius: radius.sm,
+    backgroundColor: colors.skeletonHighlight,
+  },
+
+  // Facility List Card — matches the Clinics screen cards (full width, image 180)
+  facilityListCard: {
+    borderRadius: radius.xxl,
+    backgroundColor: colors.skeleton,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+  },
+  facilityListImage: {
+    height: 180,
+    backgroundColor: colors.skeleton,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  facilityListInfo: {
+    padding: spacing.xl,
+    gap: spacing.sm,
+  },
+  facilityListName: {
+    width: '65%',
+    height: 17,
+    borderRadius: radius.sm,
+    backgroundColor: colors.skeletonHighlight,
+  },
+  facilityListSpecialty: {
+    width: '45%',
     height: 14,
     borderRadius: radius.sm,
     backgroundColor: colors.skeletonHighlight,
+  },
+  facilityListMeta: {
+    width: '35%',
+    height: 13,
+    borderRadius: radius.sm,
+    backgroundColor: colors.skeletonHighlight,
+    marginTop: spacing.xs,
   },
 
   // Reminder Card XL

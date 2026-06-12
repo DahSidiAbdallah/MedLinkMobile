@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   value: string;
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export default function BloodTypePicker({ value, onChange }: Props) {
+  const { t } = useTranslation();
   return (
     <View style={styles.pickerWrapper}>
       <Picker
@@ -15,7 +17,7 @@ export default function BloodTypePicker({ value, onChange }: Props) {
         style={styles.picker}
         onValueChange={onChange}
       >
-        <Picker.Item label="Select..." value="" />
+        <Picker.Item label={t('auth.bloodTypeSelect', 'Select...')} value="" />
         <Picker.Item label="A+" value="A+" />
         <Picker.Item label="A-" value="A-" />
         <Picker.Item label="B+" value="B+" />
@@ -24,7 +26,7 @@ export default function BloodTypePicker({ value, onChange }: Props) {
         <Picker.Item label="AB-" value="AB-" />
         <Picker.Item label="O+" value="O+" />
         <Picker.Item label="O-" value="O-" />
-        <Picker.Item label="Other (type below)" value="custom" />
+        <Picker.Item label={t('auth.bloodTypeOther', 'Other (type below)')} value="custom" />
       </Picker>
     </View>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useTranslation } from 'react-i18next';
 
 interface BloodTypePickerProps {
   readonly value: string;
@@ -8,6 +9,7 @@ interface BloodTypePickerProps {
 }
 
 export default function BloodTypePicker({ value, onChange }: BloodTypePickerProps) {
+  const { t } = useTranslation();
   if (Platform.OS === 'web') {
     return (
       <select
@@ -15,7 +17,7 @@ export default function BloodTypePicker({ value, onChange }: BloodTypePickerProp
         value={value}
         onChange={e => onChange(e.target.value)}
       >
-        <option value="">Select...</option>
+        <option value="">{t('auth.bloodTypeSelect', 'Select...')}</option>
         <option value="A+">A+</option>
         <option value="A-">A-</option>
         <option value="B+">B+</option>
@@ -24,7 +26,7 @@ export default function BloodTypePicker({ value, onChange }: BloodTypePickerProp
         <option value="AB-">AB-</option>
         <option value="O+">O+</option>
         <option value="O-">O-</option>
-        <option value="custom">Other (type below)</option>
+        <option value="custom">{t('auth.bloodTypeOther', 'Other (type below)')}</option>
       </select>
     );
   }
@@ -32,7 +34,7 @@ export default function BloodTypePicker({ value, onChange }: BloodTypePickerProp
   return (
     <View style={{ flex: 1, height: 44, borderColor: '#E5E7EB', borderWidth: 1, borderRadius: 8, backgroundColor: '#F9FAFB', justifyContent: 'center', paddingLeft: 4 }}>
       <Picker selectedValue={value} onValueChange={v => onChange(String(v))} style={{ flex: 1 }}>
-        <Picker.Item label="Select..." value="" />
+        <Picker.Item label={t('auth.bloodTypeSelect', 'Select...')} value="" />
         <Picker.Item label="A+" value="A+" />
         <Picker.Item label="A-" value="A-" />
         <Picker.Item label="B+" value="B+" />
@@ -41,7 +43,7 @@ export default function BloodTypePicker({ value, onChange }: BloodTypePickerProp
         <Picker.Item label="AB-" value="AB-" />
         <Picker.Item label="O+" value="O+" />
         <Picker.Item label="O-" value="O-" />
-        <Picker.Item label="Other (type below)" value="custom" />
+        <Picker.Item label={t('auth.bloodTypeOther', 'Other (type below)')} value="custom" />
       </Picker>
     </View>
   );

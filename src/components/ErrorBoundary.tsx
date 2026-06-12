@@ -45,12 +45,12 @@ export default class ErrorBoundary extends Component<Props, State> {
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.message}>
-                {this.state.error?.message || 'An unexpected error occurred'}
+                {this.state.error?.message || i18next.t('errors.unexpectedError', 'An unexpected error occurred')}
               </Text>
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.hint}>
-                Try restarting the app or contact support if the problem persists.
+                {i18next.t('errors.restartHint', 'Try restarting the app or contact support if the problem persists.')}
               </Text>
             </View>
             <Pressable style={styles.button} onPress={this.handleReset}>

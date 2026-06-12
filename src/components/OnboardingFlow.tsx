@@ -6,13 +6,15 @@ import {
   Dimensions,
   Animated,
   Pressable,
-  Image as RNImage,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, shadow, animation, radius } from '../theme';
 import Button from './Button';
 import { useTranslation } from 'react-i18next';
+import FlagGB from '../assets/gb.svg';
+import FlagFR from '../assets/fr.svg';
+import FlagMR from '../assets/mr.svg';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -47,9 +49,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const { t, i18n } = useTranslation();
 
   const languages = [
-    { code: 'en', label: t('languages.english', 'English'), flag: require('../assets/gb.svg') },
-    { code: 'fr', label: t('languages.french', 'French'), flag: require('../assets/fr.svg') },
-    { code: 'ar', label: t('languages.arabic', 'Arabic'), flag: require('../assets/mr.svg') },
+    { code: 'en', label: t('languages.english', 'English'), Flag: FlagGB },
+    { code: 'fr', label: t('languages.french', 'French'), Flag: FlagFR },
+    { code: 'ar', label: t('languages.arabic', 'Arabic'), Flag: FlagMR },
   ];
 
   const onboardingSteps: OnboardingStep[] = [
@@ -229,7 +231,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     ]}
                   >
                     <View style={[styles.langFlagWrap, i18n.language === lang.code && styles.langFlagWrapActive]}>
-                      <RNImage source={lang.flag} style={styles.langFlagLarge} resizeMode="contain" />
+                      <View style={styles.langFlagLarge}>
+                        <lang.Flag width={48} height={32} />
+                      </View>
                     </View>
                     <Text style={[styles.languageLabel, i18n.language === lang.code && styles.languageLabelActive]}>
                       {lang.label}
@@ -491,6 +495,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 32,
     borderRadius: 8,
+    overflow: 'hidden',
   },
   languageLabel: {
     flex: 1,

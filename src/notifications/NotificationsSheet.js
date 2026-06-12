@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import { Modal, View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from './NotificationsContext';
 import { colors, spacing, radius } from '../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 
 export default function NotificationsSheet({ visible, onClose }) {
+  const { t } = useTranslation();
   const { notifications, markAllRead, clearAll, markRead, removeOne } = useNotifications();
 
   const summary = useMemo(() => notifications, [notifications]);
@@ -16,15 +18,15 @@ export default function NotificationsSheet({ visible, onClose }) {
       <View style={styles.sheet}>
         <View style={styles.grabber} />
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Notifications</Text>
+          <Text style={styles.title}>{t('notifications.title', 'Notifications')}</Text>
           <View style={styles.headerActions}>
             {summary.length > 0 && (
               <>
                 <Pressable onPress={markAllRead} style={styles.headerBtn}>
-                  <Text style={styles.headerBtnText}>Mark all read</Text>
+                  <Text style={styles.headerBtnText}>{t('notifications.markAllRead', 'Mark all read')}</Text>
                 </Pressable>
                 <Pressable onPress={clearAll} style={styles.headerBtn}>
-                  <Text style={styles.headerBtnText}>Clear</Text>
+                  <Text style={styles.headerBtnText}>{t('notifications.clear', 'Clear')}</Text>
                 </Pressable>
               </>
             )}
@@ -33,8 +35,8 @@ export default function NotificationsSheet({ visible, onClose }) {
         {summary.length === 0 ? (
       <View style={styles.empty}>
         <MaterialIcons name="notifications-none" size={40} color={colors.muted} />
-            <Text style={styles.emptyTitle}>All caught up</Text>
-            <Text style={styles.emptyText}>You have no notifications.</Text>
+            <Text style={styles.emptyTitle}>{t('notifications.allCaughtUp', 'All caught up')}</Text>
+            <Text style={styles.emptyText}>{t('notifications.noNotifications', 'You have no notifications.')}</Text>
           </View>
         ) : (
           <FlatList
@@ -45,7 +47,7 @@ export default function NotificationsSheet({ visible, onClose }) {
               <View style={[styles.card, item.read && styles.cardRead]}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardTitle} numberOfLines={1}>
-                    {item.title || 'Notification'}
+                    {item.title || t('notifications.fallbackTitle', 'Notification')}
                   </Text>
                   {item.subtitle ? (
                     <Text style={styles.cardSubtitle} numberOfLines={2}>
@@ -59,7 +61,7 @@ export default function NotificationsSheet({ visible, onClose }) {
                 <View style={styles.cardActions}>
                   {!item.read && (
                     <Pressable onPress={() => markRead(item.id)} style={styles.pill}>
-                      <Text style={styles.pillText}>Read</Text>
+                      <Text style={styles.pillText}>{t('notifications.read', 'Read')}</Text>
                     </Pressable>
                   )}
                   <Pressable onPress={() => removeOne(item.id)} style={[styles.pill, styles.pillGhost]}>
@@ -86,7 +88,7 @@ NotificationsSheet.defaultProps = {
 };
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: colors.overlay },
+  backdrop: { flex: 1, backgroundColor: 'transparent' },
   sheet: {
     position: 'absolute',
     left: 0, right: 0, bottom: 0,

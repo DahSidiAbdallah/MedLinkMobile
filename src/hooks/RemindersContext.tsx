@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import i18next from 'i18next';
 import { fetchReminders, createReminder, updateReminder, deleteReminder, Reminder } from '../core/reminders';
 
 interface RemindersContextType {
@@ -36,7 +37,7 @@ export const RemindersProvider = ({ children }: { children: ReactNode }) => {
       setReminders(data || []);
       setError(null);
     } catch (err) {
-      setError('Failed to load reminders');
+      setError(i18next.t('errors.loadRemindersFailed', 'Failed to load reminders'));
     } finally {
       setLoading(false);
     }

@@ -32,10 +32,14 @@ type RegisterErrorState = { email?: string; password?: string; confirmPassword?:
 type RegisterPersonalErrors = { name?: string; phone?: string; dateOfBirth?: string };
 type HealthErrors = { bloodType?: string; allergies?: string; conditions?: string };
 
+import FlagGB from '../assets/gb.svg';
+import FlagFR from '../assets/fr.svg';
+import FlagMR from '../assets/mr.svg';
+
 const LANGS = [
-  { code: 'en', flag: require('../assets/gb.svg') },
-  { code: 'fr', flag: require('../assets/fr.svg') },
-  { code: 'ar', flag: require('../assets/mr.svg') },
+  { code: 'en', Flag: FlagGB },
+  { code: 'fr', Flag: FlagFR },
+  { code: 'ar', Flag: FlagMR },
 ] as const;
 
 export default function Login({ onLogin }: Readonly<LoginProps>) {
@@ -421,7 +425,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
       {/* Health section */}
       <View style={styles.sectionDivider}>
         <Text style={styles.sectionLabel}>{t('auth.healthBasics', 'Health info')}</Text>
-        <View style={styles.optionalPill}><Text style={styles.optionalText}>Optional</Text></View>
+        <View style={styles.optionalPill}><Text style={styles.optionalText}>{t('common.optional', 'Optional')}</Text></View>
       </View>
 
       {healthErrors.bloodType ? <Text style={styles.errorText}>{healthErrors.bloodType}</Text> : null}
@@ -562,7 +566,9 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
                   style={[styles.langPill, i18n.language === l.code && styles.langPillActive]}
                   hitSlop={6}
                 >
-                  <Image source={l.flag} style={styles.langFlag} resizeMode="contain" />
+                  <View style={styles.langFlag}>
+                    <l.Flag width={20} height={14} />
+                  </View>
                   {i18n.language === l.code && (
                     <Text style={styles.langLabel}>
                       {l.code.toUpperCase()}
@@ -604,7 +610,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
             {isRegister ? (
               registerStep === 0 ? (
                 <Pressable
-                  style={styles.primaryBtn}
+                  style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryBtnPressed]}
                   onPress={() => { if (validateAccountStep()) setRegisterStep(1); }}
                 >
                   <Text style={styles.primaryBtnText}>{t('common.continue', 'Continue')}</Text>
@@ -612,7 +618,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
                 </Pressable>
               ) : (
                 <Pressable
-                  style={[styles.primaryBtn, loading && styles.primaryBtnBusy]}
+                  style={({ pressed }) => [styles.primaryBtn, loading && styles.primaryBtnBusy, pressed && styles.primaryBtnPressed]}
                   onPress={handleRegister}
                   disabled={loading}
                 >
@@ -624,7 +630,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
               )
             ) : (
               <Pressable
-                style={[styles.primaryBtn, loading && styles.primaryBtnBusy]}
+                style={({ pressed }) => [styles.primaryBtn, loading && styles.primaryBtnBusy, pressed && styles.primaryBtnPressed]}
                 onPress={handleLogin}
                 disabled={loading}
               >
@@ -765,13 +771,13 @@ const styles = StyleSheet.create({
   langPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
     backgroundColor: colors.bgSecondary,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: 'transparent',
   },
   langPillActive: {
     backgroundColor: colors.primary50,
@@ -781,6 +787,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 14,
     borderRadius: 2,
+    overflow: 'hidden',
   },
   langLabel: {
     fontSize: 11,
@@ -979,6 +986,10 @@ const styles = StyleSheet.create({
   },
   primaryBtnBusy: {
     opacity: 0.65,
+  },
+  primaryBtnPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.985 }],
   },
   primaryBtnText: {
     color: '#fff',

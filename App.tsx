@@ -385,7 +385,7 @@ function AppContent() {
         {loadingTimeout && (
           <View style={{ position: 'absolute', bottom: 60, left: 0, right: 0, alignItems: 'center', gap: spacing.md }}>
             <Text style={{ color: colors.textSecondary, fontSize: 14, textAlign: 'center' }}>
-              Taking longer than expected?
+              {t('common.takingLonger', 'Taking longer than expected?')}
             </Text>
             <Pressable
               onPress={handleManualContinue}
