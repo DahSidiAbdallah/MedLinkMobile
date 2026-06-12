@@ -151,7 +151,7 @@ const calStyles = StyleSheet.create({
 
 /* ── Main screen ────────────────────────────────────────────────────────── */
 export default function Reminders() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isRTL, textAlign } = useRTL();
   const [segment, setSegment]           = useState<'Active' | 'Past'>('Active');
   const [modalVisible, setModalVisible] = useState(false);
@@ -258,7 +258,17 @@ export default function Reminders() {
   const getDayName = (dt: string) => {
     const m = dt?.match(/(\d{4}-\d{2}-\d{2})/);
     if (!m) return '';
-    return new Date(m[1]).toLocaleDateString('en', { weekday: 'short' });
+    return new Date(m[1]).toLocaleDateString(i18n.language, { weekday: 'short' });
+  };
+
+  /* Frequency values are stored in English ("Daily") — map through i18n for display */
+  const trFreq = (f?: string) => {
+    const key = f?.trim().toLowerCase();
+    if (!key) return '';
+    if (['daily', 'weekly', 'monthly', 'once'].includes(key)) {
+      return t(`reminders.frequencies.${key}`, f as string);
+    }
+    return f as string;
   };
 
   /* ── Card renderer ───────────────────────────────────────────────────── */
@@ -311,7 +321,7 @@ export default function Reminders() {
               {r.frequency ? (
                 <View style={styles.chip}>
                   <Ionicons name="repeat" size={11} color={colors.textTertiary} />
-                  <Text style={styles.chipText}>{r.frequency}</Text>
+                  <Text style={styles.chipText}>{trFreq(r.frequency)}</Text>
                 </View>
               ) : null}
             </View>
@@ -726,7 +736,7 @@ const styles = StyleSheet.create({
   emptyHint:  { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
 
   /* Modal */
-  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: 'transparent', justifyContent: 'flex-end' },
   modalSheet: {
     backgroundColor: colors.card,
     borderTopLeftRadius: radius.xxxl,

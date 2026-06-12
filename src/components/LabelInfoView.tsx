@@ -81,7 +81,7 @@ const LabelInfoView: React.FC<Props> = ({ labelInfo, label, truncateLimit = 300 
           <Text style={{ color: colors.text, flex: 1 }} accessibilityRole="text">{modalContent}</Text>
           <Pressable 
             accessibilityRole="button" 
-            accessibilityLabel="Close details modal"
+            accessibilityLabel={t('common.close', 'Close')}
             onPress={closeModal} 
             style={{ marginTop: 20 }}
           >
