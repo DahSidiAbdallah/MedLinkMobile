@@ -170,12 +170,12 @@ export function SkeletonReminderCardXL() {
 const styles = StyleSheet.create({
   // Hero Card
   heroCard: {
-    height: 280,
+    height: 180,
     marginHorizontal: spacing.xl,
     borderRadius: radius.xxl,
     overflow: 'hidden',
     backgroundColor: colors.skeleton,
-    ...shadow.lg,
+    ...shadow.card,
   },
   heroCardInner: {
     flex: 1,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   heroCardContent: {
     flex: 1,
-    padding: spacing.xxl,
+    padding: spacing.xl,
     justifyContent: 'space-between',
   },
   heroCardBadge: {

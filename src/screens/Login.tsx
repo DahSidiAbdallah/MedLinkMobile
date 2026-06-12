@@ -33,9 +33,9 @@ type RegisterPersonalErrors = { name?: string; phone?: string; dateOfBirth?: str
 type HealthErrors = { bloodType?: string; allergies?: string; conditions?: string };
 
 const LANGS = [
-  { code: 'en', flag: '🇺🇸' },
-  { code: 'fr', flag: '🇫🇷' },
-  { code: 'ar', flag: '🇸🇦' },
+  { code: 'en', flag: require('../assets/gb.svg') },
+  { code: 'fr', flag: require('../assets/fr.svg') },
+  { code: 'ar', flag: require('../assets/mr.svg') },
 ] as const;
 
 export default function Login({ onLogin }: Readonly<LoginProps>) {
@@ -562,7 +562,7 @@ export default function Login({ onLogin }: Readonly<LoginProps>) {
                   style={[styles.langPill, i18n.language === l.code && styles.langPillActive]}
                   hitSlop={6}
                 >
-                  <Text style={styles.langFlag}>{l.flag}</Text>
+                  <Image source={l.flag} style={styles.langFlag} resizeMode="contain" />
                   {i18n.language === l.code && (
                     <Text style={styles.langLabel}>
                       {l.code.toUpperCase()}
@@ -778,7 +778,9 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   langFlag: {
-    fontSize: 18,
+    width: 20,
+    height: 14,
+    borderRadius: 2,
   },
   langLabel: {
     fontSize: 11,
@@ -795,16 +797,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   pageTitle: {
-    fontSize: 34,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '700',
     color: colors.text,
-    letterSpacing: -1,
-    lineHeight: 42,
+    letterSpacing: -0.6,
+    lineHeight: 34,
   },
   pageSubtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 21,
   },
 
   /* ── Register progress ── */
@@ -853,17 +855,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.bgSecondary,
-    borderRadius: 14,
+    borderRadius: radius.xl,
     paddingHorizontal: 16,
-    minHeight: 54,
+    minHeight: 52,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
   },
   inputWrapperFocused: {
-    backgroundColor: colors.bgTertiary,
-    borderWidth: 1.5,
+    backgroundColor: colors.card,
     borderColor: colors.primary,
   },
   inputWrapperError: {
-    backgroundColor: colors.dangerLight ?? '#FEF2F2',
+    backgroundColor: colors.danger100,
+    borderColor: colors.danger,
   },
   inputIcon: {
     marginRight: 10,
@@ -948,11 +952,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     backgroundColor: colors.bgSecondary,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.line,
+    borderRadius: radius.pill,
   },
   tagText: {
     color: colors.text,
@@ -980,8 +982,8 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
     letterSpacing: -0.2,
   },
   backBtn: {

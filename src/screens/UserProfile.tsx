@@ -8,7 +8,6 @@ import {
   Alert,
   Image as RNImage,
   Animated,
-  ImageBackground,
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -251,13 +250,11 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
       <ScreenContainer scrollable contentContainerStyle={styles.content}>
         {/* Hero Header with Image */}
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-          <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800' }}
-            style={styles.hero}
-            imageStyle={styles.heroImageStyle}
-          >
+          <View style={styles.hero}>
             <LinearGradient
-              colors={['rgba(0,102,204,0.88)', 'rgba(0,85,170,0.97)']}
+              colors={[colors.primary, colors.primary700]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0.6, y: 1 }}
               style={styles.heroOverlay}
             >
               <View style={styles.heroTop}>
@@ -302,7 +299,7 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                 </View>
               </View>
             </LinearGradient>
-          </ImageBackground>
+          </View>
         </Animated.View>
 
         {/* Quick Actions */}
@@ -310,8 +307,8 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
           <View style={styles.quickActions}>
             {([
               { key: 'meds', icon: 'medkit' as const, label: t('profile.myMedications', 'Medications'), color: colors.primary, onPress: () => setMedicationsModal(true) },
-              { key: 'medical', icon: 'pulse' as const, label: t('profile.medicalId', 'Medical ID'), color: colors.secondary, onPress: () => setMedicalModal(true) },
-              { key: 'insurance', icon: 'shield-checkmark' as const, label: t('profile.insurance', 'Insurance'), color: colors.success, onPress: () => setInsuranceModal(true) },
+              { key: 'medical', icon: 'pulse' as const, label: t('profile.medicalId', 'Medical ID'), color: colors.primary, onPress: () => setMedicalModal(true) },
+              { key: 'insurance', icon: 'shield-checkmark' as const, label: t('profile.insurance', 'Insurance'), color: colors.primary, onPress: () => setInsuranceModal(true) },
               { key: 'emergency', icon: 'call' as const, label: t('profile.emergencyContacts', 'Emergency'), color: colors.danger, onPress: () => setEmergencyModal(true) },
             ] as const).map((action, index) => (
               <Animated.View
@@ -365,7 +362,7 @@ export default function UserProfile({ navigation, onLogout }: Readonly<UserProfi
                   title: t('profile.insurance', 'Insurance'),
                   subtitle: profile.insurance_info?.provider ?? t('common.tapToAdd', 'Tap to add'),
                   icon: 'shield' as const,
-                  color: colors.secondary,
+                  color: colors.primary,
                   onPress: () => setInsuranceModal(true),
                 },
                 {
@@ -572,10 +569,11 @@ const styles = StyleSheet.create({
   },
 
   // Hero
-  hero: { height: 340 },
-  heroImageStyle: {
-    borderBottomLeftRadius: radius.xxxl,
-    borderBottomRightRadius: radius.xxxl,
+  hero: {
+    height: 330,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    overflow: 'hidden',
   },
   heroOverlay: {
     flex: 1,
@@ -583,8 +581,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.xl,
     gap: spacing.xl,
-    borderBottomLeftRadius: radius.xxxl,
-    borderBottomRightRadius: radius.xxxl,
   },
   heroTop: {
     flexDirection: 'row',

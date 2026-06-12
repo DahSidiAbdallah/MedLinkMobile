@@ -265,7 +265,7 @@ export default function Reminders() {
   const renderCard = (r: any) => {
     const isDone     = !!doneMap[r.id];
     const isLoading  = !!toggling[r.id];
-    const typeColor  = r.type === 'checkup' ? colors.secondary : colors.primary;
+    const typeColor  = r.type === 'checkup' ? colors.info : colors.primary;
     const iconName   = isDone ? 'checkmark-circle' : (r.type === 'checkup' ? 'calendar-outline' : 'medical-outline');
     const iconColor  = isDone ? colors.success : colors.textSecondary;
 

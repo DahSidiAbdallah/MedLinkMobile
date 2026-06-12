@@ -8,7 +8,7 @@ import {
   TextStyle,
   Animated,
 } from 'react-native';
-import { colors, radius, spacing, shadow } from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -28,26 +28,26 @@ type ButtonProps = {
 };
 
 const sizeStyles = {
-  sm: { 
-    paddingVertical: 10, 
-    paddingHorizontal: 20, 
-    fontSize: 14,
+  sm: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    fontSize: 13,
     fontWeight: '600' as const,
-    minHeight: 40,
+    minHeight: 38,
   },
-  md: { 
-    paddingVertical: 14, 
-    paddingHorizontal: 24, 
+  md: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    fontSize: 15,
+    fontWeight: '600' as const,
+    minHeight: 44,
+  },
+  lg: {
+    paddingVertical: 14,
+    paddingHorizontal: 28,
     fontSize: 16,
-    fontWeight: '700' as const,
-    minHeight: 52,
-  },
-  lg: { 
-    paddingVertical: 18, 
-    paddingHorizontal: 28, 
-    fontSize: 18,
-    fontWeight: '700' as const,
-    minHeight: 56,
+    fontWeight: '600' as const,
+    minHeight: 50,
   },
 };
 
@@ -92,7 +92,7 @@ export default function Button({
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.sm,
-      borderRadius: radius.xl, // VELO: larger rounded corners
+      borderRadius: radius.lg,
       paddingVertical: sizeConfig.paddingVertical,
       paddingHorizontal: sizeConfig.paddingHorizontal,
       minHeight: sizeConfig.minHeight,
@@ -105,45 +105,46 @@ export default function Button({
 
     switch (variant) {
       case 'secondary':
-        return { 
-          ...base, 
-          backgroundColor: colors.accent, // VELO: use accent color for secondary
+        return {
+          ...base,
+          backgroundColor: colors.primary50,
         };
       case 'outline':
-        return { 
-          ...base, 
-          backgroundColor: 'transparent', 
-          borderWidth: 1.5, 
-          borderColor: colors.primary,
+        return {
+          ...base,
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.lineDark,
         };
       case 'ghost':
-        return { 
-          ...base, 
-          backgroundColor: colors.bg,
+        return {
+          ...base,
+          backgroundColor: 'transparent',
         };
       case 'danger':
-        return { 
-          ...base, 
+        return {
+          ...base,
           backgroundColor: colors.danger,
         };
       case 'success':
-        return { 
-          ...base, 
+        return {
+          ...base,
           backgroundColor: colors.success,
         };
       default:
         return {
           ...base,
           backgroundColor: colors.primary,
-          ...shadow.primary, // VELO: add shadow to primary buttons
         };
     }
   };
 
   const getTextColor = (): string => {
     switch (variant) {
-      case 'outline':
+      case 'secondary':
         return colors.primary;
+      case 'outline':
+        return colors.text;
       case 'ghost':
         return colors.primary;
       default:

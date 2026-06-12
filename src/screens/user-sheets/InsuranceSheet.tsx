@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Animated, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius } from '../../theme';
 
 type Props = {
@@ -13,16 +12,17 @@ type Props = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.35)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xxxx,
+    borderTopRightRadius: radius.xxxx,
     overflow: 'hidden',
     maxHeight: '85%',
   },
-  gradient: {
+  body: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: 48,
@@ -32,36 +32,44 @@ const styles = StyleSheet.create({
     width: 48,
     height: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: colors.line,
     alignSelf: 'center',
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
   },
   description: {
-    color: colors.muted,
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 21,
   },
   item: {
+    fontSize: 14,
     color: colors.text,
     fontWeight: '600',
+    lineHeight: 22,
   },
   value: {
-    color: colors.muted,
+    color: colors.textSecondary,
+    fontWeight: '400',
     marginLeft: spacing.sm,
   },
   close: {
     marginTop: spacing.xl,
     backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    borderRadius: radius.lg,
+    height: 44,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   closeText: {
-    color: colors.card,
-    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 
@@ -82,7 +90,7 @@ export default function InsuranceSheet({ visible, onClose, profile }: Readonly<P
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Animated.View style={[styles.sheet, { transform: [{ translateY }] }] }>
-          <LinearGradient colors={colors.subtleGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+          <View style={styles.body}>
             <View style={styles.handle} />
             <Text style={styles.title}>{t('profile.insurance', 'Insurance')}</Text>
             {profile?.insurance_info ? (
@@ -104,7 +112,7 @@ export default function InsuranceSheet({ visible, onClose, profile }: Readonly<P
             }}>
               <Text style={styles.closeText}>{t('common.close', 'Close')}</Text>
             </Pressable>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     </Modal>
