@@ -137,7 +137,7 @@ export default function FacilitiesScreen({ navigation }: any) {
             pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
           ]}
         >
-          <Ionicons name="search" size={22} color={colors.textTertiary} />
+          <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
           <TextInput
             placeholder={t('facilities.searchFacilities', 'Search facilities...')}
             value={search}
@@ -153,15 +153,15 @@ export default function FacilitiesScreen({ navigation }: any) {
         <View style={styles.filterCard}>
           <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
           <View style={styles.chipRow}>
-            <Chip 
-              label={openNow ? `${t('facilities.openNow', 'Open Now')} ✓` : t('facilities.openNow', 'Open Now')} 
-              selected={openNow} 
-              onPress={() => setOpenNow(v => !v)} 
+            <Chip
+              label={t('facilities.openNow', 'Open Now')}
+              selected={openNow}
+              onPress={() => setOpenNow(v => !v)}
             />
-            <Chip 
-              label={hasDelivery ? `${t('facilities.delivery', 'Delivery')} ✓` : t('facilities.delivery', 'Delivery')} 
-              selected={hasDelivery} 
-              onPress={() => setHasDelivery(v => !v)} 
+            <Chip
+              label={t('facilities.delivery', 'Delivery')}
+              selected={hasDelivery}
+              onPress={() => setHasDelivery(v => !v)}
             />
           </View>
         </View>
@@ -191,7 +191,7 @@ export default function FacilitiesScreen({ navigation }: any) {
           ) : filtered.length === 0 ? (
             <View style={styles.emptyState}>
               <View style={styles.emptyIcon}>
-                <Ionicons name="business-outline" size={48} color={colors.primary} />
+                <Ionicons name="business-outline" size={28} color={colors.primary} />
               </View>
               <Text style={styles.emptyTitle}>{t('facilities.noFacilities', 'No facilities found')}</Text>
               <Text style={styles.emptyText}>{t('facilities.adjustFilters', 'Try adjusting your filters or search')}</Text>
@@ -260,7 +260,7 @@ export default function FacilitiesScreen({ navigation }: any) {
                         </View>
                         {fac.rating && (
                           <View style={styles.facilityMetaItem}>
-                            <Ionicons name="star" size={14} color="#F59E0B" />
+                            <Ionicons name="star" size={14} color={colors.warn} />
                             <Text style={styles.facilityMetaText}>{fac.rating.toFixed(1)}</Text>
                           </View>
                         )}
@@ -289,8 +289,11 @@ export default function FacilitiesScreen({ navigation }: any) {
               <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>{selectedFacility.name}</Text>
-                  <Pressable onPress={() => setModalVisible(false)}>
-                    <Ionicons name="close" size={28} color={colors.text} />
+                  <Pressable
+                    onPress={() => setModalVisible(false)}
+                    style={({ pressed }) => [styles.modalCloseBtn, pressed && { opacity: 0.7 }]}
+                  >
+                    <Ionicons name="close" size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
 
@@ -370,25 +373,25 @@ export default function FacilitiesScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   content: {
-    gap: spacing.xxxl,
+    gap: spacing.xl,
     paddingBottom: 140,
   },
 
   // Header
   header: {
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xl,
-    gap: spacing.xs,
+    paddingTop: spacing.lg,
+    gap: 2,
   },
   headerTitle: {
-    fontSize: 34,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '700',
     color: colors.text,
-    letterSpacing: -0.8,
+    letterSpacing: -0.3,
   },
   headerSubtitle: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '400',
     color: colors.textSecondary,
   },
 
@@ -396,18 +399,18 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgSecondary,
+    backgroundColor: colors.card,
     marginHorizontal: spacing.xl,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.xl,
-    borderRadius: radius.xxl,
-    gap: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 13,
+    borderRadius: radius.pill,
+    gap: spacing.sm,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.line,
   },
   searchInput: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '400',
     color: colors.text,
   },
@@ -571,9 +574,9 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
     backgroundColor: colors.bgSecondary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -622,11 +625,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   modalTitle: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
     flex: 1,
     letterSpacing: -0.3,
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.bgSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalImage: {
     height: 200,
@@ -652,7 +663,7 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   modalSpecialty: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.primary,
   },
@@ -696,9 +707,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgSecondary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.line,
+    borderRadius: radius.pill,
   },
   modalTagText: {
     fontSize: 13,

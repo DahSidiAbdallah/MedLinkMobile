@@ -580,20 +580,20 @@ const BarcodeScanner: React.FC = () => {
                   styles.riskItem,
                   risk.type === 'allergy' && { borderLeftColor: colors.danger },
                   risk.type === 'condition' && { borderLeftColor: colors.warn },
-                  risk.type === 'interaction' && { borderLeftColor: severityColor ?? colors.secondary },
+                  risk.type === 'interaction' && { borderLeftColor: severityColor ?? colors.info },
                 ]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <View style={[
                       styles.riskTypeBadge,
                       risk.type === 'allergy' && { backgroundColor: colors.dangerLight },
                       risk.type === 'condition' && { backgroundColor: colors.warnLight },
-                      risk.type === 'interaction' && { backgroundColor: colors.secondary100 },
+                      risk.type === 'interaction' && { backgroundColor: colors.infoLight },
                     ]}>
                       <Text style={[
                         styles.riskTypeText,
                         risk.type === 'allergy' && { color: colors.danger },
                         risk.type === 'condition' && { color: colors.warn },
-                        risk.type === 'interaction' && { color: colors.secondary },
+                        risk.type === 'interaction' && { color: colors.info },
                       ]}>
                         {risk.label}
                       </Text>
@@ -693,8 +693,8 @@ const BarcodeScanner: React.FC = () => {
 
               {verification?.webscraperInfo && verification?.labelInfo && (
                 <View style={[styles.infoSectionHeader, { marginTop: spacing.lg, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line }]}>
-                  <Ionicons name="globe-outline" size={14} color={colors.accent} />
-                  <Text style={[styles.infoSectionTitle, { color: colors.accent, fontSize: 12 }]}>{t('scanner.supplementalData', 'Additional web-sourced data available')}</Text>
+                  <Ionicons name="globe-outline" size={14} color={colors.textSecondary} />
+                  <Text style={[styles.infoSectionTitle, { color: colors.textSecondary, fontSize: 12 }]}>{t('scanner.supplementalData', 'Additional web-sourced data available')}</Text>
                 </View>
               )}
             </Card>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Animated, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../theme';
 import MyMedicationsList from '../../components/MyMedicationsList';
 
@@ -13,16 +13,17 @@ type Props = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.35)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xxxx,
+    borderTopRightRadius: radius.xxxx,
     overflow: 'hidden',
     maxHeight: '85%',
   },
-  gradient: {
+  body: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: 48,
@@ -32,29 +33,31 @@ const styles = StyleSheet.create({
     width: 48,
     height: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: colors.line,
     alignSelf: 'center',
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
   },
-  close: {
-    color: colors.muted,
-    fontWeight: '600',
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.bgSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listWrap: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.55)',
-    borderRadius: radius.lg,
-    padding: spacing.md,
   },
 });
 
@@ -75,20 +78,24 @@ export default function MedicationsSheet({ visible, onClose }: Readonly<Props>) 
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
-          <LinearGradient colors={colors.subtleGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+          <View style={styles.body}>
             <View style={styles.handle} />
             <View style={styles.headerRow}>
               <Text style={styles.title}>{t('profile.myMedications', 'My Medications')}</Text>
-              <Pressable onPress={() => {
-                Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(onClose);
-              }} hitSlop={10}>
-                <Text style={styles.close}>{t('common.close', 'Close')}</Text>
+              <Pressable
+                style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+                onPress={() => {
+                  Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(onClose);
+                }}
+                hitSlop={10}
+              >
+                <Ionicons name="close" size={20} color={colors.textSecondary} />
               </Pressable>
             </View>
             <View style={styles.listWrap}>
               <MyMedicationsList />
             </View>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     </Modal>

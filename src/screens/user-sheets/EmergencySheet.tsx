@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Animated, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius } from '../../theme';
 
 type Props = {
@@ -13,16 +12,17 @@ type Props = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.35)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xxxx,
+    borderTopRightRadius: radius.xxxx,
     overflow: 'hidden',
     maxHeight: '85%',
   },
-  gradient: {
+  body: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: 48,
@@ -32,50 +32,56 @@ const styles = StyleSheet.create({
     width: 48,
     height: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: colors.line,
     alignSelf: 'center',
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
   },
   contactCard: {
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: radius.lg,
-    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
     gap: 4,
   },
   contactName: {
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '600',
     color: colors.text,
   },
   contactMeta: {
-    color: colors.muted,
+    fontSize: 13,
+    color: colors.textSecondary,
   },
   badge: {
     marginTop: 4,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(37,99,235,0.12)',
+    backgroundColor: colors.primary50,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
   badgeText: {
+    fontSize: 12,
     color: colors.primary,
     fontWeight: '600',
   },
   close: {
     marginTop: spacing.xl,
     backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    borderRadius: radius.lg,
+    height: 44,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   closeText: {
-    color: colors.card,
-    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 
@@ -96,7 +102,7 @@ export default function EmergencySheet({ visible, onClose, profile }: Readonly<P
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Animated.View style={[styles.sheet, { transform: [{ translateY }] }] }>
-          <LinearGradient colors={colors.subtleGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+          <View style={styles.body}>
             <View style={styles.handle} />
             <Text style={styles.title}>{t('profile.emergencyContacts', 'Emergency Contacts')}</Text>
             {profile?.emergency_contacts && profile.emergency_contacts.length > 0 ? (
@@ -120,7 +126,7 @@ export default function EmergencySheet({ visible, onClose, profile }: Readonly<P
             }}>
               <Text style={styles.closeText}>{t('common.close', 'Close')}</Text>
             </Pressable>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     </Modal>

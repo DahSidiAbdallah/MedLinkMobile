@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, Pressable, StyleSheet, ScrollView,
-  Image as RNImage, Animated, ImageBackground,
+  Image as RNImage, Animated, Easing, ImageBackground,
 } from 'react-native';
 import SkeletonImage from '../components/SkeletonImage';
 import {
@@ -103,6 +103,18 @@ export default function Dashboard({ navigation }: any) {
   }, [activeReminders.length]);
 
   const progress    = pillsDone.total ? pillsDone.done / pillsDone.total : 0;
+
+  /* Animated progress fill — eases in rather than snapping */
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 650,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [progress]);
+
   const firstName   = profile?.name?.split(' ')[0] ?? '';
   const getTime     = (dt: string) => dt?.match(/(\d{2}:\d{2})/)?.[1] ?? '';
   const nearbyOpen  = sortByDistance(facilities.filter(f => f.isOpen)).slice(0, 5);
@@ -152,35 +164,41 @@ export default function Dashboard({ navigation }: any) {
       ) : activeReminders.length > 0 ? (
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           <Pressable
-            style={({ pressed }) => [styles.apptBanner, pressed && { opacity: 0.9 }]}
+            style={({ pressed }) => [styles.apptBanner, pressed && { opacity: 0.92 }]}
             onPress={() => navigation.navigate('Reminders')}
           >
             <LinearGradient
               colors={[colors.primary, colors.primary700]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              start={{ x: 0, y: 0 }} end={{ x: 0.8, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
-            {/* Icon */}
-            <View style={styles.apptIconWrap}>
-              <Ionicons name="medical-outline" size={20} color={colors.primary} />
+            {/* Top row: label pill + arrow */}
+            <View style={styles.apptTopRow}>
+              <View style={styles.apptLabelPill}>
+                <Ionicons name="medical-outline" size={13} color="#fff" />
+                <Text style={styles.apptLabel}>{t('dashboard.nextDose', 'Next appointment')}</Text>
+              </View>
+              <View style={styles.apptArrow}>
+                <Ionicons name="chevron-forward" size={16} color="#fff" />
+              </View>
             </View>
-            {/* Text */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.apptLabel}>{t('dashboard.nextDose', 'Next appointment')}</Text>
-              <Text style={styles.apptTitle} numberOfLines={1}>{activeReminders[0].title}</Text>
-              {getTime(activeReminders[0].datetime) ? (
-                <View style={styles.apptTimeRow}>
-                  <Ionicons name="time-outline" size={12} color="rgba(255,255,255,0.75)" />
-                  <Text style={styles.apptTime}>
-                    {getTime(activeReminders[0].datetime)}
-                    {activeReminders[0].frequency ? `  ·  ${activeReminders[0].frequency}` : ''}
-                  </Text>
+            {/* Bottom: title + time + CTA */}
+            <View style={styles.apptBottom}>
+              <Text style={styles.apptTitle} numberOfLines={2}>{activeReminders[0].title}</Text>
+              <View style={styles.apptFootRow}>
+                {getTime(activeReminders[0].datetime) ? (
+                  <View style={styles.apptTimeRow}>
+                    <Ionicons name="time-outline" size={13} color="rgba(255,255,255,0.80)" />
+                    <Text style={styles.apptTime}>
+                      {getTime(activeReminders[0].datetime)}
+                      {activeReminders[0].frequency ? `  ·  ${activeReminders[0].frequency}` : ''}
+                    </Text>
+                  </View>
+                ) : <View />}
+                <View style={styles.apptCTA}>
+                  <Text style={styles.apptCTAText}>{t('dashboard.viewSchedule', 'View schedule')}</Text>
                 </View>
-              ) : null}
-            </View>
-            {/* Arrow */}
-            <View style={styles.apptArrow}>
-              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+              </View>
             </View>
           </Pressable>
         </Animated.View>
@@ -238,7 +256,18 @@ export default function Dashboard({ navigation }: any) {
             </View>
             {/* Track */}
             <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${Math.min(progress * 100, 100)}%` as any }]} />
+              <Animated.View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: progressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', '100%'],
+                      extrapolate: 'clamp',
+                    }),
+                  },
+                ]}
+              />
             </View>
             {/* Stats */}
             <View style={styles.statRow}>
@@ -426,34 +455,54 @@ const styles = StyleSheet.create({
   },
   searchText: { flex: 1, fontSize: 14, color: colors.textTertiary, fontWeight: '400' },
 
-  /* Appointment banner */
+  /* Appointment banner — hero-sized to match the loading skeleton */
   apptBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    minHeight: 180,
+    justifyContent: 'space-between',
     marginHorizontal: spacing.xl,
     borderRadius: radius.xxl,
-    padding: spacing.lg,
-    gap: spacing.md,
+    padding: spacing.xl,
     overflow: 'hidden',
     ...shadow.card,
   },
-  apptIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.20)',
+  apptTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  apptLabelPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  apptLabel: { fontSize: 12, fontWeight: '600', color: '#fff', letterSpacing: 0.2 },
+  apptBottom: { gap: spacing.md },
+  apptTitle: { fontSize: 22, fontWeight: '700', color: '#fff', letterSpacing: -0.3, lineHeight: 28 },
+  apptFootRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  apptTimeRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  apptTime:  { fontSize: 13, fontWeight: '500', color: 'rgba(255,255,255,0.80)' },
+  apptCTA: {
+    backgroundColor: '#fff',
+    paddingHorizontal: spacing.lg,
+    height: 36,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  apptLabel: { fontSize: 11, fontWeight: '500', color: 'rgba(255,255,255,0.70)', letterSpacing: 0.2 },
-  apptTitle: { fontSize: 15, fontWeight: '600', color: '#fff', marginTop: 2 },
-  apptTimeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
-  apptTime:  { fontSize: 12, color: 'rgba(255,255,255,0.75)' },
+  apptCTAText: { fontSize: 13, fontWeight: '600', color: colors.primary },
   apptArrow: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.20)',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -471,7 +520,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.line,
   },
-  catLabel: { fontSize: 10, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
+  catLabel: { fontSize: 11, fontWeight: '500', color: colors.textSecondary, textAlign: 'center' },
 
   /* Progress card */
   progressCard: {
@@ -530,6 +579,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.xl,
     gap: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
     ...shadow.card,
   },
   reminderIconCircle: {

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Modal, View, Text, Animated, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius } from '../../theme';
 
 type Props = {
@@ -13,16 +12,17 @@ type Props = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.35)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.xl + 4,
-    borderTopRightRadius: radius.xl + 4,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xxxx,
+    borderTopRightRadius: radius.xxxx,
     overflow: 'hidden',
     maxHeight: '85%',
   },
-  gradient: {
+  body: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: 48,
@@ -31,41 +31,44 @@ const styles = StyleSheet.create({
     width: 48,
     height: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: colors.line,
     alignSelf: 'center',
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
     marginBottom: spacing.sm,
   },
   sectionLabel: {
+    fontSize: 12,
     fontWeight: '600',
-    color: colors.text,
-    marginTop: spacing.md,
+    color: colors.textTertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: spacing.lg,
     marginBottom: spacing.xs,
   },
   item: {
-    color: colors.muted,
-    marginLeft: spacing.sm,
-    marginBottom: 4,
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 22,
+    marginBottom: 2,
   },
   closeButton: {
     marginTop: spacing.xl,
     backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    borderRadius: radius.lg,
+    height: 44,
     alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
+    justifyContent: 'center',
   },
   closeText: {
-    color: colors.card,
-    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 
@@ -86,7 +89,7 @@ export default function MedicalSheet({ visible, onClose, profile }: Readonly<Pro
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Animated.View style={[styles.sheet, { transform: [{ translateY }] }] }>
-          <LinearGradient colors={colors.subtleGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+          <View style={styles.body}>
             <View style={styles.handle} />
             <Text style={styles.title}>{t('profile.medicalId', 'Medical ID')}</Text>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -119,7 +122,7 @@ export default function MedicalSheet({ visible, onClose, profile }: Readonly<Pro
             }}>
               <Text style={styles.closeText}>{t('common.close', 'Close')}</Text>
             </Pressable>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     </Modal>

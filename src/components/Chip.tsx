@@ -1,8 +1,7 @@
 import React from 'react';
 import { Pressable, Text, View, ViewStyle, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 type ChipVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';
 type ChipSize = 'sm' | 'md';
@@ -20,11 +19,11 @@ type Props = {
 };
 
 const variantColors = {
-  default: { bg: colors.chipBg, text: colors.chipText, selectedBg: colors.primaryGradient },
-  success: { bg: colors.success100, text: colors.success, selectedBg: [colors.success, '#059669'] as const },
-  warning: { bg: colors.warn100, text: '#B45309', selectedBg: [colors.warn, '#D97706'] as const },
-  danger: { bg: colors.danger100, text: colors.danger, selectedBg: [colors.danger, '#DC2626'] as const },
-  info: { bg: colors.primary100, text: colors.primary, selectedBg: colors.primaryGradient },
+  default: { bg: colors.chipBg, text: colors.chipText, selectedBg: colors.primary },
+  success: { bg: colors.success100, text: colors.success, selectedBg: colors.success },
+  warning: { bg: colors.warn100, text: '#B45309', selectedBg: colors.warn },
+  danger: { bg: colors.danger100, text: colors.danger, selectedBg: colors.danger },
+  info: { bg: colors.primary50, text: colors.primary, selectedBg: colors.primary },
 };
 
 const sizeStyles = {
@@ -56,13 +55,11 @@ export default React.memo(function Chip({
           style,
         ]}
       >
-        <LinearGradient
-          colors={variantStyle.selectedBg as readonly [string, string, ...string[]]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
           style={[
             styles.chip,
             {
+              backgroundColor: variantStyle.selectedBg,
               paddingVertical: sizeStyle.paddingVertical,
               paddingHorizontal: sizeStyle.paddingHorizontal,
             },
@@ -77,7 +74,7 @@ export default React.memo(function Chip({
               <Ionicons name="close" size={sizeStyle.iconSize} color="#FFFFFF" />
             </Pressable>
           )}
-        </LinearGradient>
+        </View>
       </Pressable>
     );
   }
