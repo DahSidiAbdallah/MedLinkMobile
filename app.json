@@ -2,6 +2,7 @@
   "expo": {
     "name": "MedLinkMobile",
     "slug": "MedLinkMobile",
+    "sdkVersion": "54.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
