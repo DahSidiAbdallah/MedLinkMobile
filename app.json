@@ -22,7 +22,6 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
       "package": "com.anonymous.MedLinkMobile"
@@ -37,8 +36,7 @@
           "cameraPermission": "Allow MedLinkMobile to access your camera",
           "microphonePermission": "Allow MedLinkMobile to access your microphone"
         }
-      ],
-      "expo-barcode-scanner"
+      ]
     ]
   }
 }
