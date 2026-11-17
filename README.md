@@ -1,81 +1,182 @@
 # MedLink Mobile
 
-MedLink is a React Native mobile app focused on medication safety, counterfeit detection, and patient-aware drug verification. The project is meant to help people verify what they are scanning, understand recall and labeling data, and cross-check medication risk against the patient profile they maintain in the app.
+MedLink is an Africa-focused medication verification app built to help people check what they are buying or taking, flag suspicious products, and understand the risk around counterfeit, recalled, expired, or poorly matched medicines.
 
-This is not a clinical system and not a replacement for professional medical advice. It is a safety and verification tool intended to support informed decisions, reduce avoidable medication errors, and surface known risks around counterfeit goods, recalls, allergies, and interactions.
+This project started from a very practical problem: in many markets, including across Africa, counterfeit and substandard medicines are easier to move when people cannot quickly verify packaging, product origin, or known safety signals. The app is meant to give patients, caregivers, and pharmacy-facing teams a faster way to cross-check medicine information before it reaches the patient.
 
-## Why this project exists
+> This project is not a clinical decision system and it is not a replacement for a doctor or pharmacist. It is a safety and verification tool meant to support informed decisions, not replace professional care.
 
-Medication safety problems are often caused by a combination of:
+![MedLink branding](src/assets/logo.png)
 
-- products that are recalled, expired, or counterfeit,
-- the wrong drug being scanned or substituted,
-- patient allergies or medical conditions being missed,
-- duplicate medication use, and
-- poor visibility into medication interactions.
+## Why this exists
 
-MedLink attempts to bring a few of those checks into one workflow:
+The problem is not just one bad batch or one fake box. It is a bigger system issue:
 
-1. scan a drug code,
-2. look up product information and recall state,
-3. compare against the patient profile,
-4. flag important risks, and
-5. guide the user toward a safer decision.
+- medication packaging is not always traceable at the point of sale,
+- patients may not know the product name, active ingredients, or legal origin,
+- counterfeit products can look convincing enough to fool a rushed buyer,
+- side effects and allergies can be missed when the patient has no quick way to compare their profile against the medication,
+- some markets do not have strong digital traceability or recall visibility at the point of care.
 
-## What is implemented today
+MedLink is designed to make that process less fragile by putting a few critical checks into one mobile workflow: scan, verify, check recall risk, compare against the patient record, and surface the warning where it matters.
 
-### Core product features
+## The African context
 
-- barcode and GS1/Datamatrix scanning support,
-- EAN/UPC/NDC-style lookup flows,
-- MedLink authenticity QR support,
-- recall and labeling lookups using public drug data sources,
-- local recall data checks for offline-first safety screening,
-- patient profile data for allergies, medications, medical conditions, and reminders,
-- dashboard summary and medication management views,
-- clinic and facility lookup screens,
-- reminder scheduling and medication management UX,
-- multilingual interface support.
+This project is intentionally shaped around the realities of African healthcare and consumer markets.
 
-### Safety and verification logic
+Why that matters:
 
-The app includes logic for:
+- counterfeit medicines are a major risk in many African countries,
+- poor packaging and supply-chain visibility make verification harder,
+- many consumers rely on pharmacies, informal sellers, or local clinics that need better product intelligence,
+- region-specific recall and compliance data matters more than a generic one-size-fits-all product view,
+- a mobile-first tool can help close the gap between medicine packaging, patient data, and local safety information.
 
-- recall screening,
-- expiry checks from GS1 DataMatrix fields,
-- counterfeit suspicion checks for known MedLink authenticity codes,
-- medical label and drug lookup fallback behavior,
-- user profile comparisons against allergy and condition data,
-- duplicate medication detection,
-- medication safety assessment flows for known interactions and contraindications.
+This is not a purely US-centric product. It is meant to be useful in African contexts, with room for country-specific recall coverage, pharmacy workflows, and product verification patterns that reflect real market conditions.
 
-## Current architecture
+## What the app does
 
-MedLink is structured as a mobile app with a number of supporting services and data sources.
+At a high level, MedLink brings together a few important functions:
 
-### Mobile app
+- barcode and GS1/DataMatrix scanning,
+- product lookup and verification workflows,
+- authenticity checks for MedLink-issued codes,
+- recall and expiry screening,
+- patient profile comparison for allergies, conditions, and current medication history,
+- reminder and medication management tools,
+- facility and clinic/pharmacy discovery,
+- multilingual support for different user contexts.
 
-The app is a React Native / Expo project using TypeScript.
+## Main app areas
 
-Key areas:
+This repo includes the main surfaces that drive the product:
 
-- App shell and navigation: [App.tsx](App.tsx)
-- Screens: [src/screens](src/screens)
-- Safety and verification logic: [src/utils](src/utils)
-- Barcode parsing and assessment: [src/scan](src/scan)
-- Firebase/auth integration: [src/lib](src/lib)
-- Notifications and reminders: [src/notifications](src/notifications)
-- Theme and UI helpers: [src/theme.ts](src/theme.ts)
+### Dashboard
 
-### Supporting services and data sources
+The dashboard acts as the home layer for the patient or user: reminders, summary information, schedule awareness, and quick access to essential tools.
 
-- OpenFDA and regional recall sources for product data and recalls,
-- RxNorm-style safety checks for interactions and cross-references,
-- local recall datasets for offline checks,
-- a scraper/fallback data path used when public sources are incomplete,
-- optional FastAPI or scraper service support under [autoscrape](autoscrape) and [autoscrape_fastapi](autoscrape_fastapi).
+### Scanner and verification
 
-## Project layout
+The scanner is at the heart of the project. It handles product scanning, code parsing, lookup, and warnings for recall, authenticity, or expiry-related issues.
+
+### Patient profile
+
+The profile layer is where a user stores medical context such as allergies, medications, conditions, emergency information, and pharmacy-related details. This is important because verification works much better when it can compare a scanned product against the real person using it.
+
+### Facilities and pharmacies
+
+The app also includes facility discovery for clinics, hospitals, and pharmacies, which matters in settings where people need to find trusted care or purchase medicines from a known source.
+
+## How the app works
+
+The core flow is simple on the surface but layered underneath: scan a product, normalize the code, check what is known about it, compare it to the patient record, and then surface the right warning or confidence signal.
+
+```mermaid
+flowchart TD
+    A[User scans barcode / GS1 DataMatrix / MedLink QR] --> B[Code normalization and parsing]
+    B --> C{Known format?}
+    C -->|GTIN / EAN / UPC / NDC| D[Lookup product metadata]
+    C -->|MedLink authenticity QR| E[Verify issued authenticity code]
+    D --> F[Check recall + expiry + labeling data]
+    F --> G[Compare with patient profile: allergies, meds, conditions]
+    E --> G
+    G --> H{Risk or warning found?}
+    H -->|Yes| I[Show alert + recommended action]
+    H -->|No| J[Show product info / safe state]
+```
+
+### Product verification pipeline
+
+The app currently pulls together a few layers of verification rather than depending on one single lookup source.
+
+```mermaid
+flowchart LR
+    A[App UI] --> B[Barcode / DataMatrix parsing]
+    B --> C[OpenFDA / label lookup]
+    B --> D[Local recall datasets]
+    B --> E[Scraper fallback]
+    B --> F[MedLink authenticity verification]
+    C --> G[Safety assessment logic]
+    D --> G
+    E --> G
+    F --> G
+    G --> H[Patient profile comparison]
+    H --> I[UI warning / recall / expiry / interaction alert]
+```
+
+### Technology and source stack
+
+```mermaid
+flowchart TB
+    A[React Native + Expo mobile app] --> B[App navigation + screens]
+    A --> C[TypeScript logic and validation]
+    B --> D[Barcode scanner + GS1 parsing]
+    C --> E[Verification engine]
+    E --> F[OpenFDA labeling data]
+    E --> G[Recall data sources]
+    E --> H[Scraper fallback layer]
+    E --> I[Profile-aware safety checks]
+    E --> J[Firebase / auth / profile persistence]
+    G --> K[Regional and local recall registries]
+    H --> L[Web-scraped drug metadata]
+```
+
+### Where the app gets its information
+
+The verification engine is designed to use multiple data sources rather than a single API, which is important in markets where product and recall data is uneven.
+
+- Product and labeling data: OpenFDA and related public metadata sources
+- Recall checks: local/regional recall registries and public enforcement data
+- Safety logic: patient profile comparisons for allergies, recorded medications, and medical conditions
+- Offline and low-coverage fallback: local recall datasets and scraper-driven metadata lookup
+- Authenticated user context: Firebase-based profile and reminder persistence
+
+This layered approach is intentional: the app is designed for a world where one source may be incomplete, delayed, or unavailable.
+
+## Current project status
+
+This is a working mobile app and a serious project foundation, but it is still best treated as an evolving safety tooling project rather than a fully regulated clinical product.
+
+### What is already in place
+
+- mobile app shell and navigation,
+- barcode verification workflow,
+- product and recall lookup logic,
+- user profile management,
+- reminder and dashboard views,
+- clinic / pharmacy discovery screens,
+- multilingual support,
+- region-aware recall and data-building scripts.
+
+### What still needs work
+
+This is the honest part:
+
+- some features depend on public data sources that are incomplete or inconsistent,
+- risk checks can be limited by source coverage and region,
+- product verification is not the same as a complete patient assessment,
+- some barcode and product-matching edge cases still need cleanup,
+- the app would need stronger legal, privacy, and safety review before broader deployment,
+- a production-grade rollout would require deeper field validation across countries and regulatory contexts.
+
+## Known limitations
+
+MedLink is useful, but it has clear limits.
+
+- public databases may not cover every medication or every market,
+- recall and product data can be outdated or incomplete,
+- not every product code will match perfectly across markets,
+- interaction and contraindication logic can be limited by the quality of the data source,
+- counterfeit detection is probabilistic, not absolute,
+- package-level checks do not replace a clinician's judgment.
+
+## Safety note
+
+MedLink is intended for general reference and awareness, not as a medical diagnosis tool. It should never be treated as a substitute for a qualified healthcare professional, pharmacist, or emergency clinician.
+
+Users should always confirm product safety, dosage, and appropriateness with a licensed professional when the stakes are high.
+
+## Project structure
 
 ```text
 .
@@ -112,16 +213,16 @@ Key areas:
 └── tsconfig.json
 ```
 
-## Getting started
+## Local setup
 
 ### Prerequisites
 
-- Node.js 18+ recommended
+- Node.js 18+
 - npm
-- Expo / React Native toolchain
-- optional: Python for the scraper/support service
+- Expo / React Native tooling
+- optional: Python for scraper and fallback data work
 
-### Install dependencies
+### Install
 
 ```bash
 npm install
@@ -133,124 +234,62 @@ npm install
 npm start
 ```
 
-### Run the app with the scraper service
+### Run with scraper support
 
 ```bash
 npm run start:full
 ```
 
-The project also includes some utility scripts for scraper startup and registry/data prep.
+## Screens and core flows
 
-## Quick feature checks
+This repo does not currently include a full exported screenshot gallery in the project itself, but the main user flows are clear from the app structure and screen files:
 
-Some parts of the app are still experimental and should be treated as guidance, not final clinical-grade decisions.
-
-### Example flows supported
-
-- scan a product barcode and check for recall or labeling data,
-- identify a MedLink-issued authenticity QR code,
-- query a product by NDC or GTIN-like identifier,
-- check expiry details embedded in GS1 DataMatrix information,
-- compare the medication list and patient profile for unsafe combinations,
-- surface alerts through the UI and reminder flow.
-
-## Roadmap and current status
-
-### Working areas
-
-- core barcode decoding and verification flows,
-- basic patient profile persistence and medication awareness,
-- recall / label lookup integration,
-- reminder scheduling and dashboard views,
-- architecture for safety-checking and verification results.
-
-### Still in progress or not production-safe yet
-
-These are the principal gaps to acknowledge honestly:
-
-- no guaranteed clinical validation or medical-grade safety audit,
-- some risk logic depends on external APIs and public datasets,
-- product data quality varies by country, source, and format,
-- interaction detection is limited by source coverage and availability,
-- cross-border product mapping can be incomplete,
-- the app still needs stronger validation for edge cases and uncommon code formats,
-- legal/privacy review, consent flows, and compliance checks are still required before broad public use.
-
-## Known limitations
-
-This project should be viewed as an early-to-mid-stage safety tooling project rather than a regulated medical product.
-
-### Important limitations
-
-- public data sources may not cover all medications or all markets,
-- search results can be incomplete or outdated,
-- many safety checks are heuristic or dataset-dependent,
-- product substitution and counterfeit detection are probabilistic rather than absolute,
-- package-level identification does not equal a full patient assessment,
-- medication safety can depend on dose, timing, patient-specific factors, and clinician context,
-- some conditions, allergies, and contraindications may not be represented in the data sources.
-
-### Safety disclaimer
-
-MedLink is intended for general reference only. It should not be treated as a medical diagnosis, prescribing tool, or emergency triage system. Users should consult a licensed healthcare professional, pharmacist, or physician before making treatment decisions.
-
-## Ongoing project issues and areas to improve
-
-The main follow-up work is to improve reliability and safety rather than just add more features.
-
-### High-priority work
-
-- improve validation and normalization for barcode edge cases,
-- make external lookup failure modes more predictable and user-friendly,
-- add stronger caching, retry/backoff, and timeout management,
-- formalize alert severity and confidence levels,
-- improve profile-to-medication matching quality,
-- reduce false positives and false negatives in risk detection,
-- add better offline fallback logic,
-- document data provenance and source confidence clearly in UI.
-
-### Additional areas worth contribution
-
-- better medication interaction logic,
-- improved allergy matching and condition mapping,
-- recall data coverage across more regions,
-- support for more international packaging formats,
-- accessibility improvements,
-- error handling and telemetry,
-- test coverage around scan flows and profile comparisons,
-- documentation updates and onboarding improvements.
+- Dashboard / overview
+- Barcode scanner and verification result view
+- Product details and safety warnings
+- User profile and medication history
+- Facility, clinic and pharmacy lookup
+- Reminder management and medication schedule
 
 ## Testing
 
-The repository already includes Jest tests and verification-oriented checks. Run the project tests with:
+The repository includes Jest tests around verification and scanning logic. To run the test suite:
 
 ```bash
 npm test
 ```
 
-If you are working on scanner logic or verification flows, it is worth running the targeted tests before submitting a pull request.
+If you are working on barcode logic, safety checks, or product validation, it is worth running the most relevant tests before merging changes.
 
 ## Contributing
 
-We want more contributors on this project. The app is big enough that multiple people can work in parallel across mobile UI, safety logic, data pipelines, testing, and documentation.
+This project is big enough for a lot of different kinds of contributors, and that is part of the point. We need people working on:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guide, workflow, and project standards.
+- mobile UI and screen flow improvements,
+- barcode and product verification logic,
+- safety warnings and data quality,
+- Africa-focused recall and registry coverage,
+- facility and pharmacy discovery,
+- testing and regression work,
+- documentation and onboarding clarity.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guide and workflow.
 
 ## Documentation index
 
-- [START_HERE.md](START_HERE.md) – quick start and setup notes
-- [QUICK_START.md](QUICK_START.md) – operational overview
-- [DRUG_SAFETY_SYSTEM.md](DRUG_SAFETY_SYSTEM.md) – implementation and safety system notes
-- [DRUG_VERIFICATION_AUDIT.md](DRUG_VERIFICATION_AUDIT.md) – audit of current capabilities and gaps
-- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) – implementation-focused summary
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) – issues and problem solving
+- [START_HERE.md](START_HERE.md) — quick-start setup notes
+- [QUICK_START.md](QUICK_START.md) — operational overview
+- [DRUG_SAFETY_SYSTEM.md](DRUG_SAFETY_SYSTEM.md) — safety system notes
+- [DRUG_VERIFICATION_AUDIT.md](DRUG_VERIFICATION_AUDIT.md) — audit and known gaps
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) — implementation notes and changes
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — common issues and fixes
 
 ## License
 
-This project declares the 0BSD license in [package.json](package.json), but contributors should still review the repository state and legal use constraints before public deployment, especially for healthcare-facing products.
+This project currently declares the 0BSD license in [package.json](package.json), but anyone working on healthcare-facing tooling should treat legal review and safety review as part of the development process, not an afterthought.
 
-## Final note
+## Closing note
 
-This project has real potential for impact, but it needs disciplined contributors who understand the difference between a useful prototype and a trustworthy healthcare product. If you contribute, focus on correctness, safety, transparency, and measurable improvements over time.
+This is a project with real social value if it is built carefully. The goal is not just to make a fancy scanner. The goal is to create a useful, honest, and practical product that helps people avoid bad medicine in places where the risk is too high and the margin for error is too low.
 
-If you are working on this repo, treat the safety logic and the patient data layer as high-risk areas. That is where good engineering discipline matters most.
+That is why the project is being shaped around the African context and why the app is being built with real-world verification, profile awareness, and safety logic in mind.

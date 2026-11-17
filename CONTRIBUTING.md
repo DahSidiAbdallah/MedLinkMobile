@@ -1,56 +1,61 @@
 # Contributing to MedLink
 
-Thanks for being interested in MedLink. This project is broad enough to benefit from many kinds of contributions: mobile UI, medication safety logic, barcode parsing, data quality improvement, backend services, tests, and documentation.
+Thanks for being interested in this project. MedLink is not a toy app or a throwaway prototype. It is a real-world medication safety project with a direct connection to counterfeit medicine risk, recall visibility, and patient safety in African and other underserved markets.
 
-This repository is not just a demo app. It is a real-world-oriented medication verification system with safety implications, so contributions should be careful, well-tested, and honest about limitations.
+If you are contributing here, the goal is not just to make the app look nice. It is to make it more trustworthy, more useful, and more accurate in the environments where people actually face the risk of bad or fake medicines.
 
-## Project goals
+## Why this project matters
 
-MedLink aims to help people:
+The main challenge is straightforward: medicine verification is too weak in too many places. Counterfeit products can slip through when packaging is hard to verify, local recall data is fragmented, and patients do not have a quick way to compare a product with their own medical profile.
 
-- verify medication packaging or scanned product information,
-- detect obvious counterfeit or suspicious product signals,
-- understand recall and expiry status,
-- compare a scanned drug against a patient profile,
-- reduce avoidable medication errors caused by missing allergy or interaction data.
+MedLink is trying to make that process easier by combining:
+
+- product scanning,
+- recall and expiry checks,
+- patient profile awareness,
+- medication safety prompts,
+- and practical workflows for clinics, pharmacies, and everyday users.
 
 ## Ways to contribute
 
-### 1. Core app work
+There are a lot of useful ways to help, and almost all of them matter.
 
-- improve the barcode and GS1 parsing flow,
-- harden validation logic,
-- fix edge cases in product normalization,
-- improve the scanner UX and error states,
-- clean up the dashboard and profile integration.
+### App and UX
 
-### 2. Safety logic
+- improve the dashboard and screen logic,
+- fix scanner edge cases,
+- make safety warnings clearer,
+- improve the user experience in low-connectivity environments,
+- clean up patient profile flows and onboarding.
 
-- review interaction logic,
-- improve recall/expiry handling,
-- improve patient-profile matching,
+### Safety and product logic
+
+- improve product verification logic,
 - reduce false positives and false negatives,
-- add stronger confidence and severity reporting.
+- strengthen recall and expiry logic,
+- improve medication comparisons against patient allergies and conditions,
+- help with data quality and confidence scoring.
 
-### 3. Data and integrations
+### Data and regional support
 
-- improve OpenFDA / registry / recall data handling,
-- work on scraper fallback reliability,
-- improve regional coverage and local dataset quality,
-- document data provenance and source limitations.
+- improve coverage for African markets and regional pharmacovigilance data,
+- work on local recall sources and registry integration,
+- improve product mapping across different packaging standards,
+- add better handling for countries or regions with incomplete data.
 
-### 4. Quality and reliability
+### Testing and reliability
 
-- add or improve tests,
-- help with error handling,
-- improve logging and telemetry,
-- make the app more resilient to network and API outages.
+- add or improve tests around scanning and verification,
+- fix edge cases in barcode parsing,
+- improve network fallback behavior,
+- harden the app against missing or incomplete API data.
 
-### 5. Documentation
+### Documentation
 
-- improve onboarding and setup documentation,
-- clarify workflows, limitations, and risks,
-- document architecture, decisions, and unsupported assumptions.
+- clarify project workflows,
+- improve setup and troubleshooting docs,
+- explain limitations honestly,
+- write better onboarding materials for new contributors.
 
 ## Before you start
 
@@ -60,7 +65,7 @@ Please read these first:
 - [START_HERE.md](START_HERE.md)
 - [DRUG_SAFETY_SYSTEM.md](DRUG_SAFETY_SYSTEM.md)
 
-This matters because the project has both product and safety implications. Good contributions require understanding that this is not a generic app.
+This is important because the project is not a generic app. It sits inside a high-risk problem area, and good contributions need to respect that.
 
 ## Local setup
 
@@ -77,83 +82,81 @@ npm run start:full
 
 ## Development workflow
 
-1. Fork the repo or create a feature branch.
-2. Keep changes focused and readable.
-3. Test the affected behavior before opening a PR.
-4. Keep the PR description specific: what changed, why it changed, and how it was validated.
-5. Be transparent about limitations, known edge cases, and unverified assumptions.
+1. Fork the repo or create a branch for your work.
+2. Keep changes focused and easy to review.
+3. Test the part of the app you changed.
+4. Be clear in your pull request about what changed and why.
+5. Call out any uncertainty, data limits, or known edge cases.
 
 ## Contribution standards
 
-### Code quality
+### Keep it careful
 
-- prefer small, readable commits,
-- avoid unrelated refactors in the same PR,
-- keep TypeScript types explicit where needed,
-- document important assumptions in code comments when appropriate,
-- avoid broad changes that hide the root cause of a bug.
+This project deals with medication safety, which means we should be conservative and honest.
 
-### Safety-sensitive work
-
-If you are changing product risk logic, patient-profile matching, or medical interpretation:
-
-- explain the rule or logic source,
+- do not overstate certainty,
 - document assumptions,
-- keep output conservative when certainty is low,
-- avoid making hard claims that the app is a final medical decision tool.
+- explain how a rule or alert was derived,
+- avoid making medical claims that the code cannot support.
 
-### Tests
+### Keep it readable
 
-For bug fixes and new logic, add or update tests where possible. The repo already contains a test suite around barcode verification and scanner flows.
+- keep PRs focused,
+- avoid unrelated refactors,
+- prefer clear names and straightforward logic,
+- comment on tricky parts where needed,
+- write code that another contributor can understand without a long explanation.
 
-Example:
+### Keep it testable
+
+For new or changed logic, add or update tests where possible. This repo already includes scanning and verification tests, and those are a good place to start.
 
 ```bash
 npm test
 ```
 
-If you are only touching a narrow area, run the relevant subset when possible.
-
-## Good PR structure
-
-A good PR should include:
-
-- concise title,
-- clear summary of the issue or enhancement,
-- changed files and why,
-- validation commands run,
-- known limitations or follow-up items,
-- any risk notes, especially around safety or data accuracy.
-
-## Issue reporting
-
-When opening an issue, include:
-
-- what you expected to happen,
-- what actually happened,
-- reproduction steps,
-- environment details,
-- screenshots or logs when relevant,
-- whether the issue is app logic, UI, data lookup, or validation-related.
-
 ## What we especially need help with
 
-- barcode edge cases and normalization fixes,
+Right now, the biggest value is in a few areas:
+
+- barcode edge cases and normalization improvements,
 - product lookup reliability,
-- safety logic quality,
-- accessibility improvements,
-- documentation clarity,
-- tests for scan and verification behavior,
-- international product support and dataset coverage.
+- region-specific recall and registry work,
+- better patient-medication comparison logic,
+- app resilience when APIs or network access are unreliable,
+- accessibility and UX improvements,
+- documentation and contributor onboarding.
 
-## Important note on responsibility
+## Pull request expectations
 
-This project deals with medication information and risk signaling. That means contributors should be careful not to overstate certainty. If a change improves safety but introduces uncertainty, document that uncertainty instead of hiding it.
+A solid PR here should include:
 
-Contributions are welcome, but we expect them to be thoughtful, evidence-based, and respectful of the seriousness of the problem space.
+- a clear title,
+- a short explanation of the problem,
+- what changed and why,
+- any validation you ran,
+- limitations or follow-up questions,
+- any safety or data-quality concerns you are aware of.
+
+## Issues and bug reports
+
+When opening an issue, be specific. Include:
+
+- what you expected,
+- what actually happened,
+- steps to reproduce,
+- environment details,
+- screenshots or logs if useful,
+- whether the problem is UI, scanning, verification, profile logic, or data quality.
+
+## A note on responsibility
+
+This project sits in a high-risk problem space. That means contributors should treat patient safety and data quality as core values, not as a nice-to-have afterthought.
+
+A good contribution is not just one that works. It is one that is understandable, honest about uncertainty, and safe to build on.
 
 ## Code of conduct
 
-Please keep discussions constructive and professional. This project is about improving medication safety, not marketing hype or careless assumptions.
+Please keep discussions constructive and respectful. This project is about improving medication safety, not hype, vague claims, or careless engineering.
 
-Treat patient safety, data quality, and honest reporting as core project values.
+If you are contributing, be practical, be honest, and keep the real-world problem in view.
