@@ -582,7 +582,144 @@ export default {
       notFound: 'Facility not found.',
       address: 'Address'
     },
+    countries: {
+      FR: "France",
+      MA: "Morocco",
+      DZ: "Algeria",
+      TN: "Tunisia",
+      EG: "Egypt",
+      LY: "Libya",
+      MR: "Mauritania",
+      SN: "Senegal",
+      ML: "Mali",
+      CI: "Côte d'Ivoire",
+      NG: "Nigeria",
+      IN: "India",
+      CN: "China",
+      DE: "Germany",
+      ES: "Spain",
+      IT: "Italy",
+      BE: "Belgium",
+      CH: "Switzerland",
+      PT: "Portugal",
+      NL: "Netherlands",
+      GB: "United Kingdom",
+      IE: "Ireland",
+      AT: "Austria",
+      US: "United States",
+      TR: "Türkiye",
+      JO: "Jordan",
+      LB: "Lebanon",
+      SY: "Syria",
+      SA: "Saudi Arabia",
+      AE: "United Arab Emirates",
+    },
     scanner: {
+      verdict: {
+        danger: {
+          title: "Do not use this medicine",
+          detail: "A serious problem was found. Return it to the pharmacy and ask for advice.",
+        },
+        warning: {
+          title: "Check this box with a pharmacist",
+          detail: "Something does not look right. It may be fine, but get it checked before using it.",
+        },
+        ok: {
+          title: "Registered product — no alerts found",
+          detail: "This medicine is listed by a health authority and no recall or falsification alert matches it.",
+        },
+        unknown: {
+          title: "Not found in our databases",
+          detail: "We could not identify this product. That does not mean it is fake — ask your pharmacist if in doubt.",
+        },
+      },
+      report: {
+        holder: "Laboratory",
+        substances: "Active ingredients",
+        registeredIn: "Registered in",
+        barcodeIssuedIn: "Barcode issued in",
+        expiry: "Expiry date",
+        lot: "Batch",
+        serial: "Serial number",
+        scansOfThisBox: "Scans of this box",
+        findings: "Findings",
+        viewSource: "View official notice",
+        disclaimer: "A scan cannot prove a box is genuine. Buy medicines from licensed pharmacies, and check the packaging, seal and leaflet.",
+      },
+      signals: {
+        recalled: {
+          title: "Recalled by {{source}}",
+          detail: "{{reason}}",
+        },
+        who_batch: {
+          title: "This batch is in a WHO alert",
+          detail: "Batch {{lot}} matches WHO Medical Product Alert {{alert}} ({{date}}). Do not use it.",
+        },
+        expired: {
+          title: "Expired on {{date}}",
+          detail: "Expired medicines can be ineffective or harmful. Do not use it.",
+        },
+        who_product_recent: {
+          title: "WHO recently reported falsified or substandard versions",
+          detail: "WHO alert {{alert}} ({{date}}) concerns this product. Compare the batch and packaging with the alert.",
+        },
+        clone_suspected: {
+          title: "This exact box code was scanned by {{count}} other people",
+          detail: "Every genuine box has a unique serial number. Seeing it many times suggests the code was copied onto fake boxes.",
+        },
+        not_in_registry: {
+          title: "Not found in the {{country}} medicine register",
+          detail: "The barcode uses {{country}}'s official format, but the official list of authorised medicines does not contain it.",
+        },
+        authorisation_withdrawn: {
+          title: "Authorisation withdrawn in {{country}}",
+          detail: "This product is no longer authorised for sale there. Ask your pharmacist why it is still being sold.",
+        },
+        check_digit: {
+          title: "The barcode is malformed",
+          detail: "Its check digit is wrong. Genuine packs are printed correctly, so this can be a sign of a crude copy.",
+        },
+        invalid_expiry: {
+          title: "The printed expiry date is invalid",
+          detail: "The expiry date in the code is not a real date, which genuine packs never have.",
+        },
+        restricted_prefix: {
+          title: "Not a registered product barcode",
+          detail: "This barcode range is reserved for in-store use and is never used for registered medicines.",
+        },
+        clone_possible: {
+          title: "This box code was scanned by {{count}} other people",
+          detail: "This can be normal (for example, at the pharmacy), but keep an eye on it.",
+        },
+        not_marketed: {
+          title: "No longer marketed in {{country}}",
+          detail: "It may be old stock. Check the expiry date and where it was bought.",
+        },
+        expires_soon: {
+          title: "Expires soon ({{date}})",
+          detail: "Expires in {{days}} days.",
+        },
+        who_product_old: {
+          title: "WHO has reported falsified versions of this product",
+          detail: "Alert {{alert}} ({{date}}). Buy it from a licensed pharmacy and compare the packaging.",
+        },
+        registered: {
+          title: "Registered in {{country}}",
+          detail: "{{source}}",
+        },
+        missing_separators: {
+          title: "Some details were estimated",
+          detail: "The scanner did not return field separators, so the batch and serial number may be slightly off.",
+        },
+        medlink_verified: {
+          title: "Verified MedLink authenticity code",
+          detail: "This code was issued through MedLink.",
+        },
+        medlink_invalid: {
+          title: "Invalid MedLink authenticity code",
+          detail: "This MedLink code is not in our records.",
+        },
+      },
       title: 'Barcode Scanner',
       scanMedication: 'Scan Medication',
       positionBarcode: 'Position barcode in the frame',

@@ -596,7 +596,144 @@ export default {
       dosageAdministration: 'Posologie et administration',
       code: 'Code'
     },
+    countries: {
+      FR: "France",
+      MA: "Maroc",
+      DZ: "Algérie",
+      TN: "Tunisie",
+      EG: "Égypte",
+      LY: "Libye",
+      MR: "Mauritanie",
+      SN: "Sénégal",
+      ML: "Mali",
+      CI: "Côte d'Ivoire",
+      NG: "Nigeria",
+      IN: "Inde",
+      CN: "Chine",
+      DE: "Allemagne",
+      ES: "Espagne",
+      IT: "Italie",
+      BE: "Belgique",
+      CH: "Suisse",
+      PT: "Portugal",
+      NL: "Pays-Bas",
+      GB: "Royaume-Uni",
+      IE: "Irlande",
+      AT: "Autriche",
+      US: "États-Unis",
+      TR: "Turquie",
+      JO: "Jordanie",
+      LB: "Liban",
+      SY: "Syrie",
+      SA: "Arabie saoudite",
+      AE: "Émirats arabes unis",
+    },
     scanner: {
+      verdict: {
+        danger: {
+          title: "N'utilisez pas ce médicament",
+          detail: "Un problème grave a été détecté. Rapportez-le à la pharmacie et demandez conseil.",
+        },
+        warning: {
+          title: "Faites vérifier cette boîte par un pharmacien",
+          detail: "Quelque chose semble anormal. Ce n'est peut-être rien, mais faites-le vérifier avant de l'utiliser.",
+        },
+        ok: {
+          title: "Produit enregistré — aucune alerte",
+          detail: "Ce médicament est référencé par une autorité de santé et aucune alerte de rappel ou de falsification ne le concerne.",
+        },
+        unknown: {
+          title: "Introuvable dans nos bases",
+          detail: "Nous n'avons pas pu identifier ce produit. Cela ne veut pas dire qu'il est faux — demandez à votre pharmacien en cas de doute.",
+        },
+      },
+      report: {
+        holder: "Laboratoire",
+        substances: "Principes actifs",
+        registeredIn: "Enregistré en",
+        barcodeIssuedIn: "Code-barres émis en",
+        expiry: "Date de péremption",
+        lot: "Lot",
+        serial: "Numéro de série",
+        scansOfThisBox: "Scans de cette boîte",
+        findings: "Constats",
+        viewSource: "Voir l'avis officiel",
+        disclaimer: "Un scan ne peut pas prouver qu'une boîte est authentique. Achetez vos médicaments en pharmacie et vérifiez l'emballage, le scellé et la notice.",
+      },
+      signals: {
+        recalled: {
+          title: "Rappelé par {{source}}",
+          detail: "{{reason}}",
+        },
+        who_batch: {
+          title: "Ce lot figure dans une alerte de l'OMS",
+          detail: "Le lot {{lot}} correspond à l'alerte produit médical OMS {{alert}} ({{date}}). Ne l'utilisez pas.",
+        },
+        expired: {
+          title: "Périmé depuis le {{date}}",
+          detail: "Un médicament périmé peut être inefficace ou dangereux. Ne l'utilisez pas.",
+        },
+        who_product_recent: {
+          title: "L'OMS a récemment signalé des versions falsifiées ou non conformes",
+          detail: "L'alerte OMS {{alert}} ({{date}}) concerne ce produit. Comparez le lot et l'emballage avec l'alerte.",
+        },
+        clone_suspected: {
+          title: "Ce code de boîte a été scanné par {{count}} autres personnes",
+          detail: "Chaque boîte authentique a un numéro de série unique. Le voir plusieurs fois suggère qu'il a été copié sur de fausses boîtes.",
+        },
+        not_in_registry: {
+          title: "Absent du registre des médicaments ({{country}})",
+          detail: "Le code-barres utilise le format officiel de ce pays, mais la liste officielle des médicaments autorisés ne le contient pas.",
+        },
+        authorisation_withdrawn: {
+          title: "Autorisation retirée ({{country}})",
+          detail: "Ce produit n'est plus autorisé à la vente. Demandez à votre pharmacien pourquoi il est encore vendu.",
+        },
+        check_digit: {
+          title: "Le code-barres est mal formé",
+          detail: "Sa clé de contrôle est fausse. Les boîtes authentiques sont imprimées correctement : cela peut indiquer une copie grossière.",
+        },
+        invalid_expiry: {
+          title: "La date de péremption imprimée est invalide",
+          detail: "La date contenue dans le code n'existe pas, ce qui n'arrive jamais sur une boîte authentique.",
+        },
+        restricted_prefix: {
+          title: "Ce n'est pas un code-barres de produit enregistré",
+          detail: "Cette plage de codes est réservée à un usage interne en magasin et n'est jamais utilisée pour les médicaments.",
+        },
+        clone_possible: {
+          title: "Ce code de boîte a été scanné par {{count}} autres personnes",
+          detail: "Cela peut être normal (par exemple en pharmacie), mais restez vigilant.",
+        },
+        not_marketed: {
+          title: "N'est plus commercialisé ({{country}})",
+          detail: "Il peut s'agir d'un ancien stock. Vérifiez la date de péremption et le lieu d'achat.",
+        },
+        expires_soon: {
+          title: "Expire bientôt ({{date}})",
+          detail: "Expire dans {{days}} jours.",
+        },
+        who_product_old: {
+          title: "L'OMS a signalé des versions falsifiées de ce produit",
+          detail: "Alerte {{alert}} ({{date}}). Achetez-le en pharmacie et comparez l'emballage.",
+        },
+        registered: {
+          title: "Enregistré ({{country}})",
+          detail: "{{source}}",
+        },
+        missing_separators: {
+          title: "Certaines informations ont été estimées",
+          detail: "Le lecteur n'a pas transmis les séparateurs du code : le lot et le numéro de série peuvent être légèrement inexacts.",
+        },
+        medlink_verified: {
+          title: "Code d'authenticité MedLink vérifié",
+          detail: "Ce code a été émis via MedLink.",
+        },
+        medlink_invalid: {
+          title: "Code d'authenticité MedLink invalide",
+          detail: "Ce code MedLink ne figure pas dans nos registres.",
+        },
+      },
       title: 'Scanner de codes-barres',
       scanMedication: 'Scanner un médicament',
       positionBarcode: 'Positionnez le code-barres dans le cadre',

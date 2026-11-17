@@ -35,6 +35,9 @@ import { normalizeBarcode, parseGs1AIs, validateEAN13CheckDigit, getGtinFromAIs 
 import { getTelemetryService, makeScanTelemetryEvent } from '../core/telemetryService';
 import { hapticSuccess } from '../utils/haptics';
 import LabelInfoView from '../components/LabelInfoView';
+import ScanReportView from '../components/ScanReportView';
+import { scanMedication, type ScanReport, type Verdict } from '../scan';
+import { allergyMatches } from '../scan/inn';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,6 +48,8 @@ type ScanHistoryItem = {
   verification: VerificationResult | null;
   error: string | null;
   risk?: string | null;
+  verdict?: Verdict;
+  productName?: string;
 };
 
 type RiskItem = {
@@ -85,17 +90,24 @@ function parseCodeType(data: string, type: string) {
 /** Parse profile risks into a structured list for display.
  *  Handles both the raw openFDA label shape (openfda.brand_name, contraindications array)
  *  and the simplified labelInfo shape. */
-function buildRiskItems(profile: Profile, result: VerificationResult, t: any): RiskItem[] {
+function buildRiskItems(
+  profile: Profile,
+  result: VerificationResult | null,
+  t: any,
+  registry?: { name: string; substances: string[] } | null,
+): RiskItem[] {
   const risks: RiskItem[] = [];
-  const label = result.label;
-  const labelInfo = result.labelInfo;
-  const scraper = result.webscraperInfo;
+  const label = result?.label;
+  const labelInfo = result?.labelInfo;
+  const scraper = result?.webscraperInfo;
+  const registrySubstances = registry?.substances ?? [];
 
   const asText = (v: any): string =>
     Array.isArray(v) ? v.join(' ') : (typeof v === 'string' ? v : '');
 
   // Build searchable text from all available drug data sources
   const brandName = (
+    registry?.name ||
     label?.openfda?.brand_name?.[0] ||
     label?.brand_name ||
     scraper?.brand_name ||
@@ -136,13 +148,15 @@ function buildRiskItems(profile: Profile, result: VerificationResult, t: any): R
     asText(scraper?.sideEffects),
   ].join(' ').toLowerCase();
 
-  if (!medName.trim() && !contraindications.trim() && !interactions.trim()) return risks;
+  if (!medName.trim() && !contraindications.trim() && !interactions.trim() && !registrySubstances.length) return risks;
 
   // ── Allergy check ─────────────────────────────────────────────
+  // Registry substances (e.g. French "AMOXICILLINE") are matched across languages and
+  // drug classes; free-text label sources fall back to substring matching.
   if (profile.allergies) {
     for (const allergy of profile.allergies) {
       const a = allergy.toLowerCase();
-      if (medName.includes(a) || contraindications.includes(a) || warnings.includes(a)) {
+      if (allergyMatches(allergy, registrySubstances) || medName.includes(a) || contraindications.includes(a) || warnings.includes(a)) {
         risks.push({
           type: 'allergy',
           label: t('scanner.allergyRisk', 'Allergy Risk'),
@@ -206,6 +220,7 @@ const BarcodeScanner: React.FC = () => {
   const [scanned, setScanned] = useState(false);
   const [scanData, setScanData] = useState<any>(null);
   const [verification, setVerification] = useState<VerificationResult | null>(null);
+  const [report, setReport] = useState<ScanReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ScanHistoryItem[]>([]);
@@ -276,11 +291,13 @@ const BarcodeScanner: React.FC = () => {
     setLoading(true);
     setError(null);
     setVerification(null);
+    setReport(null);
     setRisks([]);
     setSafetyCheck(null);
     setShowScanEffect(true);
 
     let result: VerificationResult | null = null;
+    let rep: ScanReport | null = null;
     let err: string | null = null;
     let riskItems: RiskItem[] = [];
     const telemetryStart = Date.now();
@@ -301,34 +318,36 @@ const BarcodeScanner: React.FC = () => {
         if (extractedGtin) telemetry.gtin = extractedGtin;
       }
 
-      result = await verifyScannedCode(data, type);
+      rep = await scanMedication(data, type);
+      result = rep.verification;
+      setReport(rep);
       setVerification(result);
 
-      if (result && (result.verified || result.recall)) {
-        try { await hapticSuccess(); } catch {}
-      }
-      telemetry.lookupSuccess = !!result;
+      try { await hapticSuccess(); } catch {}
+      telemetry.lookupSuccess = !!(rep.registry || result);
+      telemetry.verdict = rep.assessment.verdict;
 
-      // Cross-examination against user profile — text matching (fast, offline).
-      // Run whenever ANY drug data source returned something (openFDA label,
-      // simplified labelInfo, or the webscraper).
-      if (profile && result && (result.label || result.labelInfo || result.webscraperInfo)) {
-        riskItems = buildRiskItems(profile, result, t);
+      // Cross-examination against user profile — run whenever any source identified the drug
+      // (national registry, openFDA label, simplified labelInfo, or the webscraper).
+      if (profile && (rep.registry || result?.label || result?.labelInfo || result?.webscraperInfo)) {
+        riskItems = buildRiskItems(profile, result, t, rep.registry);
         setRisks(riskItems);
       }
 
-      // RxNorm drug-drug interaction check (real clinical data, async)
-      if (profile && result) {
+      // RxNorm drug-drug interaction check (real clinical data, async).
+      // Registry substances are converted to English INNs, which RxNorm understands.
+      if (profile && (rep.registry || result)) {
         const drugName =
-          result.label?.openfda?.brand_name?.[0] ||
-          result.label?.openfda?.generic_name?.[0] ||
-          result.label?.brand_name ||
-          result.label?.generic_name ||
-          result.webscraperInfo?.brand_name ||
-          result.webscraperInfo?.generic_name ||
-          result.webscraperInfo?.name ||
-          result.webscraperInfo?.title ||
-          result.labelInfo?.indications?.split(' ').slice(0, 3).join(' ') ||
+          rep.substancesEn[0] ||
+          result?.label?.openfda?.brand_name?.[0] ||
+          result?.label?.openfda?.generic_name?.[0] ||
+          result?.label?.brand_name ||
+          result?.label?.generic_name ||
+          result?.webscraperInfo?.brand_name ||
+          result?.webscraperInfo?.generic_name ||
+          result?.webscraperInfo?.name ||
+          result?.webscraperInfo?.title ||
+          result?.labelInfo?.indications?.split(' ').slice(0, 3).join(' ') ||
           '';
         if (drugName && (profile.medications?.length ?? 0) > 0) {
           try {
@@ -380,6 +399,8 @@ const BarcodeScanner: React.FC = () => {
         verification: result,
         error: err,
         risk: riskItems.length > 0 ? riskItems.map(r => r.detail).join('\n') : null,
+        verdict: rep?.assessment.verdict,
+        productName: rep?.productName,
       };
       setHistory(prev => {
         const updated = [newItem, ...prev];
@@ -393,6 +414,7 @@ const BarcodeScanner: React.FC = () => {
     setScanned(false);
     setScanData(null);
     setVerification(null);
+    setReport(null);
     setError(null);
     setLoading(false);
     setRisks([]);
@@ -422,8 +444,8 @@ const BarcodeScanner: React.FC = () => {
 
   const filteredHistory = history.filter(item => {
     if (filter === 'all') return true;
-    if (filter === 'successful') return !!(item.verification?.verified || item.verification?.recall || item.verification?.expired);
-    if (filter === 'risk') return !!(item.risk && item.risk.length > 0);
+    if (filter === 'successful') return item.verdict === 'ok' || !!item.verification?.verified;
+    if (filter === 'risk') return !!(item.risk && item.risk.length > 0) || item.verdict === 'danger' || item.verdict === 'warning';
     return true;
   });
 
@@ -444,6 +466,10 @@ const BarcodeScanner: React.FC = () => {
             ref={cameraRef}
             style={StyleSheet.absoluteFillObject}
             autofocus={'on' as any}
+            barcodeScannerSettings={{
+              // DataMatrix carries the serial/lot/expiry on serialised packs; EAN/UPC is the box barcode.
+              barcodeTypes: ['datamatrix', 'ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr', 'pdf417'],
+            }}
             onBarcodeScanned={scanned ? undefined : (event: { data: string; type: string }) => {
               if (!barcodeDetected) setBarcodeDetected(true);
               handleBarCodeScanned(event);
@@ -538,8 +564,10 @@ const BarcodeScanner: React.FC = () => {
 
     return (
       <View style={{ gap: spacing.lg }}>
-        {/* Status banner */}
-        {statusConfig && (
+        {report && !error && <ScanReportView report={report} />}
+
+        {/* Status banner (errors, or before the full report is ready) */}
+        {statusConfig && (!report || error) && (
           <View style={[styles.statusBanner, { backgroundColor: statusConfig.bg }]}>
             <Ionicons name={statusConfig.icon} size={28} color={statusConfig.color} />
             <View style={{ flex: 1 }}>
@@ -781,32 +809,29 @@ const BarcodeScanner: React.FC = () => {
           ))}
         </View>
         {filteredHistory.map((item, idx) => {
-          const isVerified = !!(item.verification?.verified);
-          const hasRecall = !!(item.verification?.recall);
+          // Older history entries predate verdicts; derive one from the stored verification.
+          const verdict: Verdict = item.verdict
+            ?? (item.verification?.recall ? 'danger' : item.verification?.verified ? 'ok' : 'unknown');
+          const tone = {
+            danger: { icon: 'close-circle' as const, color: colors.danger },
+            warning: { icon: 'warning' as const, color: colors.warn },
+            ok: { icon: 'shield-checkmark' as const, color: colors.success },
+            unknown: { icon: 'help-circle' as const, color: colors.textTertiary },
+          }[verdict];
           const hasRisk = !!(item.risk && item.risk.length > 0);
           return (
             <View key={`${item.timestamp}_${idx}`} style={[
               styles.historyItem,
-              isVerified && { borderLeftColor: colors.success },
-              hasRecall && { borderLeftColor: colors.danger },
-              hasRisk && { borderLeftColor: colors.warn },
+              { borderLeftColor: verdict === 'unknown' ? colors.line : tone.color },
             ]}>
               <View style={styles.historyItemHeader}>
-                <Ionicons
-                  name={isVerified ? 'checkmark-circle' : hasRecall ? 'warning' : 'help-circle'}
-                  size={14}
-                  color={isVerified ? colors.success : hasRecall ? colors.danger : colors.textTertiary}
-                />
+                <Ionicons name={tone.icon} size={14} color={tone.color} />
                 <Text style={styles.historyItemType}>{item.type.toUpperCase()}</Text>
                 <Text style={styles.historyItemTime}>{new Date(item.timestamp).toLocaleDateString()}</Text>
               </View>
-              <Text style={styles.historyItemCode} numberOfLines={1}>{item.data}</Text>
-              <Text style={[
-                styles.historyItemMsg,
-                isVerified && { color: colors.success },
-                hasRecall && { color: colors.danger },
-              ]} numberOfLines={2}>
-                {getUserMessage(item.verification, item.error, t)}
+              <Text style={styles.historyItemCode} numberOfLines={1}>{item.productName || item.data}</Text>
+              <Text style={[styles.historyItemMsg, verdict !== 'unknown' && { color: tone.color }]} numberOfLines={2}>
+                {item.error ? getUserMessage(null, item.error, t) : t(`scanner.verdict.${verdict}.title`)}
               </Text>
               {hasRisk && (
                 <View style={styles.historyItemRiskRow}>

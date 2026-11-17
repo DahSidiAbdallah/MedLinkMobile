@@ -27,7 +27,12 @@ export interface VerificationResult {
 }
 
 
-export async function verifyScannedCode(data: string, type: string): Promise<VerificationResult> {
+export interface VerifyOptions {
+  /** The product was already identified in a non-US registry: skip openFDA/NDC lookups, which can't match it. */
+  skipUsLookups?: boolean;
+}
+
+export async function verifyScannedCode(data: string, type: string, opts: VerifyOptions = {}): Promise<VerificationResult> {
   const latencies: Record<string, number> = {}
   const cacheHits: Record<string, boolean> = {}
   async function timeAsync<T>(key: string, fn: () => Promise<T>): Promise<T> {
@@ -154,6 +159,18 @@ export async function verifyScannedCode(data: string, type: string): Promise<Ver
       counterfeit: !verified,
       expired: false,
       message: verified ? 'Authenticity verified via MedLink code' : 'Invalid MedLink authenticity code',
+      telemetry: { latencies, cacheHits },
+    };
+  }
+
+  if (opts.skipUsLookups) {
+    const webscraperInfo = await timeAsync('fetchDrugInfoFromScraper', () => fetchDrugInfoFromScraper(data));
+    return {
+      verified: false,
+      counterfeit: false,
+      expired: false,
+      webscraperInfo,
+      message: 'Identified via national registry',
       telemetry: { latencies, cacheHits },
     };
   }

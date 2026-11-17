@@ -1,0 +1,1672 @@
+{
+ "meta": {
+  "source": "WHO Medical Product Alerts (GSMS)",
+  "url": "https://www.who.int/teams/regulation-prequalification/incidents-and-SF/full-list-of-who-medical-product-alerts",
+  "generatedAt": "2026-10-30T09:58:07.812Z"
+ },
+ "alerts": [
+  {
+   "id": "3/2026",
+   "title": "Medical Product Alert N°3/2026: Falsified DARZALEX (daratumumab)",
+   "date": "2026-07-03",
+   "url": "https://www.who.int/news/item/03-07-2026-medical-product-alert-n-3-2026--falsified-darzalex-(daratumumab)",
+   "kind": "falsified",
+   "products": [
+    "DARZALEX"
+   ],
+   "tokens": [
+    "darzalex"
+   ],
+   "batches": [
+    "STV1K01"
+   ],
+   "countries": [
+    "Mexico"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert concerns two batches of falsified DARZALEX (daratumumab) injection. The falsified products were detected in Maldives and Mexico. National Regulatory Authorities in both countries reported the incidents to WHO in May and June 2026. The falsified products were supplied or offered by non-authorized distributors and, in at least one case, hospitals received these falsifi"
+  },
+  {
+   "id": "2/2026",
+   "title": "Medical Product Alert N°2/2026: Falsified JAKAVI (ruxolitinib)",
+   "date": "2026-06-16",
+   "url": "https://www.who.int/news/item/16-06-2026-medical-product-alert-n-2-2026--falsified-jakavi-(ruxolitinib)",
+   "kind": "falsified",
+   "products": [
+    "JAKAVI"
+   ],
+   "tokens": [
+    "jakavi"
+   ],
+   "batches": [
+    "AVT50",
+    "FNR06",
+    "SGL04"
+   ],
+   "countries": [],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to three batches of falsified JAKAVI (ruxolitinib). These falsified products have been detected in the Islamic Republic of Iran, the Russian Federation and T&uuml;rkiye and reported to WHO in May 2026. The falsified products have been illicitly sold to patients via online platforms and, in at least one instance, have also been supplied to patients from a pharm"
+  },
+  {
+   "id": "1/2026",
+   "title": "Medical Product Alert N°1/2026: Substandard ACCUPAQUE (Iohexol), OMNIPAQUE (Iohexol) and VISIPAQUE (Iodixanol)",
+   "date": "2026-05-07",
+   "url": "https://www.who.int/news/item/07-05-2026-medical-product-alert-n-1-2026--substandard-accupaque-(iohexol)--omnipaque-(iohexol)-and-visipaque--(iodixanol)",
+   "kind": "substandard",
+   "products": [
+    "ACCUPAQUE",
+    "OMNIPAQUE",
+    "VISIPAQUE"
+   ],
+   "tokens": [
+    "accupaque",
+    "omnipaque",
+    "visipaque"
+   ],
+   "batches": [],
+   "manufacturer": "GE HealthCare Ireland Limited",
+   "countries": [],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to multiple batches of ACCUPAQUE, OMNIPAQUE and VISIPAQUE solutions for injection presented in 100 ml polypropylene containers. In March 2026, the Health Products Regulatory Authority (HPRA), Ireland, notified WHO of a Class I quality defect affecting specific batches of iodinated contrast media (Iohexol or Iodixanol) marketed under the brand names ACCUPAQUE, "
+  },
+  {
+   "id": "7/2025",
+   "title": "Medical Product Alert N°7/2025: Falsified IBRANCE (palbociclib)",
+   "date": "2025-12-15",
+   "url": "https://www.who.int/news/item/15-12-2025-medical-product-alert-n-7-2025--falsified-ibrance-(palbociclib)",
+   "kind": "falsified",
+   "products": [
+    "IBRANCE"
+   ],
+   "tokens": [
+    "ibrance"
+   ],
+   "batches": [],
+   "countries": [
+    "Libya",
+    "Egypt",
+    "Lebanon"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to nine lots of falsified IBRANCE (palbociclib). These falsified products have been detected in Cote d'Ivoire, Egypt, Lebanon, Libya and T&uuml;rkiye and were reported to WHO in November 2025. The falsified products have been offered directly to consumers via online platforms and have also been found at pharmacy level."
+  },
+  {
+   "id": "6/2025",
+   "title": "Medical Product Alert N°6/2025: Falsified SIMULECT (basiliximab) for injection",
+   "date": "2025-12-09",
+   "url": "https://www.who.int/news/item/09-12-2025-medical-product-alert-n-6-2025--falsified-simulect-(basiliximab)-for-injection",
+   "kind": "falsified",
+   "products": [
+    "SIMULECT"
+   ],
+   "tokens": [
+    "simulect"
+   ],
+   "batches": [
+    "SFYD2"
+   ],
+   "countries": [
+    "Rwanda",
+    "France",
+    "Switzerland",
+    "United States"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to falsified SIMULECT (basiliximab) for injection. The falsified product has been detected in Rwanda, Bulgaria, and T&uuml;rkiye, and was reported to the WHO in December 2024 and November 2025. "
+  },
+  {
+   "id": "5/2025",
+   "title": "Medical Product Alert N°5/2025: Substandard (contaminated) oral liquid medicines",
+   "date": "2025-10-13",
+   "url": "https://www.who.int/news/item/13-10-2025-medical-product-alert-n-5-2025--substandard-(contaminated)-oral-liquid-medicines",
+   "kind": "substandard",
+   "products": [
+    "oral liquid medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "Sresan Pharmaceutical, Rednex Pharmaceuticals, and Shape Pharma",
+   "countries": [
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to three substandard (contaminated) oral liquid medicines identified in India and reported to WHO on 8 October 2025."
+  },
+  {
+   "id": "4/2025",
+   "title": "Medical Product Alert N°4/2025: Substandard (contaminated) FENTANILO HLB (fentanyl citrate)",
+   "date": "2025-08-29",
+   "url": "https://www.who.int/news/item/29-08-2025-medical-product-alert-n-4-2025--substandard-(contaminated)-fentanilo-hlb-(fentanyl-citrate)",
+   "kind": "substandard",
+   "products": [
+    "FENTANILO HLB"
+   ],
+   "tokens": [
+    "fentanilo"
+   ],
+   "batches": [
+    "31202"
+   ],
+   "manufacturer": "LABORATORIOS RAMALLO S",
+   "countries": [],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert concerns six lots of substandard FENTANILO HLB (fentanyl citrate) detected in Argentina"
+  },
+  {
+   "id": "3/2025",
+   "title": "Medical Product Alert N°3/2025: Falsified IMFINZI (durvalumab) injection 500mg/10ml",
+   "date": "2025-05-14",
+   "url": "https://www.who.int/news/item/14-05-2025-medical-product-alert-n-3-2025--falsified-imfinzi-(durvalumab)-injection-500mg-10ml",
+   "kind": "falsified",
+   "products": [
+    "IMFINZI"
+   ],
+   "tokens": [
+    "imfinzi"
+   ],
+   "batches": [],
+   "countries": [
+    "Egypt",
+    "India",
+    "Lebanon"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to three batches of falsified IMFINZI (durvalumab) injection 500mg/10ml. The falsified products have been detected in the Islamic Republic of Iran and T&uuml;rkiye. These falsified products were reported to WHO in March 2025. "
+  },
+  {
+   "id": "2/2025",
+   "title": "Medical Product Alert N°2/2025: Falsified HEALMOXY (Amoxicillin) Capsules 500mg",
+   "date": "2025-04-23",
+   "url": "https://www.who.int/news/item/23-04-2025-medical-product-alert-n-2-2025--falsified-healmoxy-(amoxicillin)-capsules-500mg",
+   "kind": "falsified",
+   "products": [
+    "HEALMOXY Capsules"
+   ],
+   "tokens": [
+    "healmoxy"
+   ],
+   "batches": [],
+   "countries": [
+    "Cameroon",
+    "Central African Republic"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to four batches of falsified HEALMOXY Capsules 500mg. The falsified products have been detected in Cameroon and the Central African Republic and were reported to the WHO in March 2025. "
+  },
+  {
+   "id": "1/2025",
+   "title": "Medical Product Alert N°1/2025: Falsified (contaminated) OXYCONTIN 80mg",
+   "date": "2025-03-12",
+   "url": "https://www.who.int/news/item/12-03-2025-medical-product-alert-n-1-2024--falsified-(contaminated)-oxycontin-80mg",
+   "kind": "falsified",
+   "products": [
+    "OXYCONTIN"
+   ],
+   "tokens": [
+    "oxycontin"
+   ],
+   "batches": [],
+   "countries": [
+    "Switzerland"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one batch of falsified OXYCONTIN 80mg (oxycodone hydrochloride). The falsified product was detected in the unregulated market in Switzerland and reported to WHO in February 2025 by the genuine manufacturer MUNDIPHARMA. The falsified product imitates genuine OXYCONTIN 80mg authorized in Poland."
+  },
+  {
+   "id": "5/2024",
+   "title": "Medical Product Alert N°5/2024: Falsified IMFINZI (durvalumab) injection 500mg /10ml",
+   "date": "2024-12-23",
+   "url": "https://www.who.int/news/item/23-12-2024-medical-product-alert-n-5-2024",
+   "kind": "falsified",
+   "products": [
+    "IMFINZI"
+   ],
+   "tokens": [
+    "imfinzi"
+   ],
+   "batches": [],
+   "countries": [
+    "India",
+    "Pakistan",
+    "Lebanon",
+    "Uzbekistan"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one batch of falsified IMFINZI (durvalumab) injection 500mg/10ml. The falsified products have been detected in the regulated supply chain in Lebanon, and the unregulated supply chain in Armenia and T&uuml;rkiye, and were reported to WHO in November 2024. This update (26 August 2025) is based on additional information provided to WHO in 2025, which identifie"
+  },
+  {
+   "id": "4/2024",
+   "title": "Medical Product Alert N°4/2024: Falsified USP/EP PROPYLENE GLYCOL",
+   "date": "2024-10-10",
+   "url": "https://www.who.int/news/item/10-10-2024-medical-product-alert-n-4-2024--falsified-usp-ep-propylene-glycol",
+   "kind": "falsified",
+   "products": [
+    "USP/EP PROPYLENE GLYCOL"
+   ],
+   "tokens": [
+    "propylene",
+    "glycol"
+   ],
+   "batches": [
+    "F8900L8PPD6"
+   ],
+   "countries": [
+    "Pakistan",
+    "United States"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Alert refers to falsified DOW USP/EP PROPYLENE GLYCOL detected in Pakistan in August 2024 and notified to WHO in September 2024. "
+  },
+  {
+   "id": "3/2024",
+   "title": "Medical Product Alert N°3/2024: Falsified (contaminated) Oxymorphone Hydrochloride 40mg",
+   "date": "2024-08-05",
+   "url": "https://www.who.int/news/item/05-08-2024-medical-product-alert-n-3-2024--falsified-(contaminated)-oxymorphone-hydrochloride-40mg",
+   "kind": "falsified",
+   "products": [
+    "Oxymorphone Hydrochloride"
+   ],
+   "tokens": [
+    "oxymorphone"
+   ],
+   "batches": [],
+   "countries": [
+    "United States"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one batch of falsified Oxymorphone Hydrochloride 40mg. The falsified product was detected in the unregulated supply chain in Finland and reported to WHO in July 2024 by the Finnish Medicines Agency (FIMEA). "
+  },
+  {
+   "id": "2/2024",
+   "title": "Medical Product Alert N°2/2024: Falsified OZEMPIC (semaglutide)",
+   "date": "2024-06-19",
+   "url": "https://www.who.int/news/item/19-06-2024-medical-product-alert-n-2-2024--falsified-ozempic-(semaglutide)",
+   "kind": "falsified",
+   "products": [
+    "OZEMPIC"
+   ],
+   "tokens": [
+    "ozempic"
+   ],
+   "batches": [
+    "LP6F832",
+    "NAR0074",
+    "MP5E511"
+   ],
+   "manufacturer": "Novo Nordisk:\nbatch number LP6F832 is not recognized",
+   "countries": [
+    "United Kingdom",
+    "Brazil",
+    "United States"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to three falsified batches of OZEMPIC (semaglutide). This falsified product has been detected in Brazil (October 2023), the United Kingdom of Great Britain and Northern Ireland (October 2023), and the United States of America (December 2023), and was supplied in the regulated supply chain.OZEMPIC (semaglutide) is from a group of medicines called glucagon-like "
+  },
+  {
+   "id": "1/2024",
+   "title": "Medical Product Alert N°1/2024: Falsified (contaminated) USP/EP PROPYLENE GLYCOL",
+   "date": "2024-04-15",
+   "url": "https://www.who.int/news/item/15-04-2024-medical-product-alert-n-1-2024--falsified-(contaminated)-usp-ep-propylene-glycol",
+   "kind": "falsified",
+   "products": [
+    "USP/EP PROPYLENE GLYCOL"
+   ],
+   "tokens": [
+    "propylene",
+    "glycol"
+   ],
+   "batches": [],
+   "countries": [
+    "Pakistan",
+    "United States"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Alert refers to falsified DOW USP/EP PROPYLENE GLYCOL detected in Pakistan. "
+  },
+  {
+   "id": "8/2023",
+   "title": "Medical Product Alert N°8/2023: Substandard (contaminated) syrup and suspension medicines",
+   "date": "2023-12-07",
+   "url": "https://www.who.int/news/item/07-12-2023-medical-product-alert-n-8-2023--substandard-(contaminated)-syrup-and-suspension-medicines",
+   "kind": "substandard",
+   "products": [
+    "syrup",
+    "suspension medicines",
+    "ALERGO Syrup",
+    "EMIDONE Suspension",
+    "MUCORID Syrup",
+    "ULCOFIN Suspension",
+    "ZINCELL Syrup"
+   ],
+   "tokens": [
+    "alergo",
+    "emidone",
+    "mucorid",
+    "ulcofin",
+    "zincell"
+   ],
+   "batches": [],
+   "manufacturer": "PHARMIX LABORATORIES",
+   "countries": [
+    "Pakistan"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to five different syrup and suspension medicines initially detected in the Maldives and Pakistan and notified to WHO on 8 November 2023. Some of the affected products have also been detected in Belize, Fiji and Lao People's Democratic Republic."
+  },
+  {
+   "id": "7/2023",
+   "title": "Medical Product Alert N°7/2023: Falsified DEFITELIO (defibrotide)",
+   "date": "2023-09-04",
+   "url": "https://www.who.int/news/item/04-09-2023-medical-product-alert-n-7-2023--falsified-defitelio-(defibrotide)",
+   "kind": "falsified",
+   "products": [
+    "DEFITELIO"
+   ],
+   "tokens": [
+    "defitelio"
+   ],
+   "batches": [
+    "20G20A"
+   ],
+   "countries": [
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one falsified batch of DEFITELIO (defibrotide sodium). This falsified product has been detected in India (April 2023) and T&uuml;rkiye (July 2023) and was supplied outside of regulated and authorized channels."
+  },
+  {
+   "id": "6/2023",
+   "title": "Medical Product Alert N°6/2023: Substandard (contaminated) syrup medicines",
+   "date": "2023-08-07",
+   "url": "https://www.who.int/news/item/07-08-2023-medical-product-alert-n-6-2023--substandard-(contaminated)-syrup-medicines",
+   "kind": "substandard",
+   "products": [
+    "syrup medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "countries": [
+    "Iraq"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one batch of substandard (contaminated) COLD OUT syrup (Paracetamol and Chlorpheniramine Maleate) identified in the Republic of Iraq and reported to the World Health Organization (WHO) on 10 July 2023 by a third party. Please refer to the Annex of this Alert for full details of the affected batch of the product."
+  },
+  {
+   "id": "5/2023",
+   "title": "Medical Product Alert N°5/2023: Substandard (contaminated) syrup medicines",
+   "date": "2023-07-19",
+   "url": "https://www.who.int/news/item/19-07-2023-medical-product-alert-n-5-2023--substandard-(contaminated)-syrup-medicines",
+   "kind": "substandard",
+   "products": [
+    "syrup medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "countries": [
+    "Cameroon",
+    "United Kingdom"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to a batch of substandard (contaminated) NATURCOLD Syrup identified in Cameroon and first reported to WHO on 13 March 2023. All reasonable precautions have been taken by WHO to verify the information contained in this alert and this may be updated as more information becomes available."
+  },
+  {
+   "id": "4/2023",
+   "title": "Medical Product Alert N°4/2023: Substandard (contaminated) syrup medicines",
+   "date": "2023-04-25",
+   "url": "https://www.who.int/news/item/25-04-2023-medical-product-alert-n-4-2023--substandard-(contaminated)-syrup-medicines",
+   "kind": "substandard",
+   "products": [
+    "syrup medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "countries": [
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to a batch of substandard (contaminated) GUAIFENESIN SYRUP TG SYRUP identified in the Marshall Islands and Micronesia (Federated States of) and reported to WHO on 6 April 2023."
+  },
+  {
+   "id": "3/2023",
+   "title": "Medical Product Alert N°3/2023: Falsified DEFITELIO (defibrotide sodium)",
+   "date": "2023-04-11",
+   "url": "https://www.who.int/news/item/11-04-2023-medical-product-alert-n-3-2023--falsified-defitelio-(defibrotide-sodium)",
+   "kind": "falsified",
+   "products": [
+    "DEFITELIO"
+   ],
+   "tokens": [
+    "defitelio"
+   ],
+   "batches": [
+    "19G19A"
+   ],
+   "countries": [
+    "United Arab Emirates"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to a falsified batch of DEFITELIO (defibrotide sodium) identified in the United Arab Emirates and publicly reported by the national regulatory authority (in November 2022). The falsified batch was also identified in Kyrgyzstan (in March 2023). "
+  },
+  {
+   "id": "2/2023",
+   "title": "Medical Product Alert N°2/2023: TETRACYCLINE HYDROCHLORIDE OPHTHALMIC OINTMENT USP 1%",
+   "date": "2023-02-22",
+   "url": "https://www.who.int/news/item/22-02-2023-medical-product-alert-n-2-2023-tetracycline-hydrochloride-ophthalmic-ointment",
+   "kind": "other",
+   "products": [
+    "TETRACYCLINE HYDROCHLORIDE OPHTHALMIC OINTMENT USP 1%"
+   ],
+   "tokens": [
+    "tetracycline"
+   ],
+   "batches": [],
+   "manufacturer": "Galentic Pharma",
+   "countries": [
+    "India"
+   ],
+   "allBatches": true,
+   "summary": "This WHO Medical Product Alert refers to the batches of TETRACYCLINE HYDROCHLORIDE OPHTHALMIC OINTMENT USP 1%, manufactured by Galentic Pharma (India) Pvt. Ltd, located at R-673, T.T.C. MIDC Rabale, Thane-Belapur Road, Navi Mumbai - 400701, Maharashtra, India, whose shelf lives are still valid, as listed in tables 1 and 2."
+  },
+  {
+   "id": "1/2023",
+   "title": "Medical Product Alert N°1/2023: Substandard (contaminated) liquid dosage medicines",
+   "date": "2023-01-11",
+   "url": "https://www.who.int/news/item/11-01-2023-medical-product-alert-n-1-2023-substandard-(contaminated)-liquid-dosage-medicines",
+   "kind": "substandard",
+   "products": [
+    "liquid dosage medicines",
+    "AMBRONOL syrup",
+    "DOK-1 Max syrup"
+   ],
+   "tokens": [
+    "ambronol"
+   ],
+   "batches": [],
+   "countries": [
+    "India",
+    "Uzbekistan"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to two substandard (contaminated) products, identified in Uzbekistan and reported to WHO on 22 December 2022, and identified in Cambodia, and reported to WHO on 3 April 2023. Substandard medical products are products that fail to meet quality standards or specifications and are therefore \"out of specification\"[1]. "
+  },
+  {
+   "id": "8/2022",
+   "title": "Medical Product Alert N°8/2022: Substandard (contaminated) METHOTREX 50mg",
+   "date": "2022-12-27",
+   "url": "https://www.who.int/news/item/27-12-2022-medical-product-alert-n-8-2022-substandard-(contaminated)-methotrex",
+   "kind": "substandard",
+   "products": [
+    "METHOTREX"
+   ],
+   "tokens": [
+    "methotrex"
+   ],
+   "batches": [
+    "MTI2101BAQ"
+   ],
+   "countries": [
+    "India",
+    "Lebanon",
+    "Yemen"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one batch of substandard (contaminated) METHOTREXTM (methotrexate) 50mg, identified in two countries (Yemen and Lebanon) in the WHO Eastern Mediterranean region. Methotrexate is on the WHO model list of essential medicines and is indicated for the treatment of cancer and autoimmune diseases."
+  },
+  {
+   "id": "7/2022",
+   "title": "Medical Product Alert N°7/2022: Substandard (contaminated) paediatric liquid dosage medicines",
+   "date": "2022-11-02",
+   "url": "https://www.who.int/news/item/02-11-2022-medical-product-alert-n-7-2022-substandard-(contaminated)-paediatric-liquid-dosage-medicines",
+   "kind": "substandard",
+   "products": [
+    "paediatric liquid dosage medicines",
+    "Termorex syrup",
+    "Flurin DMP syrup",
+    "Unibebi Cough Syrup",
+    "Unibebi Demam Paracetamol Drops",
+    "Unibebi Demam Paracetamol Syrup",
+    "Paracetamol Drops",
+    "Paracetamol Syrup",
+    "Vipcol Syrup"
+   ],
+   "tokens": [
+    "termorex",
+    "flurin",
+    "unibebi",
+    "demam",
+    "paracetamol",
+    "vipcol"
+   ],
+   "batches": [
+    "AUG22A06"
+   ],
+   "manufacturer": "PT Afi Farma",
+   "countries": [
+    "Indonesia"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to eight substandard products, identified in the WHO Region of South-East Asia. These products were identified in Indonesia and publicly reported by the national regulatory authority (Badan POM) on 20 and 30 October 2022[1]. Substandard medical products are products that fail to meet either their quality standards or specifications and are, therefore \"out of s"
+  },
+  {
+   "id": "6/2022",
+   "title": "Medical Product Alert N°6/2022: Substandard (contaminated) paediatric medicines",
+   "date": "2022-10-05",
+   "url": "https://www.who.int/news/item/05-10-2022-medical-product-alert-n-6-2022-substandard-(contaminated)-paediatric-medicines",
+   "kind": "substandard",
+   "products": [
+    "paediatric medicines",
+    "Promethazine Oral Solution",
+    "Kofexmalin Baby Cough Syrup",
+    "Makoff Baby Cough Syrup",
+    "Magrip N Cold Syrup"
+   ],
+   "tokens": [
+    "promethazine",
+    "kofexmalin",
+    "makoff",
+    "magrip"
+   ],
+   "batches": [],
+   "manufacturer": "Maiden Pharmaceuticals Limited",
+   "countries": [
+    "Gambia",
+    "India"
+   ],
+   "allBatches": true,
+   "summary": "This WHO Medical Product Alert refers to four substandard products, identified in The Gambia and reported to WHO in September 2022. Substandard medical products are products that fail to meet either their quality standards or specifications and are, therefore \"out of specification\"[1]."
+  },
+  {
+   "id": "5/2022",
+   "title": "Medical Product Alert N°5/2022: DIPRIVAN",
+   "date": "2022-08-25",
+   "url": "https://www.who.int/news/item/25-08-2022-medical-product-alert-n-5-2022-falsified-diprivan",
+   "kind": "other",
+   "products": [
+    "DIPRIVAN"
+   ],
+   "tokens": [
+    "diprivan"
+   ],
+   "batches": [],
+   "manufacturer": "ASTRAZENECA for ASPEN",
+   "countries": [],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to falsified DIPRIVAN (propofol), identified in Venezuela (Bolivarian Republic of) in July 2022 and reported to WHO in August 2022. "
+  },
+  {
+   "id": "4/2022",
+   "title": "Medical Product Alert N°4/2022: Falsified DYSPORT",
+   "date": "2022-08-19",
+   "url": "https://www.who.int/news/item/19-08-2022-medical-product-alert-n-4-2022-falsified-dysport",
+   "kind": "falsified",
+   "products": [
+    "DYSPORT"
+   ],
+   "tokens": [
+    "dysport"
+   ],
+   "batches": [],
+   "countries": [
+    "United Kingdom",
+    "Jordan"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to five falsified batches of DYSPORT detected in five countries - Jordan (May 2022), T&uuml;rkiye (May 2022), Kuwait (June 2022), United Kingdom (June 2022), and Poland (July 2022)."
+  },
+  {
+   "id": "3/2022",
+   "title": "Medical Product Alert N°3/2022: Falsified Intratect (Human normal immunoglobulin)",
+   "date": "2022-05-27",
+   "url": "https://www.who.int/news/item/27-05-2022-medical-product-alert-n-3-2022-falsified-intratect-human-normal-immunoglobulin",
+   "kind": "falsified",
+   "products": [
+    "Intratect"
+   ],
+   "tokens": [
+    "intratect"
+   ],
+   "batches": [],
+   "countries": [
+    "Egypt",
+    "India",
+    "Brazil"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to four falsified lots of Intratect reported from Brazil (September 2021), India (February 2022), Bolivia (Plurinational State of) (April 2022), and Egypt (April 2022)."
+  },
+  {
+   "id": "2/2022",
+   "title": "Medical Product Alert N°2/2022: Falsified DESREM (Remdesivir)",
+   "date": "2022-03-09",
+   "url": "https://www.who.int/news/item/09-03-2022-medical-product-alert-n-2-2022-falsified-desrem-(remdesivir)",
+   "kind": "falsified",
+   "products": [
+    "DESREM"
+   ],
+   "tokens": [
+    "desrem"
+   ],
+   "batches": [],
+   "countries": [
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to two falsified batches of DESREM Remdesivir for Injection 100mg/vial. The falsified batches have been identified in Guatemala and India and were reported to WHO in February 2022."
+  },
+  {
+   "id": "9/2021",
+   "title": "Medical Product Alert N°9/2021: Falsified Soliris",
+   "date": "2021-12-22",
+   "url": "https://www.who.int/news/item/22-12-2021-medical-product-alert-n-9-2021-falsified-soliris",
+   "kind": "falsified",
+   "products": [
+    "Soliris"
+   ],
+   "tokens": [
+    "soliris"
+   ],
+   "batches": [],
+   "countries": [
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to several batches of falsified Soliris (eculizumab) identified in Argentina, Estonia, India and Uruguay and reported to WHO between November and December 2021. The genuine manufacturer of Soliris, has confirmed that the products listed in this alert are falsified. The falsified products were reported at patient level and regulated supply chains in the above-m"
+  },
+  {
+   "id": "8/2021",
+   "title": "Medical Product Alert N°8/2021: Falsified Combiart",
+   "date": "2021-12-21",
+   "url": "https://www.who.int/news/item/21-12-2021-medical-product-alert-n-8-2021-falsified-combiart",
+   "kind": "falsified",
+   "products": [
+    "Combiart"
+   ],
+   "tokens": [
+    "combiart"
+   ],
+   "batches": [
+    "7225119"
+   ],
+   "countries": [
+    "Mali",
+    "Chad",
+    "Tanzania"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one batch of falsified Combiart (combination of artemether and lumefantrine) identified in Chad, C&ocirc;te d'Ivoire, and Mali and reported to WHO in November 2021. The genuine manufacturer of Combiart has confirmed that the product listed in this alert is falsified. The falsified product was reported at the patient level outside authorized and regulated su"
+  },
+  {
+   "id": "7/2021",
+   "title": "Medical Product Alert N°7/2021: Falsified COVID-19 Vaccine AstraZeneca",
+   "date": "2021-11-04",
+   "url": "https://www.who.int/news/item/04-11-2021-medical-product-alert-n-7-2021-falsified-covid-19-vaccine-astrazeneca",
+   "kind": "falsified",
+   "products": [
+    "COVID-19 Vaccine AstraZeneca"
+   ],
+   "tokens": [
+    "astrazeneca"
+   ],
+   "batches": [],
+   "countries": [],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to falsified COVID-19 VACCINE AstraZeneca (ChAdOx1-S [recombinant]) identified in the Islamic Republic of Iran and reported to WHO in October 2021. The genuine manufacturer of COVID-19 VACCINE AstraZeneca (ChAdOx1-S [recombinant]) has indicated that the product is falsified. The falsified product was reported at the patient level outside authorized and regulat"
+  },
+  {
+   "id": "6/2021",
+   "title": "Medical Product Alert N°6/2021: Falsified Pfizer-BioNTech COVID-19 Vaccine",
+   "date": "2021-11-04",
+   "url": "https://www.who.int/news/item/04-11-2021-medical-product-alert-n-6-2021-falsified-pfizer-biontech-covid-19-vaccine",
+   "kind": "falsified",
+   "products": [
+    "Pfizer-BioNTech COVID-19 Vaccine"
+   ],
+   "tokens": [
+    "pfizer",
+    "biontech"
+   ],
+   "batches": [
+    "EH9899"
+   ],
+   "countries": [],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to one lot of falsified Pfizer-BioNTech COVID-19 Vaccine identified in the Islamic Republic of Iran and reported to WHO in October 2021. The genuine manufacturer of Pfizer-BioNTech COVID-19 Vaccine has confirmed that the product listed in this Alert is falsified. The falsified product was reported at the patient level outside authorized and regulated supply ch"
+  },
+  {
+   "id": "5/2021",
+   "title": "Medical Product Alert N°5/2021: Falsified COVISHIELD vaccine (Update)",
+   "date": "2021-08-31",
+   "url": "https://www.who.int/news/item/31-08-2021-medical-product-alert-n-5-2021-falsified-covishield-vaccine",
+   "kind": "falsified",
+   "products": [
+    "COVISHIELD vaccine"
+   ],
+   "tokens": [
+    "covishield"
+   ],
+   "batches": [
+    "4121Z040",
+    "4126Z079"
+   ],
+   "countries": [
+    "Uganda",
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to falsified COVISHIELD (ChAdOx1 nCoV-19 Corona Virus Vaccines"
+  },
+  {
+   "id": "4/2021",
+   "title": "Medical Product Alert N°4/2021: Falsified remdesivir",
+   "date": "2021-08-13",
+   "url": "https://www.who.int/news/item/13-08-2021-medical-product-alert-n-4-2021-falsified-remdesivir",
+   "kind": "falsified",
+   "products": [
+    "remdesivir"
+   ],
+   "tokens": [
+    "remdesivir"
+   ],
+   "batches": [
+    "EN2005A2-B",
+    "EN2009D7-Q"
+   ],
+   "manufacturer": "GILEAD",
+   "countries": [
+    "Mexico"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to two batches of falsified remdesivir injection 100mg/20ml (5mg/ml)"
+  },
+  {
+   "id": "3/2021",
+   "title": "Medical Product Alert N°3/2021: Falsified CYTOTEC",
+   "date": "2021-08-10",
+   "url": "https://www.who.int/news/item/10-08-2021-medical-product-alert-n-3-2021",
+   "kind": "falsified",
+   "products": [
+    "CYTOTEC"
+   ],
+   "tokens": [
+    "cytotec"
+   ],
+   "batches": [
+    "B16519",
+    "14660"
+   ],
+   "countries": [
+    "Niger",
+    "Ghana",
+    "Nigeria",
+    "Cameroon",
+    "Congo"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to two batches of falsified CYTOTEC (misoprostol) 200 microgram"
+  },
+  {
+   "id": "2/2021",
+   "title": "Medical Product Alert N°2/2021: Falsified COVID-19 Vaccine BNT162b2",
+   "date": "2021-03-26",
+   "url": "https://www.who.int/news/item/26-03-2021-medical-product-alert-n-2-2021-falsified-covid-19-vaccine-bnt162b2",
+   "kind": "falsified",
+   "products": [
+    "COVID-19 Vaccine BNT162b2"
+   ],
+   "tokens": [
+    "bnt162b2"
+   ],
+   "batches": [],
+   "countries": [
+    "Mexico"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to falsified COVID-19 Vaccine identified as \"BNT162b2\" detected in Mexico in February 2021 and recently confirmed as falsified to the WHO. The falsified product was supplied and administered to patients outside authorized vaccination programs."
+  },
+  {
+   "id": "1/2021",
+   "title": "Medical Product Alert N°1/2021: Falsified Vitamin A",
+   "date": "2021-03-10",
+   "url": "https://www.who.int/news/item/10-03-2021-medical-product-alert-n-1-2021-falsified-vitamin-a",
+   "kind": "falsified",
+   "products": [
+    "Vitamin A"
+   ],
+   "tokens": [
+    "vitamin"
+   ],
+   "batches": [
+    "UI4004",
+    "39090439"
+   ],
+   "manufacturer": "Accucaps Industries Limited in September 2009, with an expiry date of September",
+   "countries": [
+    "Chad"
+   ],
+   "allBatches": false,
+   "summary": "This WHO Medical Product Alert refers to two falsified VITAMIN A (retinol) capsules identified in Chad and reported to WHO in November 2020. Laboratory analysis of recovered samples identified that both products are severely degraded and underdosed - containing less than the stated active ingredient. Both falsified products also carry now-defunct logos - the outdated WHO Essential Drugs Programme "
+  },
+  {
+   "id": "7/2020",
+   "title": "Medical Product Alert N°7/2020: Falsified HARVONI (Ledipasvir/sofosbuvir)",
+   "date": "2020-12-08",
+   "url": "https://www.who.int/news/item/08-12-2020-medical-product-alert-n-7-2020",
+   "kind": "falsified",
+   "products": [
+    "HARVONI"
+   ],
+   "tokens": [
+    "harvoni"
+   ],
+   "batches": [],
+   "countries": [
+    "Turkey",
+    "Brazil"
+   ],
+   "allBatches": false,
+   "summary": "Falsified HARVONI (Ledipasvir/sofosbuvir) identified in the WHO regions of the Americas and Europe"
+  },
+  {
+   "id": "5/2020",
+   "title": "Medical Product Alert N°5/2020",
+   "date": "2020-10-30",
+   "url": "https://www.who.int/news/item/30-10-2020-medical-product-alert-n-6-2020",
+   "kind": "other",
+   "products": [],
+   "tokens": [],
+   "batches": [],
+   "countries": [
+    "Mexico"
+   ],
+   "allBatches": false,
+   "summary": "Falsified Fluzone&reg; Quadrivalent Influenza Vaccine identified in WHO region of the Americas"
+  },
+  {
+   "id": "4/2020",
+   "title": "Medical Product Alert N°4/2020: Falsified Chloroquine (Update)",
+   "date": "2020-04-09",
+   "url": "https://www.who.int/news/item/09-04-2020-medical-product-alert-n4-2020",
+   "kind": "falsified",
+   "products": [
+    "Chloroquine"
+   ],
+   "tokens": [
+    "chloroquine"
+   ],
+   "batches": [],
+   "countries": [
+    "Niger",
+    "Burkina Faso",
+    "Cameroon",
+    "Congo",
+    "France"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to several confirmed falsified chloroquine products circulating in the WHO regions of Africa and Europe. New reports of falsified chloroquine which have been validated by WHO are included in this update."
+  },
+  {
+   "id": "3/2020",
+   "title": "Medical Product Alert N°3/2020: Falsified medical products that claim to prevent, detect, treat or cure COVID-19",
+   "date": "2020-03-31",
+   "url": "https://www.who.int/news/item/31-03-2020-medical-product-alert-n-3-2020",
+   "kind": "falsified",
+   "products": [
+    "medical products that claim to prevent",
+    "detect",
+    "treat or cure COVID-19"
+   ],
+   "tokens": [],
+   "batches": [],
+   "countries": [
+    "China",
+    "Brazil",
+    "United States"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert warns consumers, healthcare professionals, and health authorities against a growing number of falsified medical products that claim to prevent, detect, treat or cure COVID-19. "
+  },
+  {
+   "id": "2/2020",
+   "title": "Medical Product Alert N°2/2020: Falsified HIV rapid diagnostic tests",
+   "date": "2020-03-27",
+   "url": "https://www.who.int/news/item/27-03-2020-medical-product-alert-n-2-2020",
+   "kind": "falsified",
+   "products": [
+    "HIV rapid diagnostic tests"
+   ],
+   "tokens": [],
+   "batches": [
+    "HIV7120026",
+    "HIV6120030"
+   ],
+   "manufacturer": "Trinity Biotech plc",
+   "countries": [
+    "Kenya"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to a confirmed falsified human immunodeficiency virus (HIV) in vitro diagnostic medical device (IVD) that has been identified circulating in Guyana and Kenya. "
+  },
+  {
+   "id": "1/2020",
+   "title": "Medical Product Alert N° 1/2020: Falsified antimalarials displaying an outdated WHO Essential Drugs Programme logo",
+   "date": "2020-03-09",
+   "url": "https://www.who.int/news/item/09-03-2020-medical-product-alert-n-1-2020-english-version",
+   "kind": "falsified",
+   "products": [
+    "antimalarials displaying an outdated WHO Essential Drugs Programme logo"
+   ],
+   "tokens": [],
+   "batches": [
+    "44680"
+   ],
+   "manufacturer": "REMEDICA LTD - Cyprus and to contain 300mg of quinine sulphate",
+   "countries": [
+    "Niger",
+    "Nigeria",
+    "Cameroon",
+    "Chad"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to a series of confirmed falsified antimalarials circulating in West and Central Africa. Medicines subject of this alert display a similar logo to the outdated WHO Essential Drugs Programme logo. "
+  },
+  {
+   "id": "8/2019",
+   "title": "Medical Product Alert N° 8/2019: Falsified Rabies Vaccines and Anti-Rabies Serum",
+   "date": "2020-01-31",
+   "url": "https://www.who.int/news/item/31-01-2020-medical-product-alert-n-8-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "Rabies Vaccines",
+    "Anti-Rabies Serum"
+   ],
+   "tokens": [],
+   "batches": [
+    "N1E353M"
+   ],
+   "countries": [],
+   "allBatches": false,
+   "summary": " to the WHO Medical Product Alert N°1/2019 issued on 30 January 2019 regarding falsified Verorab rabies vaccines circulating in the Philippines. Rabies\r"
+  },
+  {
+   "id": "5/2019",
+   "title": "Medical Product Alert N°5/2019: Falsified Meningitis vaccines",
+   "date": "2020-01-28",
+   "url": "https://www.who.int/news/item/28-01-2020-medical-product-alert-n-5-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "Meningitis vaccines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "GSK for \r\nPfizer which has the market authorization rights",
+   "countries": [
+    "Niger"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the circulation of confirmed falsified Mencevax ACWY in the WHO region of Africa. Genuine Mencevax ACWY is used to prevent meningitis types A, C, W and Y."
+  },
+  {
+   "id": "11/2019",
+   "title": "Medical Product Alert N° 11/2019: Falsified Amoxicillin + Clavulanic Acid products",
+   "date": "2019-10-16",
+   "url": "https://www.who.int/news/item/16-10-2019-medical-product-alert-n-11-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "Amoxicillin + Clavulanic Acid products"
+   ],
+   "tokens": [
+    "amoxicillin",
+    "clavulanic"
+   ],
+   "batches": [
+    "35405327A",
+    "BSTU0039"
+   ],
+   "countries": [],
+   "allBatches": false,
+   "summary": "Genuine amoxicillin + clavulanic acid is used to treat a range of bacterial infections and is referenced on the WHO Essential Medicines List as an access group antibiotic. "
+  },
+  {
+   "id": "10/2019",
+   "title": "Medical Product Alert N° 10/2019: Falsified Quinine Bisulphate and Quinine Sulphate",
+   "date": "2019-10-16",
+   "url": "https://www.who.int/news/item/16-10-2019-medical-product-alert-n-10-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "Quinine Bisulphate",
+    "Quinine Sulphate"
+   ],
+   "tokens": [
+    "quinine"
+   ],
+   "batches": [
+    "7711006",
+    "00952005",
+    "7422",
+    "7711004"
+   ],
+   "manufacturer": "\"Enitop\r\n Pharmaceutical Nig",
+   "countries": [
+    "Niger",
+    "Nigeria",
+    "Chad",
+    "Uganda",
+    "Central African Republic"
+   ],
+   "allBatches": false,
+   "summary": " the African region. Please refer to the previous WHO Medical Product Alert N°2/2017\r"
+  },
+  {
+   "id": "9/2019",
+   "title": "Medical Product Alert N° 9/2019: Falsified Augmentin",
+   "date": "2019-08-20",
+   "url": "https://www.who.int/news/item/20-08-2019-medical-product-alert-n-9-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "Augmentin"
+   ],
+   "tokens": [
+    "augmentin"
+   ],
+   "batches": [],
+   "countries": [
+    "Kenya",
+    "Uganda"
+   ],
+   "allBatches": false,
+   "summary": "Product details are listed in Table 1 below and contained in the Uganda National Drug Authority News Release."
+  },
+  {
+   "id": "7/2019",
+   "title": "Medical Product Alert N° 7/2019: Falsified meglumine antimoniate ampoules",
+   "date": "2019-04-24",
+   "url": "https://www.who.int/news/item/24-04-2019-medical-product-alert-n-7-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "meglumine antimoniate ampoules"
+   ],
+   "tokens": [
+    "meglumine",
+    "antimoniate"
+   ],
+   "batches": [],
+   "countries": [
+    "Pakistan"
+   ],
+   "allBatches": false,
+   "summary": "Table 1: Details of the falsified products GULUCATIME and GLUCANTIME, subject of WHO medical product alert N°7/2019"
+  },
+  {
+   "id": "6/2019",
+   "title": "Medical Product Alert N° 6/2019: Falsified hydrochlorothiazide",
+   "date": "2019-04-17",
+   "url": "https://www.who.int/news/item/17-04-2019-medical-product-alert-n-6-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "hydrochlorothiazide"
+   ],
+   "tokens": [
+    "hydrochlorothiazide"
+   ],
+   "batches": [
+    "16G04"
+   ],
+   "countries": [
+    "Cameroon"
+   ],
+   "allBatches": false,
+   "summary": "Adverse effects attributed to these products have been reported. Genuine hydrochlorothiazide is used as an antihypertensive and diuretic medicine, whereas glibenclamide is an antidiabetic medicine."
+  },
+  {
+   "id": "4/2019",
+   "title": "Medical Product Alert N°4/2019: Falsified oral cholera vaccines",
+   "date": "2019-03-21",
+   "url": "https://www.who.int/news/item/21-03-2019-medical-product-alert-n-4-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "oral cholera vaccines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "Valneva Canada Inc",
+   "countries": [],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the circulation of confirmed falsified DUKORAL in the WHO region of South East Asia. Genuine Dukoral is a WHO pre-qualified oral cholera vaccine."
+  },
+  {
+   "id": "3/2019",
+   "title": "Medical Product Alert N° 3/2019: Falsified ICLUSIG (Asia and globally)",
+   "date": "2019-02-21",
+   "url": "https://www.who.int/news/item/21-02-2019-medical-product-alert-n-3-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "ICLUSIG"
+   ],
+   "tokens": [
+    "iclusig"
+   ],
+   "batches": [
+    "PR072875",
+    "PR0834170",
+    "25A19E09"
+   ],
+   "countries": [],
+   "allBatches": false,
+   "summary": " Pacific. This is linked to the WHO Medical Product Alert N°2/2019 issued on 31 January 2019 regarding falsified ICLUSIG traded globally.\r"
+  },
+  {
+   "id": "2/2019",
+   "title": "Medical Product Alert N°2/2019: Falsified ICLUSIG traded globally",
+   "date": "2019-02-01",
+   "url": "https://www.who.int/news/item/01-02-2019-medical-product-alert-n-2-2019-(english-version)",
+   "kind": "falsified",
+   "products": [
+    "ICLUSIG"
+   ],
+   "tokens": [
+    "iclusig"
+   ],
+   "batches": [
+    "25A19E09",
+    "PR072875"
+   ],
+   "countries": [
+    "Switzerland"
+   ],
+   "allBatches": false,
+   "summary": " of Europe and the WHO Region of the Americas. Genuine ICLUSIG, the active pharmaceutical ingredient of which is Ponatinib Hydrochloride, is used to treat different forms of leukaemia."
+  },
+  {
+   "id": "1/2019",
+   "title": "Medical Product Alert N° 1/2019: Falsified Rabies Vaccines",
+   "date": "2019-02-01",
+   "url": "https://www.who.int/news/item/01-02-2019-medical-product-alert-n-1-2019",
+   "kind": "falsified",
+   "products": [
+    "Rabies Vaccines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "Sanofi Pasteur",
+   "countries": [],
+   "allBatches": false,
+   "summary": "Two falsified vaccines have so far been discovered and their details and available photographs are shown below. "
+  },
+  {
+   "id": "4/2018",
+   "title": "Medical Product Alert N°4/2018: impurity discovered in valsartan",
+   "date": "2018-07-18",
+   "url": "https://www.who.int/news/item/18-07-2018-medical-product-alert-n-4-2018--impurity-discovered-in-valsartan",
+   "kind": "other",
+   "products": [
+    "impurity discovered in valsartan"
+   ],
+   "tokens": [
+    "valsartan"
+   ],
+   "batches": [],
+   "manufacturer": "Zhejiang Huahai Pharmaceuticals since July 2012 are expected to be affected",
+   "countries": [
+    "China"
+   ],
+   "allBatches": true,
+   "summary": "Medicines containing valsartan are used to treat patients with high blood pressure to reduce complications such as heart attack and stroke. It is also used in patients who have had heart failure or a recent heart attack."
+  },
+  {
+   "id": "3/2018",
+   "title": "Medical Product Alert N°3/2018: Falsified Hepatitis B Vaccines",
+   "date": "2018-03-23",
+   "url": "https://www.who.int/news/item/23-03-2018-medical-product-alert-n-3-2018--falsified-hepatitis-b-vaccines",
+   "kind": "falsified",
+   "products": [
+    "Hepatitis B Vaccines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "the Serum Institute of India Pvt",
+   "countries": [
+    "Uganda",
+    "India"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to falsified versions of Multi dose (10ml) Hepatitis B Vaccines (rDNA) that have been identified in Uganda and recently reported to WHO."
+  },
+  {
+   "id": "2/2018",
+   "title": "Medical Product Alert N°2/2018: Falsified “Augmentin”",
+   "date": "2018-03-02",
+   "url": "https://www.who.int/news/item/02-03-2018-medical-product-alert-n-2-2018--falsified--augmentin",
+   "kind": "falsified",
+   "products": [
+    "Augmentin"
+   ],
+   "tokens": [
+    "augmentin"
+   ],
+   "batches": [],
+   "manufacturer": "GSK",
+   "countries": [
+    "Cameroon"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to a falsified version of Augmentin (Amoxycillin + clavulanate potassium) that has been identified in Cameroon and recently reported to WHO."
+  },
+  {
+   "id": "1/2018",
+   "title": "Medical Product Alert N°1/2018: Falsified cefixime products",
+   "date": "2018-01-31",
+   "url": "https://www.who.int/news/item/31-01-2018-medical-product-alert-n-1-2018--falsified-cefixime-products",
+   "kind": "falsified",
+   "products": [
+    "cefixime products"
+   ],
+   "tokens": [
+    "cefixime"
+   ],
+   "batches": [],
+   "countries": [
+    "Democratic Republic of the Congo",
+    "Congo"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to two versions of falsified cefixime products that have been identified in the eastern part of the Democratic Republic of the Congo (South Kivu), and recently reported to WHO."
+  },
+  {
+   "id": "4/2017",
+   "title": "Medical Product Alert N°4/2017: Falsified Penicillin V",
+   "date": "2017-11-27",
+   "url": "https://www.who.int/news/item/27-11-2017-medical-product-alert-n-4-2017--falsified-penicillin-v",
+   "kind": "falsified",
+   "products": [
+    "Penicillin V"
+   ],
+   "tokens": [
+    "penicillin"
+   ],
+   "batches": [],
+   "countries": [
+    "Cameroon",
+    "Belgium"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to falsified Penicillin V (phenoxymethyl penicillin) circulating in Cameroon, and recently reported to WHO. Phenoxymethyl penicillin is used to treat particular bacterial infections and is listed as a WHO Essential Medicine and key anti-biotic."
+  },
+  {
+   "id": "3/2017",
+   "title": "Medical Product Alert N°3/2017: Falsified Avastin and Sutent",
+   "date": "2017-08-18",
+   "url": "https://www.who.int/news/item/18-08-2017-medical-product-alert-n-3-2017--falsified-avastin-and-sutent",
+   "kind": "falsified",
+   "products": [
+    "Avastin",
+    "Sutent"
+   ],
+   "tokens": [
+    "avastin",
+    "sutent"
+   ],
+   "batches": [],
+   "manufacturer": "Roche/Genentech for the treatment of various cancers",
+   "countries": [
+    "Uganda"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to two falsified medicines discovered by the National Drug Authority, Uganda and reported to WHO."
+  },
+  {
+   "id": "2/2017",
+   "title": "Medical Product Alert N°2/2017: Falsified Quinine Sulphate",
+   "date": "2017-07-27",
+   "url": "https://www.who.int/news/item/27-07-2017-medical-product-alert-n-2-2017--falsified-quinine-sulphate",
+   "kind": "falsified",
+   "products": [
+    "Quinine Sulphate"
+   ],
+   "tokens": [
+    "quinine"
+   ],
+   "batches": [],
+   "countries": [
+    "Democratic Republic of the Congo",
+    "Congo"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the circulation of two confirmed falsified versions of Quinine Sulphate, in the Democratic Republic of the Congo, and containing zero active pharmaceutical ingredient."
+  },
+  {
+   "id": "1/2017",
+   "title": "Medical Product Alert N°1/2017: Falsified Meningococcal ACWY Vaccine",
+   "date": "2017-06-02",
+   "url": "https://www.who.int/news/item/02-06-2017-medical-product-alert-n-1-2017--falsified-meningococcal-acwy-vaccine",
+   "kind": "falsified",
+   "products": [
+    "Meningococcal ACWY Vaccine"
+   ],
+   "tokens": [
+    "acwy"
+   ],
+   "batches": [
+    "089UMH002"
+   ],
+   "manufacturer": "Bio-Manguinhos/Fiocruz and is presented in vials of 10 doses each",
+   "countries": [
+    "Niger"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the circulation of a confirmed falsified Meningococcal ACWY Vaccine discovered in Niger."
+  },
+  {
+   "id": "4/2016",
+   "title": "Medical Product Alert N°4/2016: Falsified Quinine Sulphate",
+   "date": "2016-08-19",
+   "url": "https://www.who.int/news/item/19-08-2016-medical-product-alert-n-4-2016--falsified-quinine-sulphate",
+   "kind": "falsified",
+   "products": [
+    "Quinine Sulphate"
+   ],
+   "tokens": [
+    "quinine"
+   ],
+   "batches": [],
+   "countries": [
+    "Cameroon",
+    "Democratic Republic of the Congo",
+    "Congo"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the recent circulation of two confirmed falsified versions of Quinine Sulphate circulating in Cameroon and the Democratic Republic of the Congo, containing zero active pharmaceutical ingredient."
+  },
+  {
+   "id": "3/2016",
+   "title": "Medical Product Alert N°3/2016: Falsified Hepatitis C medicines",
+   "date": "2016-02-25",
+   "url": "https://www.who.int/news/item/25-02-2016-medical-product-alert-n-3-2016--falsified-hepatitis-c-medicines",
+   "kind": "falsified",
+   "products": [
+    "Hepatitis C medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "PHARCO Corporation ; Alexandria, Egypt",
+   "countries": [
+    "Egypt"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the circulation of confirmed falsified versions of Sofosbuvir 400mg + Ledipasvir 90mg and Daclatasvir 60mg in South East Asia."
+  },
+  {
+   "id": "2/2016",
+   "title": "Medical Product Alert N°2/2016: Falsified AMARIL yellow fever vaccines",
+   "date": "2016-02-11",
+   "url": "https://www.who.int/news/item/11-02-2016-medical-product-alert-n-2-2016--falsified-amaril-yellow-fever-vaccines",
+   "kind": "falsified",
+   "products": [
+    "AMARIL yellow fever vaccines"
+   ],
+   "tokens": [
+    "amaril"
+   ],
+   "batches": [],
+   "manufacturer": "the Pasteur Institute in Dakar, Senegal",
+   "countries": [
+    "Senegal"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the confirmed circulation of falsified versions of \"AMARIL stabilised vaccine\" in South East Asia."
+  },
+  {
+   "id": "1/2016",
+   "title": "Medical Product Alert N°1/2016: Falsified phenobarbitone tablets",
+   "date": "2016-02-05",
+   "url": "https://www.who.int/news/item/05-02-2016-medical-product-alert-n-4-2017--falsified-phenobarbitone-tablets",
+   "kind": "falsified",
+   "products": [
+    "phenobarbitone tablets"
+   ],
+   "tokens": [
+    "phenobarbitone"
+   ],
+   "batches": [],
+   "countries": [
+    "Guinea",
+    "Liberia"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the circulation of falsified versions of phenobarbitone (also known as phenobarbital) in West Africa."
+  },
+  {
+   "id": "5/2015",
+   "title": "Medical Product Alert N°5/2015: Falsified Emergency Contraceptive",
+   "date": "2015-11-18",
+   "url": "https://www.who.int/news/item/18-11-2015-medical-product-alert-n-5-2015--falsified-emergency-contraceptive",
+   "kind": "falsified",
+   "products": [
+    "Emergency Contraceptive"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "Gedeon Richter",
+   "countries": [
+    "Uganda"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the confirmed circulation of falsified versions of Postinor-2 (Levonorgestrel) in East Africa."
+  },
+  {
+   "id": "4/2015",
+   "title": "Medical Product Alert N°4/2015: Adverse reactions caused by Falsified Diazepam",
+   "date": "2015-07-02",
+   "url": "https://www.who.int/news/item/02-07-2015-medical-product-alert-n-4-2015--adverse-reactions-caused-by-falsified-diazepam",
+   "kind": "falsified",
+   "products": [
+    "Diazepam"
+   ],
+   "tokens": [
+    "diazepam"
+   ],
+   "batches": [],
+   "manufacturer": "AGOG Pharma Ltd, and again contain yellow tablets bearing the lettering AGOG",
+   "countries": [
+    "Congo"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the confirmed circulation of falsified versions of Diazepam tablets circulating in Central Africa."
+  },
+  {
+   "id": "3/2015",
+   "title": "Medical Product Alert N°3/2015: Falsified Meningitis Vaccines UPDATE",
+   "date": "2015-05-27",
+   "url": "https://www.who.int/news/item/27-05-2015-medical-product-alert-n-3-2015--falsified-meningitis-vaccines-update",
+   "kind": "falsified",
+   "products": [
+    "Meningitis Vaccines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "Sanofi Pasteur",
+   "countries": [
+    "Niger"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the confirmed circulation of falsified versions of Meningitis Vaccines in Niger and follows Medical Product Alert 2/2015 issued on the 22nd May 2015."
+  },
+  {
+   "id": "2/2015",
+   "title": "Medical Product Alert N°2/2015: Falsified Meningitis Vaccines",
+   "date": "2015-05-22",
+   "url": "https://www.who.int/news/item/22-05-2015-medical-product-alert-n-2-2015--falsified-meningitis-vaccines",
+   "kind": "falsified",
+   "products": [
+    "Meningitis Vaccines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "GlaxoSmithKline",
+   "countries": [
+    "Niger"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the confirmed circulation of falsified versions of Meningitis Vaccines in Niger."
+  },
+  {
+   "id": "1/2015",
+   "title": "Medical Product Alert N°1/2015: Falsified anti-malarial medicine",
+   "date": "2015-02-25",
+   "url": "https://www.who.int/news/item/25-02-2015-medical-product-alert-n-1-2015--falsified-anti-malarial-medicine",
+   "kind": "falsified",
+   "products": [
+    "anti-malarial medicine"
+   ],
+   "tokens": [
+    "malarial"
+   ],
+   "batches": [],
+   "manufacturer": "Ipca Laboratories Ltd",
+   "countries": [
+    "Togo"
+   ],
+   "allBatches": false,
+   "summary": "This Medical Product Alert relates to the confirmed circulation of falsified anti-malarial medicine in Togo and C&ocirc;te d'Ivoire."
+  },
+  {
+   "id": "2/2014",
+   "title": "Medical Product Alert N°2/2014: Falsified medicines UPDATE",
+   "date": "2014-10-10",
+   "url": "https://www.who.int/news/item/10-10-2014-medical-product-alert-n-2-2014--falsified-medicines-update",
+   "kind": "falsified",
+   "products": [
+    "medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "countries": [
+    "Niger"
+   ],
+   "allBatches": false,
+   "summary": "This Drug alert is in follow up to Drug Alert 131 regarding falsified antimalarial products in circulation in West and Central Africa. Six (6) new falsified medical products (antimalarials and antibiotic) have been discovered in Niger in September 2014."
+  },
+  {
+   "id": "1/2014",
+   "title": "Medical Product Alert N°1/2014: Falsified antimalarial medicines",
+   "date": "2014-03-25",
+   "url": "https://www.who.int/news/item/25-03-2014-medical-product-alert-n-1-2014--falsified-antimalarial-medicines",
+   "kind": "falsified",
+   "products": [
+    "antimalarial medicines"
+   ],
+   "tokens": [],
+   "batches": [],
+   "manufacturer": "the companies named on the labels",
+   "countries": [
+    "Ghana",
+    "Cameroon",
+    "Liberia"
+   ],
+   "allBatches": false,
+   "summary": "This drug alert concerns three separate falsified antimalarial medicines discovered in Cameroon, Ghana, and Liberia."
+  },
+  {
+   "id": "5/2013",
+   "title": "Medical Product Alert N°5/2013: Falsified batches of Coartem UPDATE",
+   "date": "2013-11-08",
+   "url": "https://www.who.int/news/item/08-11-2013-medical-product-alert-n-5-2013--falsified-batches-of-coartem-update",
+   "kind": "falsified",
+   "products": [
+    "Coartem"
+   ],
+   "tokens": [
+    "coartem"
+   ],
+   "batches": [],
+   "manufacturer": "Novartis and is a WHO pre-qualified medicine",
+   "countries": [
+    "Cameroon"
+   ],
+   "allBatches": false,
+   "summary": "This drug alert serves as an update to WHO Medical Product Alert N2/2013 of 3 May 2013 concerning falsified batches of Coartem that were circulating in Western and Central Africa"
+  },
+  {
+   "id": "4/2013",
+   "title": "Medical Product Alert N°4/2013: Contaminated Dextromethorphan UPDATE",
+   "date": "2013-10-17",
+   "url": "https://www.who.int/news/item/17-10-2013-medical-product-alert-n-4-2013--contaminated-dextromethorphan-update",
+   "kind": "substandard",
+   "products": [
+    "Dextromethorphan"
+   ],
+   "tokens": [
+    "dextromethorphan"
+   ],
+   "batches": [],
+   "countries": [
+    "India",
+    "Pakistan"
+   ],
+   "allBatches": false,
+   "summary": "On 24 January 2013, WHO Medical Product Alert N1/2013 was published following the discovery in Pakistan of two types of locally produced cough syrups containing the contaminated active pharmaceutical ingredient (API) Dextromethorphan."
+  },
+  {
+   "id": "3/2013",
+   "title": "Medical Product Alert N°3/2013: Falsified batches of Postinor 2",
+   "date": "2013-07-26",
+   "url": "https://www.who.int/news/item/26-07-2013-medical-product-alert-n-3-2013--falsified-batches-of-postinor-2",
+   "kind": "falsified",
+   "products": [
+    "Postinor 2"
+   ],
+   "tokens": [
+    "postinor"
+   ],
+   "batches": [],
+   "manufacturer": "Gedeon Richter and is a widely used WHO pre-qualified medicine",
+   "countries": [
+    "Niger",
+    "Nigeria"
+   ],
+   "allBatches": false,
+   "summary": "In late June 2013 a batch of falsified Postinor 2 was discovered at Lagos International Airport, Nigeria, containing no active pharmaceutical ingredient."
+  },
+  {
+   "id": "2/2013",
+   "title": "Medical Product Alert N°2/2013: Falsified batches of Coartem",
+   "date": "2013-05-03",
+   "url": "https://www.who.int/news/item/03-05-2013-medical-product-alert-n-2-2013--falsified-batches-of-coartem",
+   "kind": "falsified",
+   "products": [
+    "Coartem"
+   ],
+   "tokens": [
+    "coartem"
+   ],
+   "batches": [],
+   "manufacturer": "Novartis and is a WHO pre-qualified medicine",
+   "countries": [
+    "Cameroon",
+    "Kenya"
+   ],
+   "allBatches": false,
+   "summary": "In early 2013 a batch of falsified Coartem was discovered in Yaound&eacute;, Cameroon, containing no active pharmaceutical ingredients."
+  },
+  {
+   "id": "1/2013",
+   "title": "Medical Product Alert N°1/2013: Contaminated Dextromethorpan Active Pharmaceutical Ingredient",
+   "date": "2013-01-24",
+   "url": "https://www.who.int/news/item/24-01-2013-medical-product-alert-n-1-2013--contaminated-dextromethorpan-active-pharmaceutical-ingredient",
+   "kind": "substandard",
+   "products": [
+    "Dextromethorpan Active Pharmaceutical Ingredient"
+   ],
+   "tokens": [
+    "dextromethorpan"
+   ],
+   "batches": [],
+   "manufacturer": "Konduskar Laboratories, Kolhapur, India, please ensure that it is tested and mee",
+   "countries": [
+    "India",
+    "Pakistan"
+   ],
+   "allBatches": false,
+   "summary": "Increased vigilance is requested for batches of Dextromethorphan Active Pharmaceutical Ingredient produced by Konduskar Laboratories Private Limited, Kolhapur, Maharashtra India"
+  }
+ ]
+}
