@@ -1,162 +1,135 @@
 # Contributing to MedLink
 
-Thanks for being interested in this project. MedLink is not a toy app or a throwaway prototype. It is a real-world medication safety project with a direct connection to counterfeit medicine risk, recall visibility, and patient safety in African and other underserved markets.
+MedLink helps patients in Mauritania and the wider region check the medicines they buy. Read the [README](README.md) first: it explains what a scan does and where the data comes from. This guide covers how to work on the code and data without making the app less trustworthy.
 
-If you are contributing here, the goal is not just to make the app look nice. It is to make it more trustworthy, more useful, and more accurate in the environments where people actually face the risk of bad or fake medicines.
+## Where help matters most
 
-## Why this project matters
+1. **National medicine registries.** Mauritania (DPL), Morocco (AMMPS), Algeria (MIPH), Tunisia (DPM), Senegal (ARP), Côte d'Ivoire (AIRP)… None has an API. If you can get an official list of authorised medicines with barcodes as a spreadsheet, that's the most valuable contribution there is. See [Adding a country](#adding-a-country).
+2. **WHO batch numbers.** Many WHO alerts list their batches only in a PDF annex. Copying them into `scripts/registry/who-alerts.overrides.json` turns "WHO has reported fakes of this brand" into "this exact batch is in a WHO alert".
+3. **Recall feeds.** ANSM batch withdrawals, AMMPS notices, NAFDAC alerts, into `src/data/alerts/recalls.json` — or a script that builds that file automatically.
+4. **Real boxes.** Scan medicines bought in the region and report what MedLink got wrong (see [Reporting a scan problem](#reporting-a-scan-problem)).
+5. **The app itself:** UI, accessibility, Arabic right-to-left layout, behaviour on slow or no connection.
 
-The main challenge is straightforward: medicine verification is too weak in too many places. Counterfeit products can slip through when packaging is hard to verify, local recall data is fragmented, and patients do not have a quick way to compare a product with their own medical profile.
+## Setup
 
-MedLink is trying to make that process easier by combining:
-
-- product scanning,
-- recall and expiry checks,
-- patient profile awareness,
-- medication safety prompts,
-- and practical workflows for clinics, pharmacies, and everyday users.
-
-## Ways to contribute
-
-There are a lot of useful ways to help, and almost all of them matter.
-
-### App and UX
-
-- improve the dashboard and screen logic,
-- fix scanner edge cases,
-- make safety warnings clearer,
-- improve the user experience in low-connectivity environments,
-- clean up patient profile flows and onboarding.
-
-### Safety and product logic
-
-- improve product verification logic,
-- reduce false positives and false negatives,
-- strengthen recall and expiry logic,
-- improve medication comparisons against patient allergies and conditions,
-- help with data quality and confidence scoring.
-
-### Data and regional support
-
-- improve coverage for African markets and regional pharmacovigilance data,
-- work on local recall sources and registry integration,
-- improve product mapping across different packaging standards,
-- add better handling for countries or regions with incomplete data.
-
-### Testing and reliability
-
-- add or improve tests around scanning and verification,
-- fix edge cases in barcode parsing,
-- improve network fallback behavior,
-- harden the app against missing or incomplete API data.
-
-### Documentation
-
-- clarify project workflows,
-- improve setup and troubleshooting docs,
-- explain limitations honestly,
-- write better onboarding materials for new contributors.
-
-## Before you start
-
-Please read these first:
-
-- [README.md](README.md)
-- [START_HERE.md](START_HERE.md)
-- [DRUG_SAFETY_SYSTEM.md](DRUG_SAFETY_SYSTEM.md)
-
-This is important because the project is not a generic app. It sits inside a high-risk problem area, and good contributions need to respect that.
-
-## Local setup
+You need Node 20.19 or newer, npm, and Expo Go for SDK 54.
 
 ```bash
 npm install
-npm start
-```
-
-For the scraper-enabled setup:
-
-```bash
-npm run start:full
-```
-
-## Development workflow
-
-1. Fork the repo or create a branch for your work.
-2. Keep changes focused and easy to review.
-3. Test the part of the app you changed.
-4. Be clear in your pull request about what changed and why.
-5. Call out any uncertainty, data limits, or known edge cases.
-
-## Contribution standards
-
-### Keep it careful
-
-This project deals with medication safety, which means we should be conservative and honest.
-
-- do not overstate certainty,
-- document assumptions,
-- explain how a rule or alert was derived,
-- avoid making medical claims that the code cannot support.
-
-### Keep it readable
-
-- keep PRs focused,
-- avoid unrelated refactors,
-- prefer clear names and straightforward logic,
-- comment on tricky parts where needed,
-- write code that another contributor can understand without a long explanation.
-
-### Keep it testable
-
-For new or changed logic, add or update tests where possible. This repo already includes scanning and verification tests, and those are a good place to start.
-
-```bash
+npx expo start -c
 npm test
 ```
 
-## What we especially need help with
+## How the scan engine is organised
 
-Right now, the biggest value is in a few areas:
+Everything a scan decides lives in `src/scan/`, as plain TypeScript with no UI. That keeps it testable:
 
-- barcode edge cases and normalization improvements,
-- product lookup reliability,
-- region-specific recall and registry work,
-- better patient-medication comparison logic,
-- app resilience when APIs or network access are unreliable,
-- accessibility and UX improvements,
-- documentation and contributor onboarding.
+| File | Responsibility |
+|---|---|
+| `parseCode.ts` | Raw barcode → GTIN, batch, expiry, serial, national codes, structural issues |
+| `gs1Prefixes.ts` | GS1 prefix → issuing country |
+| `registries.ts` | Lookup in bundled national registries (`src/data/registries/`) |
+| `alerts.ts` | Match against WHO alerts (`src/data/alerts/who.json`) |
+| `cloneCheck.ts` | Record/check serial numbers in Firestore |
+| `assess.ts` | Combine everything into a verdict and a list of findings |
+| `inn.ts` | French/English active-ingredient names, allergy matching |
+| `index.ts` | `scanMedication()`: runs the whole pipeline |
 
-## Pull request expectations
+The screen (`src/screens/BarcodeScanner.tsx`) calls `scanMedication()` and renders the report with `src/components/ScanReportView.tsx`.
 
-A solid PR here should include:
+## Rules for safety logic
 
-- a clear title,
-- a short explanation of the problem,
-- what changed and why,
-- any validation you ran,
-- limitations or follow-up questions,
-- any safety or data-quality concerns you are aware of.
+These are the rules that keep the scanner honest. A pull request that touches `src/scan/` should follow all of them.
 
-## Issues and bug reports
+- **Never claim a product is authentic.** The best verdict is "Registered product — no alerts found". No consumer-side check can prove authenticity, and the wording must never suggest it can.
+- **Match severity to the evidence:**
+  - `critical` (→ "Do not use"): only for something certain about *this box*. Expired, recalled, or the batch appears in an alert.
+  - `high` (→ "Check with a pharmacist"): a strong but not conclusive red flag.
+  - `medium` and `info`: worth knowing, but they never change the verdict.
+- **"Not in the register" only counts for a complete list.** Only mark a registry `exhaustive` when it is the official, complete list. A partial list would make every missing product look suspicious.
+- **Avoid false alarms.** A shared active ingredient alone must never trigger a WHO match, otherwise every paracetamol box would be flagged because of one contaminated syrup. False alarms teach people to ignore warnings.
+- **Every finding needs a source.** If a rule comes from a regulation, alert or dataset, link it (the `url` on a signal) or explain it in the PR.
+- **Test with real codes.** Add cases to `__tests__/scan.engine.test.ts` using real CIP13/GTIN values from the bundled data, plus the false-positive case you're guarding against.
 
-When opening an issue, be specific. Include:
+## Adding a country
 
-- what you expected,
-- what actually happened,
-- steps to reproduce,
-- environment details,
-- screenshots or logs if useful,
-- whether the problem is UI, scanning, verification, profile logic, or data quality.
+1. Get the official list (regulator website, ministry publication, or a direct request) and export it as CSV with at least a barcode column and a product-name column.
+2. Import it:
+   ```bash
+   npm run registry:csv -- MR mauritania.csv --source "DPL — liste des médicaments autorisés" --url <source page>
+   ```
+   Add `--exhaustive` only if it's the complete official list.
+3. Scan a few boxes from that country, or add test cases with real codes from the list.
+4. In the PR, say where the list came from, its date, and whether it's complete.
 
-## A note on responsibility
+Full details, including the WHO overrides and recall file formats, are in [scripts/registry/README.md](scripts/registry/README.md).
 
-This project sits in a high-risk problem space. That means contributors should treat patient safety and data quality as core values, not as a nice-to-have afterthought.
+## Translations
 
-A good contribution is not just one that works. It is one that is understandable, honest about uncertainty, and safe to build on.
+Every user-facing string goes through i18next and must exist in **all three** files: `src/i18n/locales/en.ts`, `fr.ts` and `ar.ts`.
 
-## Code of conduct
+- Never hard-code text in a component. Use `t('section.key', 'English fallback')`.
+- Check new screens in Arabic: text alignment and icon direction should follow right-to-left.
+- The locale files use Windows (CRLF) line endings. Keep them that way, or scripts that edit them will silently miss.
+- `__tests__/scan.engine.test.ts` fails if a scan verdict or finding is missing in any language.
 
-Please keep discussions constructive and respectful. This project is about improving medication safety, not hype, vague claims, or careless engineering.
+## UI conventions
 
-If you are contributing, be practical, be honest, and keep the real-world problem in view.
+The design system is in `src/theme.ts`. Use its tokens instead of hard-coded values:
+
+- colours from `colors` (primary `#0066CC`; status colours only for status), background `#FAFAFA`, white cards
+- radius: buttons 10 (`radius.lg`), cards 12 (`radius.xl`), banners 16 (`radius.xxl`), chips/pills 20
+- buttons 44px high; screen side padding 20px; spacing in multiples of 4
+- Ionicons only, never emoji in the interface
+- every loading state gets a skeleton that matches the real layout's size
+
+## Tests
+
+```bash
+npm test                                  # everything
+npx jest __tests__/scan.engine.test.ts    # scan engine only
+npx tsc --noEmit                          # type-check
+```
+
+These suites already fail on `master` for reasons unrelated to most changes. Don't let them hide new failures:
+
+- `barcode-scanner-analysis.test.ts`: TypeScript syntax error in the test file
+- `fixtureDriven.verifyScanned.test.ts`: `jest.mock` factory references an out-of-scope variable
+- `verification.telemetry.test.ts`: `expo-constants` can't load under plain Jest
+
+Fixing any of them is a welcome contribution in its own right.
+
+## Commits and pull requests
+
+Commit messages follow the style already in the history: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, optionally with a scope (`feat(scan): …`).
+
+A pull request should say:
+
+- what problem it solves, and for whom
+- what changed
+- how you checked it: tests, device, real boxes scanned
+- for data changes: the source, its date, and whether it's complete
+- anything uncertain, or anything that could cause a false alarm or a missed warning
+
+Keep pull requests focused. A data import and a UI redesign belong in separate PRs.
+
+## Reporting a scan problem
+
+Wrong verdicts are the most useful bug reports we get. Include:
+
+- a photo of the box (front and the barcode side) and the country where it was bought
+- what MedLink said, and what you expected
+- the raw scanned code, if you can copy it from the scan history
+- whether you were online
+
+Don't include photos of prescriptions, patient names, or anything else that identifies a person.
+
+## Privacy and data
+
+- Never put real patient data in fixtures, screenshots or issues.
+- Serial-number tracking stores only an anonymous per-user hash. Keep it that way.
+- Respect each data source's reuse terms, and note them when you add a source.
+
+## Conduct
+
+Be direct, be kind, and stay focused on the patient at the other end of the scan.

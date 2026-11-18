@@ -1,295 +1,137 @@
-# MedLink Mobile
+# MedLink
 
-MedLink is an Africa-focused medication verification app built to help people check what they are buying or taking, flag suspicious products, and understand the risk around counterfeit, recalled, expired, or poorly matched medicines.
+MedLink is a mobile app that helps people in Mauritania and the rest of North and West Africa check the medicines they buy. Scan the barcode on a box and MedLink tells you what the product is, whether a health authority has registered it, and whether anything about it should worry you: an expiry date, a recall, a WHO falsified-medicine alert, a barcode that doesn't add up, or a box code that has been copied onto other boxes. It also checks the medicine against your own allergies, conditions and current treatments.
 
-This project started from a very practical problem: in many markets, including across Africa, counterfeit and substandard medicines are easier to move when people cannot quickly verify packaging, product origin, or known safety signals. The app is meant to give patients, caregivers, and pharmacy-facing teams a faster way to cross-check medicine information before it reaches the patient.
+Around it sit the everyday tools a patient needs: medication reminders, a health profile, and a map of nearby clinics, hospitals and pharmacies. The app is available in Arabic, French and English.
 
-> This project is not a clinical decision system and it is not a replacement for a doctor or pharmacist. It is a safety and verification tool meant to support informed decisions, not replace professional care.
+![MedLink](src/assets/logo.png)
 
-![MedLink branding](src/assets/logo.png)
+> MedLink supports decisions; it does not make them. A scan can't prove that a box is genuine, and MedLink never claims it can. If in doubt, ask a pharmacist.
 
-## Why this exists
+## Why we're building it
 
-The problem is not just one bad batch or one fake box. It is a bigger system issue:
+In Mauritania, most medicines are imported, mainly from France, Morocco, Algeria, Tunisia, India and China, and they reach patients through a mix of pharmacies, depots and informal sellers. A box can look right and still be expired, recalled, out of authorisation, or fake. Patients rarely have a way to check.
 
-- medication packaging is not always traceable at the point of sale,
-- patients may not know the product name, active ingredients, or legal origin,
-- counterfeit products can look convincing enough to fool a rushed buyer,
-- side effects and allergies can be missed when the patient has no quick way to compare their profile against the medication,
-- some markets do not have strong digital traceability or recall visibility at the point of care.
+The information that would help often already exists: France publishes every medicine it authorises, the WHO publishes alerts about falsified and contaminated batches found across Africa, and the box's own DataMatrix code carries its batch, expiry and a unique serial number. MedLink brings those sources together and turns them into one clear answer on the phone, in the patient's language.
 
-MedLink is designed to make that process less fragile by putting a few critical checks into one mobile workflow: scan, verify, check recall risk, compare against the patient record, and surface the warning where it matters.
+## What a scan does
 
-## The African context
+Point the camera at the box. MedLink reads the 2D DataMatrix on serialised packs or the regular EAN/UPC barcode, then:
 
-This project is intentionally shaped around the realities of African healthcare and consumer markets.
+1. **Decodes the code** — product number (GTIN), batch, expiry date, serial number, and national drug numbers such as French CIP13 or US NDC. It notes which country's GS1 office issued the barcode (Morocco 611, Algeria 613, Tunisia 619, Egypt 622, India 890…). That shows where the brand registered the barcode, not where the medicine was made.
+2. **Looks the product up in national registries.** France is loaded in full (15,883 medicines from the official ANSM database), with the laboratory, active ingredients, and whether the product is still authorised and marketed. Because that list is complete, a French-format code that isn't on it is flagged.
+3. **Checks recalls and WHO alerts.** That covers curated national recalls and 80 WHO Medical Product Alerts, including falsified Cytotec found in Niger and Nigeria, Combiart in Mali and Chad, and quinine and chloroquine across the Sahel. A shared active ingredient alone doesn't trigger a match; the brand, manufacturer or batch has to match too.
+4. **Looks for cloned codes.** Every serialised box has a unique serial number. If the same serial is scanned by several different people, the code has probably been copied onto fakes.
+5. **Checks the medicine against your profile:** allergies (across languages and drug classes, so a "penicillin" allergy catches amoxicillin), conditions, and drug–drug interactions via the NIH RxNorm database.
+6. **Gives one verdict** with plain-language findings:
 
-Why that matters:
-
-- counterfeit medicines are a major risk in many African countries,
-- poor packaging and supply-chain visibility make verification harder,
-- many consumers rely on pharmacies, informal sellers, or local clinics that need better product intelligence,
-- region-specific recall and compliance data matters more than a generic one-size-fits-all product view,
-- a mobile-first tool can help close the gap between medicine packaging, patient data, and local safety information.
-
-This is not a purely US-centric product. It is meant to be useful in African contexts, with room for country-specific recall coverage, pharmacy workflows, and product verification patterns that reflect real market conditions.
-
-## What the app does
-
-At a high level, MedLink brings together a few important functions:
-
-- barcode and GS1/DataMatrix scanning,
-- product lookup and verification workflows,
-- authenticity checks for MedLink-issued codes,
-- recall and expiry screening,
-- patient profile comparison for allergies, conditions, and current medication history,
-- reminder and medication management tools,
-- facility and clinic/pharmacy discovery,
-- multilingual support for different user contexts.
-
-## Main app areas
-
-This repo includes the main surfaces that drive the product:
-
-### Dashboard
-
-The dashboard acts as the home layer for the patient or user: reminders, summary information, schedule awareness, and quick access to essential tools.
-
-### Scanner and verification
-
-The scanner is at the heart of the project. It handles product scanning, code parsing, lookup, and warnings for recall, authenticity, or expiry-related issues.
-
-### Patient profile
-
-The profile layer is where a user stores medical context such as allergies, medications, conditions, emergency information, and pharmacy-related details. This is important because verification works much better when it can compare a scanned product against the real person using it.
-
-### Facilities and pharmacies
-
-The app also includes facility discovery for clinics, hospitals, and pharmacies, which matters in settings where people need to find trusted care or purchase medicines from a known source.
-
-## How the app works
-
-The core flow is simple on the surface but layered underneath: scan a product, normalize the code, check what is known about it, compare it to the patient record, and then surface the right warning or confidence signal.
+| Verdict | Meaning |
+|---|---|
+| **Do not use** | Expired, recalled, or the batch appears in a WHO alert |
+| **Check with a pharmacist** | Something is wrong but not conclusive: not in the national register, authorisation withdrawn, malformed barcode, likely cloned code |
+| **Registered product — no alerts found** | A health authority lists it and nothing matches it |
+| **Not found** | We couldn't identify it. That doesn't mean it's fake |
 
 ```mermaid
 flowchart TD
-    A[User scans barcode / GS1 DataMatrix / MedLink QR] --> B[Code normalization and parsing]
-    B --> C{Known format?}
-    C -->|GTIN / EAN / UPC / NDC| D[Lookup product metadata]
-    C -->|MedLink authenticity QR| E[Verify issued authenticity code]
-    D --> F[Check recall + expiry + labeling data]
-    F --> G[Compare with patient profile: allergies, meds, conditions]
-    E --> G
-    G --> H{Risk or warning found?}
-    H -->|Yes| I[Show alert + recommended action]
-    H -->|No| J[Show product info / safe state]
+    A[Scan DataMatrix / EAN / UPC / MedLink QR] --> B[Parse: GTIN, batch, expiry, serial, national codes]
+    B --> C[National registries<br/>France BDPM · more countries via CSV import]
+    B --> D[Curated national recalls]
+    B --> E[Serial seen by other users? Firestore]
+    C --> F[WHO falsified / substandard alerts]
+    B -.not found locally.-> G[openFDA · web scraper]
+    C & D & E & F & G --> H[Assessment: verdict + findings]
+    H --> I[Profile check: allergies, conditions, RxNorm interactions]
+    I --> J[Result screen in AR / FR / EN]
 ```
 
-### Product verification pipeline
+## Data sources
 
-The app currently pulls together a few layers of verification rather than depending on one single lookup source.
+| Source | What it gives us | Status |
+|---|---|---|
+| **France — BDPM (ANSM)** | Every medicine authorised in France, by CIP13 | Bundled, complete (snapshot 2026-10-30) |
+| **WHO Medical Product Alerts** | Falsified and substandard products, manufacturers, countries, some batch numbers | Bundled, 80 alerts (snapshot 2026-10-30) |
+| **National recalls** | ANSM, AMMPS, NAFDAC… recalls and batch withdrawals | Format ready, list still empty |
+| **Morocco, Algeria, Tunisia, Mauritania, Senegal…** | National lists of authorised medicines | Importer ready, no data loaded yet |
+| **NIH RxNorm** | Drug–drug interactions | Live API |
+| **openFDA** | US labels and recalls, for US imports | Live API, used only when a product isn't found locally |
+| **Web scraper** (`autoscrape/`) | Extra label text | Local development only; a phone can't reach it yet |
 
-```mermaid
-flowchart LR
-    A[App UI] --> B[Barcode / DataMatrix parsing]
-    B --> C[OpenFDA / label lookup]
-    B --> D[Local recall datasets]
-    B --> E[Scraper fallback]
-    B --> F[MedLink authenticity verification]
-    C --> G[Safety assessment logic]
-    D --> G
-    E --> G
-    F --> G
-    G --> H[Patient profile comparison]
-    H --> I[UI warning / recall / expiry / interaction alert]
-```
+Registries and alerts are bundled so scans work without a connection. Refresh them before each release with `npm run registry:update`. To add a country, see [scripts/registry/README.md](scripts/registry/README.md).
 
-### Technology and source stack
+The biggest single improvement MedLink could get is **the national registries for Mauritania and its Maghreb neighbours.** None of them publishes an API, so this means getting their authorised-medicine lists as spreadsheets.
 
-```mermaid
-flowchart TB
-    A[React Native + Expo mobile app] --> B[App navigation + screens]
-    A --> C[TypeScript logic and validation]
-    B --> D[Barcode scanner + GS1 parsing]
-    C --> E[Verification engine]
-    E --> F[OpenFDA labeling data]
-    E --> G[Recall data sources]
-    E --> H[Scraper fallback layer]
-    E --> I[Profile-aware safety checks]
-    E --> J[Firebase / auth / profile persistence]
-    G --> K[Regional and local recall registries]
-    H --> L[Web-scraped drug metadata]
-```
+## The rest of the app
 
-### Where the app gets its information
+- **Home** — greeting, next dose, today's progress, upcoming reminders, nearby facilities
+- **Reminders** — medication and check-up schedule with daily progress
+- **Clinics** — map and list of clinics, hospitals and pharmacies, with "open now" and delivery filters
+- **Profile** — medical ID (blood type, allergies, conditions), medications, insurance, emergency contacts, language
+- **Onboarding, notifications, offline-friendly scan history**
 
-The verification engine is designed to use multiple data sources rather than a single API, which is important in markets where product and recall data is uneven.
+Arabic, French and English are supported throughout, with right-to-left text for Arabic.
 
-- Product and labeling data: OpenFDA and related public metadata sources
-- Recall checks: local/regional recall registries and public enforcement data
-- Safety logic: patient profile comparisons for allergies, recorded medications, and medical conditions
-- Offline and low-coverage fallback: local recall datasets and scraper-driven metadata lookup
-- Authenticated user context: Firebase-based profile and reminder persistence
+## Tech stack
 
-This layered approach is intentional: the app is designed for a world where one source may be incomplete, delayed, or unavailable.
+- Expo SDK 54 · React Native 0.81 · React 19.1 · TypeScript
+- Firebase Auth (sessions persist across restarts) and Firestore (profiles, reminders, serial scans)
+- `expo-camera` for scanning, `react-native-svg`, i18next
+- Node scripts that build the bundled registries and alert data
+- Optional Python scraper (`autoscrape/`) and an Express analysis API (`server/`)
 
-## Current project status
+## Getting started
 
-This is a working mobile app and a serious project foundation, but it is still best treated as an evolving safety tooling project rather than a fully regulated clinical product.
-
-### What is already in place
-
-- mobile app shell and navigation,
-- barcode verification workflow,
-- product and recall lookup logic,
-- user profile management,
-- reminder and dashboard views,
-- clinic / pharmacy discovery screens,
-- multilingual support,
-- region-aware recall and data-building scripts.
-
-### What still needs work
-
-This is the honest part:
-
-- some features depend on public data sources that are incomplete or inconsistent,
-- risk checks can be limited by source coverage and region,
-- product verification is not the same as a complete patient assessment,
-- some barcode and product-matching edge cases still need cleanup,
-- the app would need stronger legal, privacy, and safety review before broader deployment,
-- a production-grade rollout would require deeper field validation across countries and regulatory contexts.
-
-## Known limitations
-
-MedLink is useful, but it has clear limits.
-
-- public databases may not cover every medication or every market,
-- recall and product data can be outdated or incomplete,
-- not every product code will match perfectly across markets,
-- interaction and contraindication logic can be limited by the quality of the data source,
-- counterfeit detection is probabilistic, not absolute,
-- package-level checks do not replace a clinician's judgment.
-
-## Safety note
-
-MedLink is intended for general reference and awareness, not as a medical diagnosis tool. It should never be treated as a substitute for a qualified healthcare professional, pharmacist, or emergency clinician.
-
-Users should always confirm product safety, dosage, and appropriateness with a licensed professional when the stakes are high.
-
-## Project structure
-
-```text
-.
-├── App.tsx
-├── package.json
-├── README.md
-├── CONTRIBUTING.md
-├── START_HERE.md
-├── QUICK_START.md
-├── DRUG_SAFETY_SYSTEM.md
-├── DRUG_VERIFICATION_AUDIT.md
-├── IMPLEMENTATION_SUMMARY.md
-├── TROUBLESHOOTING.md
-├── src/
-│   ├── components/
-│   ├── core/
-│   ├── hooks/
-│   ├── i18n/
-│   ├── lib/
-│   ├── notifications/
-│   ├── scan/
-│   ├── screens/
-│   ├── services/
-│   ├── theme.ts
-│   └── utils/
-├── autoscrape/
-├── server/
-├── scripts/
-├── docs/
-├── __tests__/
-├── app.json
-├── babel.config.js
-├── metro.config.js
-└── tsconfig.json
-```
-
-## Local setup
-
-### Prerequisites
-
-- Node.js 18+
-- npm
-- Expo / React Native tooling
-- optional: Python for scraper and fallback data work
-
-### Install
+You need **Node 20.19 or newer**, npm, and the **Expo Go** app for SDK 54 on your phone (or an iOS/Android simulator).
 
 ```bash
 npm install
+npx expo start -c
 ```
 
-### Run the app
+Scan the QR code with Expo Go. `-c` clears Metro's cache, which you need after dependency or config changes.
 
-```bash
-npm start
+| Command | What it does |
+|---|---|
+| `npm start` | Start the Expo dev server |
+| `npm run start:full` | App plus the local scraper (needs Python) |
+| `npm test` | Run the Jest suite |
+| `npm run registry:update` | Refresh the French registry and WHO alerts |
+| `npm run registry:csv -- <ISO> <file.csv>` | Import a country's medicine list |
+
+### Firestore rules for cloned-code detection
+
+The serial-number check stores anonymous scan counts in a `serialScans` collection. Deploy the rules in [scripts/registry/README.md](scripts/registry/README.md#cloned-code-detection-firestore). Without them, that one check is skipped and the rest of the scan still works.
+
+## Project layout
+
+```text
+src/
+  scan/          scan engine: parsing, registries, WHO alerts, clone check, verdict, INN names
+  screens/       Dashboard, Reminders, BarcodeScanner, Clinics, UserProfile, Login, Settings…
+  components/    shared UI (Card, Button, Chip, ScanReportView…)
+  data/          bundled registries (registries/) and alerts (alerts/)
+  i18n/locales/  en.ts, fr.ts, ar.ts
+  utils/ core/   openFDA, RxNorm, scraper client, reminders, profile
+  theme.ts       design tokens
+scripts/registry/  builders for registries and alert data
+autoscrape/        optional Python scraper
+server/            optional Express analysis API
+__tests__/         Jest tests (scan.engine.test.ts covers the scan engine with real data)
+docs/archive/      notes from the earlier (2025) pipeline, kept for history only
 ```
 
-### Run with scraper support
+## Limits we're open about
 
-```bash
-npm run start:full
-```
-
-## Screens and core flows
-
-This repo does not currently include a full exported screenshot gallery in the project itself, but the main user flows are clear from the app structure and screen files:
-
-- Dashboard / overview
-- Barcode scanner and verification result view
-- Product details and safety warnings
-- User profile and medication history
-- Facility, clinic and pharmacy lookup
-- Reminder management and medication schedule
-
-## Testing
-
-The repository includes Jest tests around verification and scanning logic. To run the test suite:
-
-```bash
-npm test
-```
-
-If you are working on barcode logic, safety checks, or product validation, it is worth running the most relevant tests before merging changes.
+- **Coverage is uneven.** French-sourced boxes are recognised reliably. Moroccan, Algerian, Tunisian and Mauritanian ones mostly aren't yet, because those registries aren't loaded.
+- **Many WHO batch numbers are missing.** They often sit in each alert's PDF annex, so a lot of WHO matches are product-level ("WHO has reported fakes of this brand") rather than batch-level.
+- **Cloned-code detection improves with users.** Few scans means few repeats to detect.
+- **No consumer app can verify a serial number officially.** The EU and national serialisation repositories are only open to pharmacies and wholesalers.
+- **This isn't a regulated medical device.** It needs legal, privacy and clinical review before a wide public release, plus field testing with pharmacists.
 
 ## Contributing
 
-This project is big enough for a lot of different kinds of contributors, and that is part of the point. We need people working on:
-
-- mobile UI and screen flow improvements,
-- barcode and product verification logic,
-- safety warnings and data quality,
-- Africa-focused recall and registry coverage,
-- facility and pharmacy discovery,
-- testing and regression work,
-- documentation and onboarding clarity.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guide and workflow.
-
-## Documentation index
-
-- [START_HERE.md](START_HERE.md) — quick-start setup notes
-- [QUICK_START.md](QUICK_START.md) — operational overview
-- [DRUG_SAFETY_SYSTEM.md](DRUG_SAFETY_SYSTEM.md) — safety system notes
-- [DRUG_VERIFICATION_AUDIT.md](DRUG_VERIFICATION_AUDIT.md) — audit and known gaps
-- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) — implementation notes and changes
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — common issues and fixes
+We especially need help with national registry data, WHO batch curation, recall feeds, and testing with real boxes from the region. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-This project currently declares the 0BSD license in [package.json](package.json), but anyone working on healthcare-facing tooling should treat legal review and safety review as part of the development process, not an afterthought.
-
-## Closing note
-
-This is a project with real social value if it is built carefully. The goal is not just to make a fancy scanner. The goal is to create a useful, honest, and practical product that helps people avoid bad medicine in places where the risk is too high and the margin for error is too low.
-
-That is why the project is being shaped around the African context and why the app is being built with real-world verification, profile awareness, and safety logic in mind.
+The code is released under 0BSD (see `package.json`). Bundled data stays under each publisher's own terms. BDPM is French public open data, and WHO alert content belongs to WHO. Check the reuse terms of every source before a commercial release.
